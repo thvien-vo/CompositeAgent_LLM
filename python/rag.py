@@ -176,20 +176,44 @@ def search(question, k=TOP_K):
 
 
 # ------------------------------------------------------------------ ranking questions ("highest Xt?")
+def detect_property(question):
+    """'Xt_MPa' for 'What is the tensile strength of ...?', 'Vf' for fibre volume fraction, else None."""
+    ql = question.lower()
+    if "volume fraction" in ql or "tỷ lệ thể tích" in ql or "tỉ lệ thể tích" in ql or re.search(r"\bvf\b", ql):
+        return "Vf"
+    for col, words in PROP_PHRASES:
+        if any(w in ql for w in words):
+            return col
+    for col, sym in PROP_SYMBOLS.items():
+        if re.search(rf"(?<![\w'’]){sym}(?![\w'’])", ql):
+            return col
+    return None
+
+
 def detect_ranking(question):
     """('Xt_MPa', 'max') for 'Which material has the highest tensile strength?', else None."""
     ql = question.lower()
     has = lambda words: any(re.search(w, ql) for w in words)
     direction = "max" if has(MAX_WORDS) else "min" if has(MIN_WORDS) else None
-    if direction is None:
+    col = detect_property(question) if direction else None
+    return (col, direction) if col and col != "Vf" else None
+
+
+def fact_line(question, hits):
+    """If the question names one material exactly and one property, look the value up directly in the table
+    (no LLM) -> (text for the prompt, value or None if not reported, unit). Else None."""
+    col = detect_property(question)
+    exact = [h for h in hits if h["boost"] >= 1.0]
+    if col is None or len(exact) != 1:
         return None
-    for col, words in PROP_PHRASES:
-        if any(w in ql for w in words):
-            return col, direction
-    for col, sym in PROP_SYMBOLS.items():
-        if re.search(rf"(?<![\w'’]){sym}(?![\w'’])", ql):
-            return col, direction
-    return None
+    m = exact[0]["material"]
+    r = load_table().set_index("material").loc[m]
+    label, unit = ("Vf (fibre volume fraction)", "") if col == "Vf" else next(
+        (lab, u) for c, lab, u in PROPS if c == col)
+    v = None if pd.isna(r[col]) else float(r[col])
+    shown = "not reported in the database" if v is None else f"{v:g} {unit}".rstrip()
+    return (f"Database value looked up by Python: {label} of {m} = {shown} "
+            f"(source: {r['source']}; status: {r['verify_status']})", v, unit)
 
 
 def ranking_block(question, n=5):
@@ -219,8 +243,11 @@ def ranking_block(question, n=5):
 # ------------------------------------------------------------------ answer
 PROMPT = """
 You are an assistant for composite material data. Answer the question using ONLY the context below.
-- Give each number with its unit, and cite the source exactly as written in the context, e.g.
-  "(source [1]: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37)". If the source has no page, say so.
+- Give each number with its unit, and cite the source of THAT row exactly as written in the context, in the
+  form "(source [<row number>]: <the Source text of that row>)". If that source has no page, say so.
+- If a line [F] is given, it is the exact database value for the question: use it.
+- If a ranking [R] is given, cite the source written after the material in the ranking.
+- If a Note says a value is anomalous, conflicting or should be excluded, say that the value is doubtful.
 - If the verification status is "needs_check" or "conflict", say that this value is not yet verified.
 - If the answer is not in the context, say that the database does not contain it. Do not invent numbers.
 - Answer in the same language as the question, in 1-4 sentences of plain text (no markdown, no LaTeX).
@@ -232,10 +259,16 @@ Question: {question}
 """
 
 
+def _ascii(s):
+    return re.sub("[‐‑‒–−]", "-", s or "")
+
+
 def check_numbers(answer_text, context):
-    """Numbers in the answer that are not in the context (rounding allowed). Empty list = OK."""
+    """Numbers and NCAMP report ids in the answer that are not in the context (rounding allowed).
+    Empty list = OK."""
+    answer_text, context = _ascii(answer_text), _ascii(context)
+    bad = [rid for rid in re.findall(r"NCP-RP-\d{4}-\d{3}", answer_text) if rid not in context]
     allowed = [float(x) for x in re.findall(r"\d+(?:\.\d+)?", context)]
-    bad = []
     for tok in re.findall(r"(?<![\w.])\d+(?:[.,]\d+)?", answer_text):
         v = float(tok.replace(",", "."))
         digits = len(re.sub(r"[^0-9]", "", tok).lstrip("0")) or 1
@@ -257,6 +290,9 @@ def answer(question, k=TOP_K, backend=None, show_context=True):
     blocks = [f"[{i}] {h['text']}" for i, h in enumerate(hits, 1)]
     if ranking:
         blocks.append(f"[R] {ranking}")
+    fact = None if ranking else fact_line(question, hits)
+    if fact:
+        blocks.append(f"[F] {fact[0]}")
     context = "\n\n".join(blocks)
     if show_context:
         print(f"\n--- Retrieved from database ({hits[0]['mode']} search, top {k}) ---")
@@ -265,9 +301,20 @@ def answer(question, k=TOP_K, backend=None, show_context=True):
                   f"score {h['score']:.3f} (similarity {h['cosine']:.3f} + name match {h['boost']:.2f})"))
         if ranking:
             print("[R] " + ranking.replace("\n", "\n    "))
+        if fact:
+            print("[F] " + fact[0])
     text = ask_llm(PROMPT.format(context=context, question=question), backend=backend)
-    return {"answer": text.strip(), "hits": hits, "ranking": ranking, "context": context,
-            "suspicious_numbers": check_numbers(text, context), "backend": llm.LAST_BACKEND}
+    consistent = None
+    if fact:  # does the answer state the value the table has?
+        t = _ascii(text).lower()
+        if fact[1] is None:
+            consistent = any(w in t for w in ["not reported", "not available", "does not", "not given", "not provide",
+                                              "no value", "không có", "chưa có", "không được báo cáo"])
+        else:
+            consistent = any(abs(float(x.replace(",", ".")) - fact[1]) <= 1e-9 + 0.005 * abs(fact[1])
+                             for x in re.findall(r"\d+(?:[.,]\d+)?", t))
+    return {"answer": text.strip(), "hits": hits, "ranking": ranking, "fact": fact, "fact_consistent": consistent,
+            "context": context, "suspicious_numbers": check_numbers(text, context), "backend": llm.LAST_BACKEND}
 
 
 def print_answer(res):
@@ -278,9 +325,13 @@ def print_answer(res):
         r = df.loc[h["material"]]
         print(f"  [{i}] {h['material']}: {r['source']} (status: {r['verify_status']})")
     if res["suspicious_numbers"]:
-        print(f"[guardrail] numbers not found in the database context: {res['suspicious_numbers']} - check them")
+        print(f"[guardrail] numbers / report ids not found in the retrieved rows: {res['suspicious_numbers']}"
+              " - check them")
     else:
-        print("[guardrail] every number in the answer appears in the retrieved database rows")
+        print("[guardrail] every number and report id in the answer appears in the retrieved database rows")
+    if res.get("fact_consistent") is not None:
+        print(f"[fact-check] the answer {'AGREES' if res['fact_consistent'] else 'does NOT agree'} with the "
+              f"database value looked up by Python")
 
 
 if __name__ == "__main__":

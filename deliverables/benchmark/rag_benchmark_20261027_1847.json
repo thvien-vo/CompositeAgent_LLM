@@ -1,0 +1,431 @@
+[
+ {
+  "backend": "hf",
+  "id": "R1",
+  "question": "What is the longitudinal tensile strength Xt of IM7/8552?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "IM7/8552",
+   "IM7/8551-7",
+   "IM7/BT250E-6"
+  ],
+  "missing": [],
+  "seconds": 49.6,
+  "suspicious": [],
+  "answer": "The longitudinal tensile strength Xt of IM7/8552 is 2212 MPa (source [1]: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37)."
+ },
+ {
+  "backend": "hf",
+  "id": "R2",
+  "question": "Độ bền cắt S của AS4/8552 là bao nhiêu?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "AS4/8552",
+   "AS4/3501-6",
+   "AS4/MTM45-1"
+  ],
+  "missing": [],
+  "seconds": 3.2,
+  "suspicious": [],
+  "answer": "Độ bền cắt S của AS4/8552 là 91.6 MPa (source [1]: NCAMP NCP-RP-2010-008 Rev D, lamina summary table p.37, RTD mean as-measured)."
+ },
+ {
+  "backend": "hf",
+  "id": "R3",
+  "question": "What is E1 of T1100G/3960 and which report is it from?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "T1100G/3960",
+   "T1100GC/TC380",
+   "T40-800/5215"
+  ],
+  "missing": [],
+  "seconds": 3.3,
+  "suspicious": [],
+  "answer": "E1 of T1100G/3960 is 170.5 GPa (source [1]: NCAMP NCP-RP-2023-002 Rev B, lamina summary table p.34)."
+ },
+ {
+  "backend": "hf",
+  "id": "R4",
+  "question": "Give the transverse compressive strength Yc of T650/5320-1.",
+  "ok": false,
+  "retrieval_hit": true,
+  "retrieved": [
+   "T650/5320-1",
+   "T650/5250-5",
+   "T700GC/TC1225"
+  ],
+  "missing": [
+   [
+    "NCP-RP-2013-001"
+   ]
+  ],
+  "seconds": 3.0,
+  "suspicious": [],
+  "answer": "The transverse compressive strength Yc of T650/5320-1 is 274 MPa (source [1]: NCAMP NCP‑RP‑2013‑001 Rev A, Table 3‑3 p.35)."
+ },
+ {
+  "backend": "hf",
+  "id": "R5",
+  "question": "What is the Poisson's ratio nu12 of T40-800/5215? Is the value reliable?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "T40-800/5215",
+   "T700GC/TC1225",
+   "T1100G/3960"
+  ],
+  "missing": [],
+  "seconds": 2.8,
+  "suspicious": [],
+  "answer": "The Poisson’s ratio ν12 for T40‑800/5215 is 0.164 (source [1]: NCAMP NCP‑RP (Cycom 5215 T40‑800 Unitape), lamina summary table p.36). However, the entry notes that ν12 = 0.164 is anomalously low compared with ν12c = 0.366 in the same table, and suggests excluding ν12 for this row, so the value is not considered reliable."
+ },
+ {
+  "backend": "hf",
+  "id": "R6",
+  "question": "Which NCAMP material has the highest Xt?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "T1100G/3960",
+   "T1100GC/TC380",
+   "IM7G/EP2202"
+  ],
+  "missing": [],
+  "seconds": 1.0,
+  "suspicious": [],
+  "answer": "The NCAMP material with the highest longitudinal tensile strength (Xt) is T1100G/3960, with Xt = 3645 MPa (source [1]: NCAMP NCP-RP-2023-002 Rev B, lamina summary table p.34, RTD mean as-measured)."
+ },
+ {
+  "backend": "hf",
+  "id": "R7",
+  "question": "Vật liệu sợi thủy tinh nào có mô đun dọc E1 lớn nhất?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "E-glass/LY556",
+   "E-glass/MY750",
+   "S2-glass/BT250E-6"
+  ],
+  "missing": [],
+  "seconds": 0.7,
+  "suspicious": [],
+  "answer": "Vật liệu E‑glass/LY556 có mô đun dọc E1 lớn nhất, bằng 53.48 GPa (source [1]: Soden, Hinton & Kaddour (1998) Compos Sci Technol 58:1011-1022 (WWFE-I)). Vì trạng thái xác minh là “needs_check”, giá trị này chưa được xác nhận."
+ },
+ {
+  "backend": "hf",
+  "id": "R8",
+  "question": "What is the tensile strength of titanium Ti-6Al-4V?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "AS4/3501-6",
+   "HTS40/MTM45-1",
+   "T1100G/3960"
+  ],
+  "missing": [],
+  "seconds": 3.1,
+  "suspicious": [],
+  "answer": "The database does not contain the tensile strength of titanium Ti‑6Al‑4V."
+ },
+ {
+  "backend": "hf",
+  "id": "R9",
+  "question": "What is the in-plane shear strength S of T650/5250-5?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "T650/5250-5",
+   "T650/5320-1",
+   "IM7/BT250E-6"
+  ],
+  "missing": [],
+  "seconds": 3.1,
+  "suspicious": [],
+  "answer": "The database does not contain a reported in‑plane shear strength S for T650/5250‑5; it is listed as not reported (NA) (source [1]: NCAMP NCP‑RP (Cycom 5250‑5 T650 Unitape), lamina summary table p.36, RTD mean as‑measured)."
+ },
+ {
+  "backend": "hf",
+  "id": "R10",
+  "question": "What is the fibre volume fraction of AS4/MTM45-1?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "AS4/MTM45-1",
+   "AS4/3501-6",
+   "AS4/8552"
+  ],
+  "missing": [],
+  "seconds": 2.8,
+  "suspicious": [],
+  "answer": "The fibre volume fraction Vf of AS4/MTM45-1 is 0.58 (dimensionless) (source [1]: NCAMP NCP-RP-2008-004 Rev B, Table 3-3 p.35, RTD (75F) mean as-measured)."
+ },
+ {
+  "backend": "hf",
+  "id": "R11",
+  "question": "What is Yc of Kevlar 49/epoxy?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "Kevlar 49/epoxy",
+   "T40-800/5215",
+   "T650/5320-1"
+  ],
+  "missing": [],
+  "seconds": 4.2,
+  "suspicious": [],
+  "answer": "Yc = 53 MPa (source [1]: Material Kevlar 49/epoxy, Tsai & Hahn (1980) Introduction to Composite Materials, Technomic). This value has a verification status of “conflict”, so it is not yet verified."
+ },
+ {
+  "backend": "hf",
+  "id": "R12",
+  "question": "Mô đun cắt G12 của IM7/BT250E-6 là bao nhiêu?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "IM7/BT250E-6",
+   "IM7/MTM45-1",
+   "IM7/8552"
+  ],
+  "missing": [],
+  "seconds": 2.9,
+  "suspicious": [],
+  "answer": "Mô đun cắt G12 của IM7/BT250E-6 là 4.34 GPa (source [1]: NCAMP NCP-RP-2015-019 N/C, lamina summary table p.31, RTD mean as-measured)."
+ },
+ {
+  "backend": "ollama",
+  "id": "R1",
+  "question": "What is the longitudinal tensile strength Xt of IM7/8552?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "IM7/8552",
+   "IM7/8551-7",
+   "IM7/BT250E-6"
+  ],
+  "missing": [],
+  "seconds": 5.8,
+  "suspicious": [],
+  "answer": "The longitudinal tensile strength Xt of IM7/8552 is 2212 MPa (source [1]: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37). This value is verified based on a visual check of the PDF page."
+ },
+ {
+  "backend": "ollama",
+  "id": "R2",
+  "question": "Độ bền cắt S của AS4/8552 là bao nhiêu?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "AS4/8552",
+   "AS4/3501-6",
+   "AS4/MTM45-1"
+  ],
+  "missing": [],
+  "seconds": 5.7,
+  "suspicious": [],
+  "answer": "Độ bền cắt S của AS4/8552 là 91.6 MPa (source [1]: NCAMP NCP-RP-2010-008 Rev D, lamina summary table p.37, RTD mean as-measured). This value has been verified."
+ },
+ {
+  "backend": "ollama",
+  "id": "R3",
+  "question": "What is E1 of T1100G/3960 and which report is it from?",
+  "ok": false,
+  "retrieval_hit": true,
+  "retrieved": [
+   "T1100G/3960",
+   "T1100GC/TC380",
+   "T40-800/5215"
+  ],
+  "missing": [
+   [
+    "NCP-RP-2023-002"
+   ],
+   [
+    "34"
+   ]
+  ],
+  "seconds": 6.1,
+  "suspicious": [
+   "2009",
+   "028",
+   "2009",
+   "028"
+  ],
+  "answer": "E1 of T1100G/3960 is 170.5 GPa (source [1]: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37). This value was obtained from the NCAMP NCP-RP-2009-028 Rev B, lamina summary table on page 37. The verification status is verified_pdf."
+ },
+ {
+  "backend": "ollama",
+  "id": "R4",
+  "question": "Give the transverse compressive strength Yc of T650/5320-1.",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "T650/5320-1",
+   "T650/5250-5",
+   "T700GC/TC1225"
+  ],
+  "missing": [],
+  "seconds": 6.0,
+  "suspicious": [],
+  "answer": "The transverse compressive strength Yc for T650/5320-1 is 274 MPa (source [1]: NCAMP NCP-RP-2013-001 Rev A, Table 3-3 p.35, RTD mean as-measured). This value is verified based on a visual check of the PDF page 35."
+ },
+ {
+  "backend": "ollama",
+  "id": "R5",
+  "question": "What is the Poisson's ratio nu12 of T40-800/5215? Is the value reliable?",
+  "ok": false,
+  "retrieval_hit": true,
+  "retrieved": [
+   "T40-800/5215",
+   "T700GC/TC1225",
+   "T1100G/3960"
+  ],
+  "missing": [],
+  "seconds": 6.4,
+  "suspicious": [
+   "028"
+  ],
+  "answer": "The Poisson’s ratio nu12 for T40-800/5215 is 0.164 (source [1]: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37). The value is not yet verified as it has an anomalous value noted in the source document (nu12t = 0.164 is anomalously low (nu12c = 0.366 in same table))."
+ },
+ {
+  "backend": "ollama",
+  "id": "R6",
+  "question": "Which NCAMP material has the highest Xt?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "T1100G/3960",
+   "T1100GC/TC380",
+   "IM7G/EP2202"
+  ],
+  "missing": [],
+  "seconds": 5.1,
+  "suspicious": [],
+  "answer": "T1100G/3960 has the highest longitudinal tensile strength with a value of 3645 MPa (source [1]: NCAMP NCP-RP-2023-002 Rev B, lamina summary table p.34, RTD mean as-measured). T1100GC/TC380 has 3277 MPa (source [2]: NCAMP NCP-RP-2025-010 Rev -, lamina summary table p.38, RTD mean as-measured), and IM7G/EP2202 has 2967 MPa (source [3]: NCAMP NCP-RP-2014-006 N/C, lamina summary table p.35, RTD mean as-measured)."
+ },
+ {
+  "backend": "ollama",
+  "id": "R7",
+  "question": "Vật liệu sợi thủy tinh nào có mô đun dọc E1 lớn nhất?",
+  "ok": false,
+  "retrieval_hit": true,
+  "retrieved": [
+   "E-glass/LY556",
+   "E-glass/MY750",
+   "S2-glass/BT250E-6"
+  ],
+  "missing": [],
+  "seconds": 5.5,
+  "suspicious": [
+   "028"
+  ],
+  "answer": "E-glass/LY556 có mô đun dọc E1 lớn nhất, với giá trị là 53.48 GPa (source [1]: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37). E-glass/MY750 có mô đun dọc E1 là 45.6 GPa (source [2]: Soden, Hinton & Kaddour (1998) Compos Sci Technol 58:1011-1022 (WWFE-I); status: needs_check). S2-glass/BT250E-6 có mô đun dọc E1 là 44.7 GPa (source [3]: NCAMP NCP-RP-2015-021 N/C, lamina summary table p.31, RTD mean as-measured; status: verified_pdf)."
+ },
+ {
+  "backend": "ollama",
+  "id": "R8",
+  "question": "What is the tensile strength of titanium Ti-6Al-4V?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "AS4/3501-6",
+   "HTS40/MTM45-1",
+   "T1100G/3960"
+  ],
+  "missing": [],
+  "seconds": 5.0,
+  "suspicious": [],
+  "answer": "The database does not contain it."
+ },
+ {
+  "backend": "ollama",
+  "id": "R9",
+  "question": "What is the in-plane shear strength S of T650/5250-5?",
+  "ok": false,
+  "retrieval_hit": true,
+  "retrieved": [
+   "T650/5250-5",
+   "T650/5320-1",
+   "IM7/BT250E-6"
+  ],
+  "missing": [
+   [
+    "not reported",
+    "not available",
+    "does not",
+    "not given",
+    "not provide"
+   ]
+  ],
+  "seconds": 5.8,
+  "suspicious": [
+   "028"
+  ],
+  "answer": "The in-plane shear strength S of T650/5250-5 is 4.96 GPa (source [1]: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37). This value is not yet verified."
+ },
+ {
+  "backend": "ollama",
+  "id": "R10",
+  "question": "What is the fibre volume fraction of AS4/MTM45-1?",
+  "ok": false,
+  "retrieval_hit": true,
+  "retrieved": [
+   "AS4/MTM45-1",
+   "AS4/3501-6",
+   "AS4/8552"
+  ],
+  "missing": [
+   [
+    "NCP-RP-2008-004"
+   ]
+  ],
+  "seconds": 5.6,
+  "suspicious": [
+   "028"
+  ],
+  "answer": "The fibre volume fraction of AS4/MTM45-1 is 0.58 (source [1]: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37)."
+ },
+ {
+  "backend": "ollama",
+  "id": "R11",
+  "question": "What is Yc of Kevlar 49/epoxy?",
+  "ok": false,
+  "retrieval_hit": true,
+  "retrieved": [
+   "Kevlar 49/epoxy",
+   "T40-800/5215",
+   "T650/5320-1"
+  ],
+  "missing": [
+   [
+    "conflict",
+    "not yet verified",
+    "not verified",
+    "unverified"
+   ]
+  ],
+  "seconds": 6.2,
+  "suspicious": [
+   "028"
+  ],
+  "answer": "The transverse compressive strength (Yc) of Kevlar 49/epoxy is 53 MPa (source [1]: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37). This value is based on Tsai & Hahn (1980) as recalled, but needs to be checked against the original table due to a discrepancy with UC3M OCW sheet data."
+ },
+ {
+  "backend": "ollama",
+  "id": "R12",
+  "question": "Mô đun cắt G12 của IM7/BT250E-6 là bao nhiêu?",
+  "ok": true,
+  "retrieval_hit": true,
+  "retrieved": [
+   "IM7/BT250E-6",
+   "IM7/MTM45-1",
+   "IM7/8552"
+  ],
+  "missing": [],
+  "seconds": 5.8,
+  "suspicious": [],
+  "answer": "The in-plane shear modulus G12 is 4.34 GPa for IM7/BT250E-6 (source [1]: NCAMP NCP-RP-2015-019 N/C, lamina summary table p.31, RTD mean as-measured)."
+ }
+]

@@ -44,13 +44,39 @@ QUESTIONS = [
 ]
 
 
+# Written on 27/10/2026 18:50 after the first run of QUESTIONS and BEFORE the RAG prompt / fact-check
+# changes; run only once with the final code.
+HOLDOUT = [
+    ("Q1", "What is the transverse tensile strength Yt of AS4/MTM45-1?", "AS4/MTM45-1",
+     [["47.7"], ["NCP-RP-2008-004"], ["35"]]),
+    ("Q2", "Cho biết mô đun ngang E2 của vật liệu T700GC/TC1225.", "T700GC/TC1225",
+     [["9.09", "9,09"], ["NCP-RP-2019-011"], ["33"]]),
+    ("Q3", "Which glass fibre material has the lowest Xc?", "E-glass/LY556",
+     [["LY556"], ["570"]]),
+    ("Q4", "What is the in-plane shear strength of IM7/8552 and how is it defined?", "IM7/8552",
+     [["91.1"], ["5%", "5 %"], ["NCP-RP-2009-028"]]),
+    ("Q5", "Xt của T300/5208 là bao nhiêu và lấy từ nguồn nào?", "T300/5208",
+     [["1500"], ["Tsai"]]),
+    ("Q6", "What is the density of IM7/8552?", None,
+     [["not contain", "does not", "no data", "not in", "không có", "not available", "not include",
+       "not provide", "not report", "not given"]]),
+]
+SETS = {"dev": QUESTIONS, "holdout": HOLDOUT}
+
+
+def _norm_text(s):
+    """Unicode hyphens / spaces from LLMs (‑ – − nbsp) -> plain ASCII, so string checks are fair."""
+    return re.sub("[‐‑‒–−]", "-", s or "").replace(" ", " ").replace(" ", " ")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--backends", default="hf,ollama")
+    ap.add_argument("--set", default="dev", choices=list(SETS))
     args = ap.parse_args()
     rows = []
     for b in args.backends.split(","):
-        for qid, q, mat, groups in QUESTIONS:
+        for qid, q, mat, groups in SETS[args.set]:
             t0 = time.time()
             try:
                 res = rag.answer(q, backend=b, show_context=False)
@@ -62,26 +88,29 @@ def main():
                 retrieved = [h["material"] for h in res["hits"]]
                 hit = mat is None or mat in retrieved
                 text = res["answer"]
-                missing = [g for g in groups if not any(s.lower() in text.lower() for s in g)]
+                missing = [g for g in groups if not any(s.lower() in _norm_text(text).lower() for s in g)]
                 ok = hit and not missing and not res["suspicious_numbers"]
             else:
                 retrieved, hit, text, missing, ok = [], False, err, groups, False
             rows.append({"backend": b, "id": qid, "question": q, "ok": ok, "retrieval_hit": hit,
+                         "fact_consistent": res.get("fact_consistent") if res else None,
                          "retrieved": retrieved, "missing": missing, "seconds": round(sec, 1),
                          "suspicious": res["suspicious_numbers"] if res else None, "answer": text})
             print(f"[{b:6}] {'OK  ' if ok else 'FAIL'} {sec:5.1f}s {qid} retrieved={retrieved}"
                   + ("" if ok else f"\n      missing={missing} suspicious={res and res['suspicious_numbers']}")
                   + f"\n      {re.sub(r'\s+', ' ', text or '')[:300]}", flush=True)
 
-    lines = [f"# RAG benchmark ({len(QUESTIONS)} questions)",
+    lines = [f"# RAG benchmark ({args.set} set, {len(SETS[args.set])} questions)",
              f"Run: {datetime.datetime.now():%Y-%m-%d %H:%M}. Embedding: {rag.EMBED_MODEL} (Ollama).", "",
-             "| backend | answer correct | right material retrieved | guardrail clean | mean s/question |",
-             "|---|---|---|---|---|"]
+             "| backend | answer correct | right material retrieved | guardrail clean | fact-check agrees | mean s/question |",
+             "|---|---|---|---|---|---|"]
     for b in args.backends.split(","):
         rs = [r for r in rows if r["backend"] == b]
         n = len(rs)
         lines.append(f"| {b} | **{sum(r['ok'] for r in rs)}/{n}** | {sum(r['retrieval_hit'] for r in rs)}/{n} | "
-                     f"{sum(1 for r in rs if r['suspicious'] == [])}/{n} | {sum(r['seconds'] for r in rs) / n:.1f} |")
+                     f"{sum(1 for r in rs if r['suspicious'] == [])}/{n} | "
+                     f"{sum(1 for r in rs if r['fact_consistent'])}/{sum(1 for r in rs if r['fact_consistent'] is not None)} | "
+                     f"{sum(r['seconds'] for r in rs) / n:.1f} |")
     lines += ["", "## Answers", ""]
     for r in rows:
         lines.append(f"- **{r['backend']} {r['id']}** {'OK' if r['ok'] else 'FAIL'} - {r['question']}  \n"
@@ -91,7 +120,7 @@ def main():
     print("\n" + md)
     out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "deliverables", "benchmark")
     os.makedirs(out_dir, exist_ok=True)
-    base = os.path.join(out_dir, f"rag_benchmark_{datetime.datetime.now():%Y%m%d_%H%M}")
+    base = os.path.join(out_dir, f"rag_benchmark_{args.set}_{datetime.datetime.now():%Y%m%d_%H%M}")
     with open(base + ".json", "w", encoding="utf-8") as f:
         json.dump(rows, f, indent=1, ensure_ascii=False)
     with open(base + ".md", "w", encoding="utf-8") as f:
