@@ -466,6 +466,44 @@ def _unused_numbers(text, angles, thick, n, qs, name_text):
     return unused
 
 
+_DEG = r"(?<![\w.])([-+−]?\d+(?:[.,]\d+)?)\s*(?:°|º|độ\b|deg\b|degrees?\b)"
+_ANGLE_LIST = (r"(?:angles?|góc|lần lượt|plies\s*:|stacking sequence\s*:?|layup\s*:?)\s*:?\s*"
+               r"((?:[-+]?\d+(?:\.\d+)?\s*°?\s*[,/;]?\s*){2,})")
+
+
+def _angles_from_text(text, stated=None):
+    """Ply angles listed one by one in the text: '30°, -30°, -30°, 30°' or 'Ply angles: 0, 45, -45, 90'.
+    -> list of angles, or None if the text has no clear list."""
+    cands = []
+    deg = [float(m.group(1).replace(",", ".").replace("−", "-")) for m in re.finditer(_DEG, text)]
+    if len(deg) >= 2:
+        cands.append(deg)
+    m = re.search(_ANGLE_LIST, text, flags=re.I)
+    if m:
+        lst = [float(x) for x in re.findall(r"[-+]?\d+(?:\.\d+)?", m.group(1))]
+        if len(lst) >= 2:
+            cands.append(lst)
+    cands = [c for c in cands if all(-90 <= a <= 90 for a in c)]
+    if stated:
+        cands = [c for c in cands if len(c) == stated] or []
+    return cands[0] if cands else None
+
+
+def _ply_thickness_from_text(text, n):
+    """'45° (0.3 mm), -45° (0.3 mm), 0° (0.5 mm) ...': one thickness after each listed angle -> list in m."""
+    degs = list(re.finditer(_DEG, text))
+    if len(degs) != n:
+        return None
+    out = []
+    for i, m in enumerate(degs):
+        seg = text[m.end():degs[i + 1].start() if i + 1 < n else len(text)]
+        lens = re.findall(r"(?<![\w.])(\d+(?:[.,]\d+)?)\s*(mm|µm|μm|um|microns?|inch(?:es)?|in|m)\b", seg)
+        if len(lens) != 1:
+            return None
+        out.append(float(lens[0][0].replace(",", ".")) * _LENGTH_WORDS[lens[0][1]])
+    return out
+
+
 def _si(q, table, what):
     unit = str(q.get("unit", "")).strip()
     if unit not in table:
@@ -518,14 +556,20 @@ def build_problem(raw, text=None):
             warnings.append(f"LLM wrote layup '{layup}', the text has {re.findall(_LAYUP_IN_TEXT, text)[0]}"
                             " -> using the text")
             angles = in_text[0]
-        elif not in_text and angles is not None and nums is not None:
-            missing = sorted({a for a in angles if a != 0 and abs(a) not in nums})
-            if missing:
-                raise ValueError(f"the layup '{layup}' has angle(s) {missing} that are not written in the text")
+        elif not in_text:
+            listed = _angles_from_text(text, _ply_count_in_text(text))
+            if listed and angles != listed:
+                warnings.append(f"LLM wrote layup '{layup}', the text lists the plies {listed} -> using the text")
+                angles = listed
+            elif not listed and angles is not None and nums is not None:
+                missing = sorted({a for a in angles if abs(a) not in nums})
+                if missing:
+                    raise ValueError(f"the layup '{layup}' has angle(s) {missing} that are not written in the text")
+            in_text = [listed] if listed else []
     if angles is None:
         raise ValueError(f"cannot read the stacking sequence '{layup}': {err}")
     n = len(angles)
-    from_text = bool(text) and bool(in_text)  # the [..] notation in the text decided the plies
+    from_text = bool(text) and bool(in_text)  # the [..] notation or the list of the text decided the plies
     stated = _ply_count_in_text(text) if text else None
     if stated and stated != n:
         if from_text:
@@ -546,11 +590,18 @@ def build_problem(raw, text=None):
     lst = [q for q in lst if float(q.get("value", 0) or 0) > 0]
     ply_t = keep(raw.get("ply_thickness"), "ply thickness")
     tot_t = keep(raw.get("total_thickness"), "total thickness")
-    if lst and len(lst) != n and (len({(q["value"], q["unit"]) for q in lst}) > 1 or
-                                  (not from_text and len(lst) >= 2)):
+    per_ply = _ply_thickness_from_text(text, n) if text else None  # "45° (0.3 mm), -45° (0.3 mm), ..."
+    if per_ply:
+        llm_list = [_si(q, LENGTH_UNITS, "ply thickness") for q in lst]
+        if llm_list and (len(llm_list) != n or any(abs(a - b) > 1e-12 for a, b in zip(llm_list, per_ply))):
+            warnings.append(f"the text gives the thickness of each ply {[round(t * 1e3, 6) for t in per_ply]} mm "
+                            "-> using the text")
+        lst = [{"value": t, "unit": "m"} for t in per_ply]
+    elif lst and len(lst) != n and (len({(q["value"], q["unit"]) for q in lst}) > 1 or
+                                    (not from_text and len(lst) >= 2)):
         raise ValueError(f"{len(lst)} ply thicknesses were given but the layup '{layup}' has {n} plies")
     # ply thickness and total thickness both given but they disagree: the words of the text decide
-    if float(ply_t.get("value", 0) or 0) > 0 and float(tot_t.get("value", 0) or 0) > 0:
+    if not per_ply and float(ply_t.get("value", 0) or 0) > 0 and float(tot_t.get("value", 0) or 0) > 0:
         ply_si, tot_si = _si(ply_t, LENGTH_UNITS, "ply thickness"), _si(tot_t, LENGTH_UNITS, "total thickness")
         if abs(ply_si * n - tot_si) > 0.01 * tot_si:
             tl = (text or "").lower()
