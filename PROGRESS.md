@@ -3,29 +3,75 @@
 Hạn: chạy ổn định trước 29/10/2026, thuyết trình 30/10/2026.
 Số kiểm chứng (demo.py, CFRP [0/45/-45/90]s, 0.125 mm, Nx=1000, Ny=500, Nxy=100 N/m):
 max_failure_index ≈ 0.00238, critical_ply = 4, ABD(1,1) ≈ 5.94e7 N/m. demo.py tự in `CHECK ... PASS/FAIL`.
+Lần chạy gần nhất: 0.0023807 / 4 / 5.93995e7 → **PASS** (chạy lại sau mỗi thay đổi).
+
+## Cách chạy
+- Demo 1 bước: double-click `run_demo.bat` (hoặc `run_demo.bat --offline`, `--interactive`, `--lang vi`).
+- Agent: `venv\Scripts\python.exe python\main.py "CFRP [0/90]s, 0.125 mm plies, Nx = 1 kN/m"`
+- RAG: `venv\Scripts\python.exe python\rag.py "What is Xt of IM7/8552?"`
+- Benchmark: `python\benchmark_llm.py --set dev|holdout|holdout2|holdout3`, `python\benchmark_rag.py --set dev|holdout`
+
+## Mục tiêu 1 - Agent LLM → ML → MATLAB → LLM: XONG
+Lỗi tìm thấy trong llm.py gốc (v1):
+1. Với Hugging Face, prompt không đưa cấu trúc JSON → gpt-oss-120b đặt Nx, Ny... ở ngoài `"loads"` →
+   `_fix_units` âm thầm điền 0 → CLT chạy với **tải = 0** và báo "an toàn". Xảy ra ở **28/28** đề thử.
+2. Prompt giải thích yêu cầu so sánh σ2 với độ bền ngang nhưng không đưa độ bền vào prompt.
+3. gpt-oss là model suy luận: `max_tokens` nhỏ → `content = None`.
+
+Thiết kế mới (v3, "LLM đọc, Python tính và kiểm tra"):
+- LLM chỉ CHÉP số + đơn vị như trong đề (JSON schema bị ép cho cả HF lẫn Ollama).
+- Python: khai triển xếp lớp (`layup.py`, [0/90]2s → 8 lớp), đổi đơn vị, và đối chiếu với văn bản đề:
+  loại sợi theo từ khóa; ký hiệu [..] trong đề thắng; mỗi giá trị SI phải tạo được từ 1 số + 1 đơn vị có
+  trong đề; tải viết dạng "Nx = 5 kN/m" được Python đọc trực tiếp; số lớp ghi trong đề phải khớp;
+  độ dày lớp × số lớp phải khớp tổng chiều dày. Lỗi nghiêm trọng → hỏi lại LLM 1 lần kèm danh sách lỗi;
+  vẫn sai → báo lỗi rõ ràng (không âm thầm tính sai).
+- HF: provider Cerebras (~1 s/lần), lỗi → provider auto → Ollama; backend lỗi bị bỏ qua 5 phút.
+- Bước giải thích nhận độ bền + tóm tắt tính sẵn (lớp tới hạn, thành phần ứng suất quyết định, hệ số an
+  toàn); guardrail dò số lạ trong lời giải thích.
+
+Benchmark trích số liệu (28 đề viết tay, đáp án kiểm tra chéo bằng layup.py; file trong deliverables/benchmark/):
+
+| bộ đề | v1 HF | v1 Ollama | v3 HF (LLM một mình) | v3 Ollama (LLM một mình) |
+|---|---|---|---|---|
+| dev 10 (dùng để chỉnh prompt) | 0/10 | 4/10 | 10/10 (10/10) | 10/10 (4/10) |
+| holdout 6 (lần đầu, mù, code giữa chừng) | 0/6 | 2/6 | 6/6 | 4/6 |
+| holdout2 6 (lần đầu, mù, code giữa chừng) | 0/6 | 0/6 | 6/6 | 3/6 |
+| holdout3 6 (lần đầu, mù, code cuối) | 0/6 | 1/6 | **6/6 (6/6)** | **5/6 (2/6)** |
+| code cuối trên cả 28 đề | 0/28 | 7/28 | **28/28** | **24/28** |
+
+Ollama 4 ca sai với code cuối: 3 ca agent từ chối + báo lỗi (H6, N5, T5), 1 ca sai âm thầm (N4: tải viết
+bằng lời "force of 2 N/mm in the x direction" bị đặt vào Nxy).
+→ **Mặc định: HF gpt-oss-120b. Dự phòng khi mất mạng: Ollama gemma3:4b** (đã thử: proxy hỏng → tự chuyển).
+Thời gian: HF ~1-2 s/lần gọi, gemma3:4b ~5-7 s (lần đầu ~15 s do nạp model vào GPU).
+main.py trọn 4 bước: HF ~2-12 s (+ ~20 s khởi động MATLAB), Ollama ~15-20 s.
+
+## Mục tiêu 2 - RAG: XONG (bản Python); pgvector: BỎ QUA
+- Docker chưa cài, WSL chưa cài ("Windows Subsystem for Linux is not installed") → Docker Desktop cần cài WSL
+  và khởi động lại máy → theo chỉ dẫn bỏ qua PostgreSQL + pgvector, giữ bản chạy ổn định.
+- rag.py: embedding nomic-embed-text (Ollama, 768 chiều) + cosine + cộng điểm khớp tên vật liệu; câu hỏi
+  "cao nhất / thấp nhất" → Python xếp hạng; câu hỏi "tính chất X của vật liệu Y" → Python tra thẳng bảng
+  (dòng [F]) và kiểm tra câu trả lời có khớp; guardrail dò số và số hiệu báo cáo NCP-RP không có trong ngữ cảnh;
+  danh sách nguồn (báo cáo, trang, trạng thái kiểm chứng) luôn do Python in ra.
+- Benchmark RAG: dev 12 câu: HF 12/12, Ollama 11/12 (trước khi sửa: Ollama 6/12 vì chép ví dụ trích dẫn
+  trong prompt). Holdout 6 câu (mù): **HF 6/6, Ollama 5/6** (thiếu số hiệu báo cáo trong câu trả lời).
+  Tìm đúng vật liệu: 18/18 cả hai.
+
+## Mục tiêu 3 - run_demo.bat: XONG
+Phần 0 kiểm tra môi trường → Phần 1 số kiểm chứng → Phần 2 agent 2 đề (đề 1 an toàn FI=0.00238; đề 2 tiếng Việt
+quá tải FI=1.096 → FAILS) → Phần 3 RAG 4 câu. Đếm ngược 5-8 s giữa các phần (bấm phím để bỏ qua).
+Đã chạy: online 23 s; `--offline` 61 s; log trong logs\.
+
+## Mục tiêu 4 - Tài liệu: ĐANG LÀM
+## Mục tiêu 5 - Fine-tune: KHÔNG CẦN (HF mặc định đúng 28/28). Ghi vào "bước tiếp theo" cho model offline.
 
 ## Nhật ký
-
-### 27/10/2026
-- [x] Đọc toàn bộ code. git init + commit trạng thái ban đầu (`2b15e21`).
-- [x] demo.py: max_failure_index = 0.0023807, critical_ply = 4, ABD(1,1) = 5.93995e7 N/m → **PASS**.
-- [x] Môi trường: HF_TOKEN có; Ollama 0.40.11 đã cài và đang chạy (chỉ có model `cylinder-agent`);
-      đang tải `gemma3:4b` và `nomic-embed-text`. Docker chưa cài, WSL chưa cài
-      → theo chỉ dẫn: bỏ qua PostgreSQL + pgvector, giữ RAG bản Python.
-- [x] Phát hiện lỗi trong llm.py gốc (v1) với Hugging Face:
-  1. Prompt không đưa cấu trúc JSON cho HF (chỉ Ollama bị ép schema) → gpt-oss-120b đặt `Nx, Ny...` ở ngoài
-     `"loads"` → `_fix_units` âm thầm điền 0 → CLT chạy với **tải = 0** và báo "an toàn". Không có cảnh báo.
-  2. Prompt giải thích yêu cầu so sánh σ2 với độ bền ngang nhưng không đưa độ bền vào prompt.
-  3. gpt-oss là model suy luận: `max_tokens` nhỏ → `content = None`.
-- [x] llm.py v2 ("LLM đọc, Python tính"): LLM chỉ CHÉP số + đơn vị như trong đề (schema bị ép cho cả HF
-      lẫn Ollama); Python khai triển xếp lớp (`layup.py`, vd [0/90]2s → 8 lớp) và đổi đơn vị.
-      HF dùng provider Cerebras (~1 s/lần), lỗi thì thử lại với provider auto, rồi mới chuyển Ollama.
-      Bước giải thích nhận thêm độ bền vật liệu + tóm tắt tính sẵn bằng Python (lớp tới hạn, thành phần
-      ứng suất quyết định, hệ số an toàn); guardrail `check_explanation` dò số lạ trong lời giải thích.
-- [x] `layup.py`: 19/19 test tự kiểm tra PASS.
-- [x] `benchmark_llm.py`: 10 đề dev + 6 đề holdout (holdout không dùng để chỉnh prompt).
-      Kết quả dev, Hugging Face: **v1 gốc 0/10 đúng hoàn toàn** (tải = 0 ở cả 10 đề; khai triển sai [..]2s ở 2 đề),
-      **v2 10/10**. File: `deliverables/benchmark/llm_benchmark_dev_20261027_1804.md`.
-- [x] main.py chạy trọn LLM → ML → MATLAB → LLM với HF: 12.3 s, kết quả trùng demo.py, giải thích đúng
-      (σ2 = 0.1518 MPa so với Yt = 63.76 MPa), guardrail không báo số lạ.
-- [ ] Đang làm: chờ gemma3:4b tải xong → benchmark Ollama (v1, v2) → chọn mặc định.
+- 27/10 17:5x  git init, commit `2b15e21`; demo.py PASS.
+- 27/10 18:04  v1 vs v2 trên HF (dev): 0/10 vs 10/10.
+- 27/10 18:21  Ollama dev: v1 4/10, v2 4/10 → thêm đối chiếu với văn bản (v3) → 9/10 → thêm hỏi lại → 10/10.
+- 27/10 18:30  holdout lần đầu: v3 HF 6/6, Ollama 4/6 → thêm luật số lớp / độ dày.
+- 27/10 18:36  holdout2 lần đầu: v3 HF 6/6, Ollama 3/6 → thêm đối chiếu SI + đọc "Nx = ..." bằng regex.
+- 27/10 18:43  holdout3 lần đầu (code cuối): HF 6/6, Ollama 5/6.
+- 27/10 18:47-18:52  RAG v2 + benchmark; holdout RAG: HF 6/6, Ollama 5/6.
+- 27/10 18:54  run_demo online/offline OK; giả lập mất mạng → tự chuyển Ollama OK.
+- 27/10 18:58  evaluate_model.py chạy lại: số LOOCV không đổi (E1 R² 0.44, G12 0.302, Xt 0.305; E2 -0.023,
+  nu12 -0.406, Xc -0.104, S -0.229; Yt 0.035, Yc 0.128).

@@ -166,17 +166,25 @@ def backend_order(backend=None):
     return [x for x in AUTO_ORDER if x != "hf" or os.environ.get("HF_TOKEN")] or ["ollama"]
 
 
+_SKIP_UNTIL = {}  # backend -> time; after a failure in "auto" mode the backend is skipped for 5 minutes
+
+
 def ask_llm(prompt, json_schema=None, backend=None):
     """Send a prompt to the chosen LLM backend (with automatic fallback in 'auto') and return its text."""
     global LAST_BACKEND
     order = backend_order(backend)
     errors = []
     for i, b in enumerate(order):
+        if len(order) > 1 and i + 1 < len(order) and time.time() < _SKIP_UNTIL.get(b, 0):
+            continue  # failed a moment ago: go straight to the next backend
         try:
             text = _ASK[b](prompt, json_schema)
             LAST_BACKEND = _NAME[b]()
+            _SKIP_UNTIL.pop(b, None)
             return text
         except Exception as e:
+            if len(order) > 1:
+                _SKIP_UNTIL[b] = time.time() + 300
             errors.append(f"{_NAME[b]()}: {type(e).__name__}: {str(e)[:200]}")
             if i + 1 < len(order):
                 print(f"[llm.py] {_NAME[b]()} failed ({type(e).__name__}: {str(e)[:120]}) "

@@ -24,9 +24,9 @@ PROBLEMS = [
     ("English, symmetric 8-ply carbon laminate (same case as the reference check)",
      "Carbon/epoxy laminate [0/45/-45/90]s, each ply 0.125 mm thick. "
      "In-plane loads: Nx = 1000 N/m, Ny = 500 N/m, Nxy = 100 N/m."),
-    ("Vietnamese, glass fibre, kN/m, decimal comma, bending moment",
+    ("Vietnamese, glass fibre, kN/m, decimal comma, bending moment - high load, failure expected",
      "Tấm composite sợi thủy tinh/epoxy, xếp lớp [0/±45]s, mỗi lớp dày 0,15 mm. "
-     "Tải trọng: Nx = 30 kN/m, Nxy = 8 kN/m, mô-men uốn My = 2 N.m/m."),
+     "Tải trọng: Nx = 150 kN/m, Nxy = 40 kN/m, mô-men uốn My = 10 N.m/m."),
 ]
 QUESTIONS = [
     "What is the longitudinal tensile strength Xt of IM7/8552?",
