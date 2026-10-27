@@ -20,6 +20,7 @@ from optimization.experiments.common import FIGS, RESULTS, read_json, setup  # n
 
 BLUE, ORANGE, AQUA = "#2a78d6", "#eb6834", "#1baf7a"
 INK, INK2, GRID, SURF = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
+METHOD_STYLE = (("ga", BLUE, "GA"), ("nsga2", ORANGE, "NSGA-II"), ("ga_ls", AQUA, "GA + local search"))
 
 plt.rcParams.update({
     "figure.facecolor": SURF, "axes.facecolor": SURF, "savefig.facecolor": SURF,
@@ -90,7 +91,7 @@ def convergence(tkey="t0125", model="closed_form"):
     budget = meta["budget"]
     fig, axes = plt.subplots(2, 4, figsize=(13, 6.0), constrained_layout=True, sharey=True)
     for ax, c in zip(axes.flat, CASES):
-        for m, col, lab in (("ga", BLUE, "GA"), ("nsga2", ORANGE, "NSGA-II")):
+        for m, col, lab in METHOD_STYLE:
             rr = [r for r in runs if (r["case"], r["tkey"], r["model"], r["method"]) == (c["id"], tkey, model, m)]
             if not rr:
                 continue
@@ -118,8 +119,10 @@ def best_so_far(tkey="t0125", model="closed_form", case="C4"):
     meta = read_json("run_cases_meta.json")
     grid = np.linspace(0, meta["budget"], 201)
     fig, axes = plt.subplots(1, 2, figsize=(11, 3.8), constrained_layout=True)
-    for m, col, lab in (("ga", BLUE, "GA"), ("nsga2", ORANGE, "NSGA-II")):
+    for m, col, lab in METHOD_STYLE:
         rr = [r for r in runs if (r["case"], r["tkey"], r["model"], r["method"]) == (case, tkey, model, m)]
+        if not rr:
+            continue
         N = np.full((len(rr), len(grid)), np.nan)
         M = np.full((len(rr), len(grid)), np.nan)
         for i, r in enumerate(rr):
@@ -199,13 +202,16 @@ def leriche():
     ax.set_title("Global optimum: source vs exhaustive search")
     ax = axes[1]
     cols = [BLUE, ORANGE, AQUA, INK2]
-    for (cid, h), col in zip(hist.items(), cols):
-        runs = h["runs"]
-        hits = sorted(r["hit_evals"] for r in runs if r["hit_evals"] is not None)
-        budget = max(r["n_evaluations"] for r in runs)
-        xs = np.concatenate([[0], np.repeat(hits, 2), [budget]])
-        ys = np.concatenate([[0, 0], np.repeat(np.arange(1, len(hits) + 1) / len(runs), 2)])[: len(xs)]
-        ax.plot(xs, ys, color=col, label=f"{cid} ({len(hits)}/{len(runs)})")
+    for (cid, h), col in zip([(k, v) for k, v in hist.items() if not k.startswith("1995")], cols):
+        for ls, style in ((False, ":"), (True, "-")):
+            runs = [r for r in h["runs"] if r.get("local_search", False) == ls]
+            if not runs:
+                continue
+            hits = sorted(r["hit_evals"] for r in runs if r["hit_evals"] is not None)
+            budget = max(r["n_evaluations"] for r in runs)
+            xs = np.concatenate([[0], np.repeat(hits, 2), [budget]])
+            ys = np.concatenate([[0, 0], np.repeat(np.arange(1, len(hits) + 1) / len(runs), 2)])[: len(xs)]
+            ax.plot(xs, ys, style, color=col, label=f"{cid} {'GA + LS' if ls else 'GA'} ({len(hits)}/{len(runs)})")
     ax.set_xlabel("distinct designs evaluated (-)")
     ax.set_ylabel("share of GA runs at the exact optimum (-)")
     ax.set_ylim(0, 1.05)

@@ -123,3 +123,30 @@ def test_non_symmetric_rules_run(im7):
     r = optimize({"Nx": 5e5, "Ny": 0, "Nxy": 0}, material=im7, method="ga", seed=0, budget=1500,
                  rules=Rules(symmetric=False, n_min=8, n_max=24))
     assert all(r.rules_check.values())
+
+
+def test_memetic_ga_local_search(im7):
+    """GA + local search: finds the exhaustive optimum, designs always satisfy the rules, budget respected."""
+    p = Problem(loads=(-1e4, -5e3, 0), material=im7)
+    ex = exhaustive(p)
+    target = (ex["best"]["n"], ex["best"]["max_margin"])
+    hits = 0
+    for seed in range(3):
+        r = GeneticAlgorithm(p, GAConfig(budget=4000, local_search=True), seed).run(target=target)
+        hits += r["hit_evals"] is not None
+        assert satisfies(full_laminate(PLY.decode(r["best_genes"][None]), True)[0], p.rules)
+        assert r["n_evaluations"] < 4000 + 1000   # may overshoot by at most one neighbourhood / generation
+    assert hits == 3
+
+
+def test_local_search_never_worsens(im7, rng):
+    """The local search returns a design at least as good as its start (min plies ordering)."""
+    from optimization.evaluate import better
+    p = Problem(loads=(1.0e6, 0.5e6, 0), material=im7)
+    ga = GeneticAlgorithm(p, GAConfig(budget=100000, local_search=True), 0)
+    for _ in range(5):
+        g = ga.repairer.random_valid(rng)
+        r0 = ga.ev.evaluate(g[None])
+        key0 = (int(r0["n_plies"][0]), float(r0["margin"][0]))
+        g2, key2 = ga._local_search(g, key0)
+        assert key2 == key0 or better(key2, key0, p.safety_factor)

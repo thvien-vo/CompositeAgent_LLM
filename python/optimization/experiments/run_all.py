@@ -21,7 +21,7 @@ def main(quick: bool = False):
     else:
         print("MATLAB engine not available -> step skipped (previous results kept, if any)")
     print("\n=== 2/5 eight load cases: exact search, GA, NSGA-II, quasi-isotropic ===", flush=True)
-    run_cases.main(quick=quick)
+    run_cases.main(quick=quick, recompute=not quick)  # full mode recomputes every exhaustive search
     print("\n=== 3/5 MATLAB re-check of the final designs ===", flush=True)
     matlab_recheck.main()
     print("\n=== 4/5 Le Riche & Haftka benchmark ===", flush=True)

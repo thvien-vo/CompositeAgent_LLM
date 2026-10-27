@@ -17,14 +17,17 @@ from typing import Dict, List, Optional
 import numpy as np
 
 from optimization.api import make_problem, optimize, quasi_isotropic
+from optimization.ga import GAConfig
 from optimization.evaluate import Plate, Problem, analyze_design
 from optimization.exhaustive import count_upper_bounds, exhaustive, strength_only_exact
 from optimization.material import get_material
 from optimization.rules import notation
 from optimization.experiments.cases import (CASES, MATERIAL, PLATE, SAFETY_FACTOR, SHEAR_CASES, THICKNESSES)
-from optimization.experiments.common import Timer, setup, write_csv, write_json
+from optimization.experiments.common import RESULTS, Timer, read_json, setup, write_csv, write_json
 
 RTOL = 1e-9
+METHODS = ("ga", "ga_ls", "nsga2")   # GA, GA + local search (memetic), NSGA-II
+METHOD_LABEL = {"ga": "GA", "ga_ls": "GA + local search", "nsga2": "NSGA-II"}
 
 
 def build_problem(mat, case: Dict, tkey: str, model: str) -> Problem:
@@ -62,10 +65,30 @@ def true_front(per_n: List[Dict]) -> List[Dict]:
     return out
 
 
+def effective_lower_bound(p: Problem, r: Dict) -> Optional[int]:
+    """Certified lower bound on n*: the count-level bound, raised past every ply count that the exhaustive
+    enumeration proved infeasible (best margin < safety factor), as long as those counts are contiguous."""
+    lb = r["bounds"]["n_lower_bound"]
+    if lb is None:
+        return None
+    done = {x["n"]: x.get("max_margin") for x in r["per_n"] if x.get("max_margin") is not None}
+    for n in p.rules.allowed_ply_counts(p.enc):
+        if n < lb:
+            continue
+        if n in done and done[n] < p.safety_factor:
+            continue
+        return n
+    return None
+
+
 def run_one(task: Dict) -> Dict:
     p: Problem = task["problem"]
-    res = optimize(None, problem=p, method=task["method"], seed=task["seed"], budget=task["budget"],
-                   target=task["target"])
+    if task["method"] == "ga_ls":
+        res = optimize(None, problem=p, method="ga", seed=task["seed"], target=task["target"],
+                       ga_config=GAConfig(budget=task["budget"], local_search=True))
+    else:
+        res = optimize(None, problem=p, method=task["method"], seed=task["seed"], budget=task["budget"],
+                       target=task["target"])
     hist = [[h["evals"], h["n_plies"], h["margin"]] for h in res.history]
     keep = sorted({0, len(hist) - 1} | {i for i in range(1, len(hist)) if hist[i][1:] != hist[i - 1][1:]})
     return {"case": task["case"], "tkey": task["tkey"], "model": task["model"], "method": task["method"],
@@ -75,7 +98,8 @@ def run_one(task: Dict) -> Dict:
             "pareto": [[q["n"], q["margin"]] for q in res.pareto], "stacking": res.stacking_deg}
 
 
-def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None, ritz: bool = True):
+def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None, ritz: bool = True,
+         recompute: bool = False):
     setup()
     T = Timer()
     seeds = list(range(3 if quick else 20))
@@ -90,15 +114,29 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
 
     # 1) exact answers ---------------------------------------------------------------------------------
     exact = {}
+    cache_name = f"exact_cache_{'quick' if quick else 'full'}.json"
+    try:
+        cache = {} if recompute else read_json(cache_name)
+    except FileNotFoundError:
+        cache = {}
     for c, tk, model in configs:
         p = build_problem(mat, c, tk, model)
-        lim = ex_time if model == "closed_form" else (60.0 if quick else 600.0)
-        r = exact_answer(p, lim, front_to if model == "closed_form" else None, start_at_bound=(model == "ritz"))
+        lim = ex_time if model == "closed_form" else (20.0 if quick else 600.0)
+        ck = f"{c['id']}|{tk}|{model}|{c['loads']}"
+        if ck in cache:
+            r = cache[ck]
+            r["from_cache"] = True
+        else:
+            r = exact_answer(p, lim, front_to if model == "closed_form" else None, start_at_bound=(model == "ritz"))
+            cache[ck] = r
+            write_json(cache_name, cache)
+        r["n_lower_bound_effective"] = effective_lower_bound(p, r)
         exact[(c["id"], tk, model)] = r
         b = r["best"]
         print(f"[exact] {c['id']} {tk} {model:11s} status={r['status']:<22s} "
               f"n={b['n'] if b else None} margin={b['max_margin'] if b else float('nan'):.6g} "
-              f"lower bound n>={r['bounds']['n_lower_bound']}  ({r['time_s']:.1f} s)", flush=True)
+              f"lower bound n>={r['bounds']['n_lower_bound']} (effective {r['n_lower_bound_effective']})  "
+              f"({r['time_s']:.1f} s{', cached' if r.get('from_cache') else ''})", flush=True)
 
     # 2) GA / NSGA-II runs ------------------------------------------------------------------------------
     tasks = []
@@ -107,10 +145,11 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
         r = exact[(c["id"], tk, model)]
         proven = r["status"] in ("optimal", "infeasible") and r["best"] is not None
         target = (r["best"]["n"], r["best"]["max_margin"]) if proven else None
-        for method in ("ga", "nsga2"):
+        for method in METHODS:
             for s in (seeds if model == "closed_form" else seeds[:10]):
                 tasks.append({"problem": p, "case": c["id"], "tkey": tk, "model": model, "method": method,
                               "seed": s, "budget": budget, "target": target})
+    print(f"exact phase done ({T():.0f} s)", flush=True)
     n_workers = workers or max(1, min(12, (os.cpu_count() or 2) - 4))
     for v in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):  # one BLAS thread per process
         os.environ[v] = "1"
@@ -118,6 +157,7 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
     with ProcessPoolExecutor(max_workers=n_workers) as pool:
         runs = list(pool.map(run_one, tasks, chunksize=2))
 
+    print(f"GA / NSGA-II phase done ({T():.0f} s)", flush=True)
     # 3) summaries, quasi-isotropic; designs for the MATLAB re-check (matlab_recheck.py) -----------------
     code = {0.0: 0, 45.0: 1, -45.0: 2, 90.0: 3}
     summary, to_check, fronts = [], [], {}
@@ -128,20 +168,20 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
         b = r["best"]
         proven = r["status"] in ("optimal", "infeasible") and b is not None
         rows = {m: [x for x in runs if (x["case"], x["tkey"], x["model"], x["method"]) == key + (m,)]
-                for m in ("ga", "nsga2")}
+                for m in METHODS}
         # reference design: exact if proven, else best over all GA / NSGA-II runs
         if proven:
             ref_full, ref_src = list(b["full"]), "exact"
         else:
-            allr = rows["ga"] + rows["nsga2"]
+            allr = [x for m in METHODS for x in rows[m]]
             feas = [x for x in allr if x["feasible"]]
             pick = min(feas, key=lambda x: (x["n_plies"], -x["margin"])) if feas else max(allr, key=lambda x: x["margin"])
             ref_full = [code[a] for a in pick["stacking"]]
-            ref_src = f"best of GA/NSGA-II runs ({pick['method']} seed {pick['seed']})"
+            ref_src = f"best of all GA / NSGA-II runs ({METHOD_LABEL[pick['method']]} seed {pick['seed']})"
         det = analyze_design(p, ref_full)
         qi = quasi_isotropic(p)
         to_check.append({"case": c["id"], "thickness": tk, "model": model, "source": ref_src, "full": ref_full})
-        for m in ("ga", "nsga2"):  # the best GA / NSGA-II designs too, when they differ from the reference
+        for m in METHODS:  # the best design of each method too, when it differs from the reference
             best = min(rows[m], key=lambda x: (not x["feasible"], x["n_plies"] if x["feasible"] else 0, -x["margin"]))
             full = [code[a] for a in best["stacking"]]
             if full != ref_full:
@@ -155,7 +195,8 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
                "ply_thickness_mm": THICKNESSES[tk] * 1e3, "model": model,
                "Nx": c["loads"][0], "Ny": c["loads"][1], "Nxy": c["loads"][2],
                "exact_status": r["status"], "exact_method": r["method"], "exact_time_s": r["time_s"],
-               "n_lower_bound": r["bounds"]["n_lower_bound"], "reference": ref_src,
+               "n_lower_bound": r["bounds"]["n_lower_bound"],
+               "n_lower_bound_effective": r["n_lower_bound_effective"], "reference": ref_src,
                "n_opt": det["n_plies"], "thickness_opt_mm": det["thickness_mm"], "margin_opt": det["margin"],
                "feasible": det["margin"] >= SAFETY_FACTOR, "design": notation(ref_full, True),
                "governing": det["governing"], "critical_ply": det["critical_ply"],
@@ -166,7 +207,7 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
                "qi_n": qi["n"], "qi_margin": qi["margin"] if qi["found"] else None,
                "mass_reduction_pct": (100.0 * (qi["n"] - det["n_plies"]) / qi["n"]) if (qi["found"] and det["margin"] >= SAFETY_FACTOR) else None,
                "matlab_pass": None, "margin_matlab": None}
-        for m in ("ga", "nsga2"):
+        for m in METHODS:
             rr = rows[m]
             hits = [x["hit_evals"] for x in rr if x["hit_evals"] is not None]
             row[f"{m}_runs"] = len(rr)
@@ -182,7 +223,7 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
             # agreement with the reference design (exact optimum, or best known when no proof exists)
             row[f"{m}_reach_reference"] = sum(1 for x in rr if x["n_plies"] == det["n_plies"]
                                               and x["margin"] >= det["margin"] * (1 - RTOL))
-            row["n_proven_by_bound"] = (r["bounds"]["n_lower_bound"] == det["n_plies"]) and det["margin"] >= SAFETY_FACTOR
+            row["n_proven_by_bound"] = (r["n_lower_bound_effective"] == det["n_plies"]) and det["margin"] >= SAFETY_FACTOR
             if m == "nsga2" and tf:
                 fr = []
                 for x in rr:
@@ -193,7 +234,9 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
                 row["true_front_points"] = len(tf)
         summary.append(row)
         print(f"[{c['id']} {tk} {model}] n*={row['n_opt']} margin={row['margin_opt']:.5g} {row['design']}  "
-              f"GA {row['ga_success']}/{row['ga_runs']}  NSGA-II {row['nsga2_success']}/{row['nsga2_runs']}  "
+              f"GA {row['ga_success']}/{row['ga_runs']}  GA+LS {row['ga_ls_success']}/{row['ga_ls_runs']}  "
+              f"NSGA-II {row['nsga2_success']}/{row['nsga2_runs']}  reach-ref GA {row['ga_reach_reference']} "
+              f"GA+LS {row['ga_ls_reach_reference']} NSGA-II {row['nsga2_reach_reference']}  "
               f"QI n={row['qi_n']}", flush=True)
 
     write_csv("cases_summary.csv", summary)
@@ -215,5 +258,6 @@ if __name__ == "__main__":
     ap.add_argument("--workers", type=int, default=0)
     ap.add_argument("--only", nargs="*")
     ap.add_argument("--no-ritz", action="store_true")
+    ap.add_argument("--recompute", action="store_true", help="ignore the cached exhaustive results")
     a = ap.parse_args()
-    main(a.quick, a.workers, a.only, not a.no_ritz)
+    main(a.quick, a.workers, a.only, not a.no_ritz, a.recompute)

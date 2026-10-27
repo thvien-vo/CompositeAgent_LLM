@@ -1,10 +1,11 @@
-"""Python CLT vs MATLAB clt_engine.m (skipped when the MATLAB engine is not installed)."""
-import numpy as np
+"""Python CLT vs MATLAB clt_engine.m. Skipped (with the reason) when the MATLAB engine cannot start: the probe runs
+in a child process with a time-out, because a hanging `import matlab.engine` cannot be interrupted in-process."""
 import pytest
 
-matlab = pytest.importorskip("matlab.engine")
+from optimization import matlab_check
 
-from optimization import matlab_check  # noqa: E402
+if not matlab_check.available(timeout=90):
+    pytest.skip("MATLAB engine could not start within 90 s (probe in a child process)", allow_module_level=True)
 
 
 @pytest.mark.matlab

@@ -37,12 +37,54 @@ def available(timeout: float = 120.0) -> bool:
         import sys
         code = ("import sys; sys.modules['_wmi'] = None\nimport matlab.engine\n"
                 "e = matlab.engine.start_matlab(); print(e.sqrt(4.0)); e.quit()")
+        proc = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                text=True)
         try:
-            r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=timeout)
-            _available = r.returncode == 0 and "2.0" in r.stdout
+            out, _ = proc.communicate(timeout=timeout)
+            _available = proc.returncode == 0 and "2.0" in out
         except subprocess.TimeoutExpired:
+            # a venv python.exe is a launcher with a child interpreter: kill the whole tree
+            # (taskkill /T needs WMI, which may be the very thing that hangs -> Toolhelp32 snapshot instead)
+            _kill_tree(proc.pid)
+            proc.kill()
+            proc.communicate()
             _available = False
     return _available
+
+
+def _kill_tree(pid: int) -> None:
+    """Terminate pid and all its descendants (Windows: Toolhelp32 snapshot, no WMI)."""
+    if os.name != "nt":
+        return
+    import ctypes
+    from ctypes import wintypes
+
+    class PROCESSENTRY32(ctypes.Structure):
+        _fields_ = [("dwSize", wintypes.DWORD), ("cntUsage", wintypes.DWORD), ("th32ProcessID", wintypes.DWORD),
+                    ("th32DefaultHeapID", ctypes.c_size_t), ("th32ModuleID", wintypes.DWORD),
+                    ("cntThreads", wintypes.DWORD), ("th32ParentProcessID", wintypes.DWORD),
+                    ("pcPriClassBase", ctypes.c_long), ("dwFlags", wintypes.DWORD), ("szExeFile", ctypes.c_char * 260)]
+
+    k32 = ctypes.windll.kernel32
+    snap = k32.CreateToolhelp32Snapshot(0x2, 0)
+    parent_of = {}
+    e = PROCESSENTRY32()
+    e.dwSize = ctypes.sizeof(PROCESSENTRY32)
+    ok = k32.Process32First(snap, ctypes.byref(e))
+    while ok:
+        parent_of[e.th32ProcessID] = e.th32ParentProcessID
+        ok = k32.Process32Next(snap, ctypes.byref(e))
+    k32.CloseHandle(snap)
+    tree, frontier = [], [pid]
+    while frontier:
+        p = frontier.pop()
+        tree.append(p)
+        frontier += [c for c, par in parent_of.items() if par == p and c not in tree]
+    for p in reversed(tree):
+        h = k32.OpenProcess(0x0001, False, p)  # PROCESS_TERMINATE
+        if h:
+            k32.TerminateProcess(h, 1)
+            k32.CloseHandle(h)
 
 
 def engine():

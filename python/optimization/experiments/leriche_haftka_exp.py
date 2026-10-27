@@ -48,8 +48,8 @@ def stack_notation(full):
 
 
 def ga_task(args):
-    p, seed, budget, target, objective = args
-    cfg = GAConfig(budget=budget, objective=objective)
+    p, seed, budget, target, objective, ls = args
+    cfg = GAConfig(budget=budget, objective=objective, local_search=ls)
     r = GeneticAlgorithm(p, cfg, seed).run(target=target)
     # practical optimum (within 0.1 %) hit: first evaluation count where best >= 0.999 * target
     prac = None
@@ -61,9 +61,20 @@ def ga_task(args):
                 prac = h["evals"]
                 break
     hist = [[h["evals"], h["n_plies"], h["margin"]] for h in r["history"]]
-    return {"seed": seed, "margin": r["margin"], "n_plies": r["n_plies"], "hit_evals": r["hit_evals"],
+    return {"seed": seed, "local_search": ls, "margin": r["margin"], "n_plies": r["n_plies"], "hit_evals": r["hit_evals"],
             "practical_evals": prac, "n_evaluations": r["n_evaluations"], "time_s": r["time_s"],
             "history": hist[:: max(1, len(hist) // 200)] + [hist[-1]]}
+
+
+def _ga_stats(row, allruns):
+    for ls, pre in ((False, "ga"), (True, "ga_ls")):
+        runs = [r for r in allruns if r["local_search"] == ls]
+        hits = [r["hit_evals"] for r in runs if r["hit_evals"] is not None]
+        prac = [r["practical_evals"] for r in runs if r["practical_evals"] is not None]
+        row.update({f"{pre}_runs": len(runs), f"{pre}_exact_hits": len(hits), f"{pre}_practical_hits": len(prac),
+                    f"{pre}_evals_to_exact_mean": float(np.mean(hits)) if hits else None,
+                    f"{pre}_evals_to_practical_mean": float(np.mean(prac)) if prac else None,
+                    f"{pre}_time_mean_s": float(np.mean([r["time_s"] for r in runs]))})
 
 
 def main(quick: bool = False):
@@ -90,9 +101,7 @@ def main(quick: bool = False):
         det_full = analyze_design(replace(p, buckling_modes=None), full)
         det5 = analyze_design(p, full)
         tgt = (case.plies, lam_star)
-        runs = list(pool.map(ga_task, [(p, s, budget, tgt, "max_margin") for s in seeds]))
-        hits = [r["hit_evals"] for r in runs if r["hit_evals"] is not None]
-        prac = [r["practical_evals"] for r in runs if r["practical_evals"] is not None]
+        allruns = list(pool.map(ga_task, [(p, s, budget, tgt, "max_margin", ls) for ls in (False, True) for s in seeds]))
         row = {"case": case.id, "title": case.title, "plies": case.plies, "a_in": case.a_in, "b_in": case.b_in,
                "Ny_over_Nx": case.ny_over_nx, "design_space": 3 ** (case.plies // 4),
                "valid_designs": best["n_valid"], "exhaustive_time_s": t(),
@@ -100,17 +109,15 @@ def main(quick: bool = False):
                "design_exhaustive": stack_notation(full), "governing": det5["governing"],
                "lambda_paper": case.paper_lambda, "paper_ref": case.paper_ref,
                "rel_diff_vs_paper": (lam_star - case.paper_lambda) / case.paper_lambda,
-               "lambda_full_mode_scan": det_full["margin"], "mode_mn": det5["buckling_mode_mn"],
-               "ga_runs": len(runs), "ga_budget": budget, "ga_exact_hits": len(hits),
-               "ga_practical_hits": len(prac),
-               "ga_evals_to_exact_mean": float(np.mean(hits)) if hits else None,
-               "ga_evals_to_practical_mean": float(np.mean(prac)) if prac else None,
-               "ga_time_mean_s": float(np.mean([r["time_s"] for r in runs]))}
+               "lambda_full_mode_scan": det_full["margin"], "mode_mn": det5["buckling_mode_mn"], "ga_budget": budget}
+        _ga_stats(row, allruns)
         summary.append(row)
-        histories[case.id] = {"target": lam_star, "runs": runs}
+        histories[case.id] = {"target": lam_star, "runs": allruns}
         print(f"[{case.id}] exhaustive lambda*={lam_star:.6g} ({best['n_optima']} optima, {t():.1f} s) "
               f"paper {case.paper_lambda} ({row['rel_diff_vs_paper']:+.2e});  full mode scan {det_full['margin']:.6g};  "
-              f"GA exact {len(hits)}/{len(runs)}, practical {len(prac)}/{len(runs)}", flush=True)
+              f"GA exact {row['ga_exact_hits']}/{row['ga_runs']} (practical {row['ga_practical_hits']}), "
+              f"GA+LS exact {row['ga_ls_exact_hits']}/{row['ga_ls_runs']} (practical {row['ga_ls_practical_hits']})",
+              flush=True)
 
     # minimum-thickness cases of Le Riche & Haftka (1995)
     mt_rows = []
@@ -121,19 +128,18 @@ def main(quick: bool = False):
         per = {r["n"]: r["max_margin"] for r in ex["per_n"]}
         b = ex["best"]
         tgt = (b["n"], b["max_margin"])
-        runs = list(pool.map(ga_task, [(p, s, 6000, tgt, "min_plies") for s in seeds]))
-        hits = [r["hit_evals"] for r in runs if r["hit_evals"] is not None]
-        prac = [r["practical_evals"] for r in runs if r["practical_evals"] is not None]
+        allruns = list(pool.map(ga_task, [(p, s, 6000, tgt, "min_plies", ls) for ls in (False, True) for s in seeds]))
         row = {"case": name, "Nx_lbin": nx, "Ny_lbin": ny, "n_opt_exhaustive": b["n"],
                "lambda_cr_opt": b["max_margin"], "design": stack_notation(b["full"]),
                "lambda_best_44": per.get(44), "lambda_best_48": per.get(48), "lambda_best_52": per.get(52),
                "paper_n_opt": 48, "paper_lambda_44_48_52": "0.879 / 1.040 / 1.201" if name == "LC1" else "",
-               "exhaustive_time_s": t(), "ga_runs": len(runs), "ga_budget": 6000, "ga_exact_hits": len(hits),
-               "ga_practical_hits": len(prac),
-               "ga_evals_to_exact_mean": float(np.mean(hits)) if hits else None}
+               "exhaustive_time_s": t(), "ga_budget": 6000}
+        _ga_stats(row, allruns)
         mt_rows.append(row)
+        histories[f"1995-{name}"] = {"target": b["max_margin"], "runs": allruns}
         print(f"[1995 {name}] n*={b['n']} lambda={b['max_margin']:.4f} best@44/48/52 = "
-              f"{per.get(44)}, {per.get(48)}, {per.get(52)};  GA exact {len(hits)}/{len(runs)}", flush=True)
+              f"{per.get(44)}, {per.get(48)}, {per.get(52)};  GA exact {row['ga_exact_hits']}/{row['ga_runs']}, "
+              f"GA+LS exact {row['ga_ls_exact_hits']}/{row['ga_ls_runs']}", flush=True)
     pool.shutdown()
     write_csv("leriche_haftka_paper_designs.csv", designs)
     write_csv("leriche_haftka_summary.csv", summary)

@@ -13,6 +13,12 @@ index are at the same distance from the mid-plane in both parents. Operators:
   permutation operator of Le Riche & Haftka, changes D without changing A), repair (rules always satisfied).
 Elitism keeps the n_elite best designs. Children that duplicate a population member get extra swaps (diversity).
 The budget is the number of DISTINCT designs analysed (repeated designs come from the cache for free).
+
+Memetic variant (local_search=True, added after the baseline GA missed the optimum of the "GA-deceptive"
+minimum-thickness cases of Le Riche & Haftka 1995): every time the best design improves, a steepest-ascent
+local search explores its neighbourhood - every swap of two plies of different orientation, every change of one
+ply to another orientation, and (fewest plies) every removal of one ply - all repaired, evaluated in one batch,
+counted in the same budget. Local improvement of GA designs follows Kogiso et al. (1994), cited in [P].
 """
 from __future__ import annotations
 
@@ -22,7 +28,7 @@ from typing import Dict, List, Optional
 
 import numpy as np
 
-from .evaluate import Evaluator, Problem, lexi_rank
+from .evaluate import Evaluator, Problem, better, lexi_rank
 from .rules import EMPTY, Repairer
 
 
@@ -40,6 +46,8 @@ class GAConfig:
     max_generations: int = 100000
     stall_generations: int = 100         # stop early if no NEW design was analysed for this many generations
     objective: str = "min_plies"
+    local_search: bool = False           # memetic variant: hill-climb from every new best design
+    ls_max_neighbors: int = 0            # 0 = whole neighbourhood, else a random subset of this size per step
 
 
 def _rank(res: Dict[str, np.ndarray], sf: float, objective: str) -> np.ndarray:
@@ -94,6 +102,47 @@ class GeneticAlgorithm:
                 s[i], s[j] = s[j], s[i]
                 return
 
+    def _neighbours(self, g: np.ndarray) -> np.ndarray:
+        s = [int(x) for x in g if x >= 0]
+        L = len(s)
+        out = []
+        for i in range(L):
+            for j in range(i + 1, L):
+                if s[i] != s[j]:
+                    t = s.copy()
+                    t[i], t[j] = t[j], t[i]
+                    out.append(t)
+        for i in range(L):
+            for k in range(self.nsym):
+                if k != s[i]:
+                    t = s.copy()
+                    t[i] = k
+                    out.append(t)
+        if self.cfg.objective == "min_plies" and L > self.repairer.Lmin:
+            out += [s[:i] + s[i + 1:] for i in range(L)]
+        if self.cfg.ls_max_neighbors and len(out) > self.cfg.ls_max_neighbors:
+            idx = self.rng.choice(len(out), self.cfg.ls_max_neighbors, replace=False)
+            out = [out[i] for i in idx]
+        arr = np.full((len(out), self.n_genes), EMPTY, dtype=np.int8)
+        for r, t in enumerate(out):
+            arr[r, self.n_genes - len(t):] = t
+            arr[r] = self.repairer.repair(arr[r], self.rng)
+        return np.unique(arr, axis=0)
+
+    def _local_search(self, g: np.ndarray, key: tuple) -> tuple:
+        """Steepest ascent from design g with (n_plies, margin) = key; stops at a local optimum or the budget."""
+        sf = self.p.safety_factor
+        while self.ev.n_unique < self.cfg.budget:
+            nb = self._neighbours(g)
+            res = self.ev.evaluate(nb)
+            k = _rank(res, sf, self.cfg.objective)[0]
+            cand = (int(res["n_plies"][k]), float(res["margin"][k]))
+            improved = cand[1] > key[1] if self.cfg.objective == "max_margin" else better(cand, key, sf)
+            if not improved:
+                break
+            g, key = nb[k].copy(), cand
+        return g, key
+
     def _tournament(self, rank_pos: np.ndarray) -> int:
         cand = self.rng.choice(len(rank_pos), self.cfg.tournament, replace=False)
         return int(cand[np.argmin(rank_pos[cand])])
@@ -106,10 +155,24 @@ class GeneticAlgorithm:
         pop = np.array([self.repairer.random_valid(self.rng) for _ in range(cfg.pop_size)], dtype=np.int8)
         res = self.ev.evaluate(pop)
         history, hit_at, gen, stall, last_unique = [], None, 0, 0, self.ev.n_unique
+        best_seen = None
         while True:
             order = _rank(res, sf, cfg.objective)
             b = order[0]
             best = (int(res["n_plies"][b]), float(res["margin"][b]))
+            if cfg.local_search and (best_seen is None or (best[1] > best_seen[1] if cfg.objective == "max_margin"
+                                                          else better(best, best_seen, sf))):
+                g2, key2 = self._local_search(pop[b].copy(), best)
+                if key2 != best:  # put the improved design in place of the worst member
+                    w = order[-1]
+                    pop[w] = g2
+                    r2 = self.ev.evaluate(g2[None])
+                    for k in res:
+                        res[k][w] = r2[k][0]
+                    order = _rank(res, sf, cfg.objective)
+                    b = order[0]
+                    best = (int(res["n_plies"][b]), float(res["margin"][b]))
+                best_seen = best
             history.append({"gen": gen, "evals": self.ev.n_unique, "n_plies": best[0], "margin": best[1],
                             "feasible": best[1] >= sf})
             if target is not None and hit_at is None and _is_hit(best, target, cfg.objective):
