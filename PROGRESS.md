@@ -13,6 +13,36 @@ Lần chạy gần nhất: 0.0023807 / 4 / 5.93995e7 → **PASS** (chạy lại 
 - Kiểm tra tất định (không gọi LLM): `python\test_checks.py` → ALL PASS
 - Số lần gọi Hugging Face: mỗi lần gọi ghi 1 dòng vào `logs\hf_calls.log`.
 
+## Lớp 1 - Tối ưu thứ tự xếp lớp (28/10, phiên 3): XONG (trừ kiểm tra MATLAB cuối, xem dưới)
+Mốc trước khi làm: tag `before-optimization` (`dec149b`). Chỉ THÊM file trong `python/optimization/` và
+`deliverables/optimization/` (+ mục này); `git diff before-optimization` trên các file cũ: trống.
+Báo cáo: `deliverables/optimization/BAO_CAO_LOP1.md` (tiếng Việt + 1 trang tiếng Anh cho GS. Nishikawa), bảng
+`results/*.csv`, `results/tables.md`, hình `figures/*.png`. Chạy lại: `python\optimization\run_optimization.bat [--quick]`.
+Thư viện mới (venv): pymoo 0.6.2, pytest 9.1.1, matplotlib 3.11.2 (ghi trong `python/optimization/requirements-opt.txt`).
+- Bộ tính CLT numpy (cùng quy ước `clt_engine.m`), Max Stress / Tsai-Wu (F12* = -0.5) / Max Strain theo hệ số dự trữ RF,
+  mất ổn định công thức đóng (dò mode có chứng minh đủ) + Ritz có Nxy (bổ sung), luật thiết kế bật/tắt + repair,
+  vét cạn (chuỗi họ góc, đếm số lượng + quy hoạch động, cận dưới chứng minh được), GA, GA + tìm kiếm cục bộ, NSGA-II
+  (pymoo), hàm `optimize(...)` trả `OptimizationResult`; IM7/8552 số đo NCAMP, thiếu độ bền -> ML + cảnh báo.
+- Kiểm chứng: Python vs MATLAB 60/60 tấm ngẫu nhiên, sai số <= 2.5e-15. 8 ca tải x 2 độ dày lớp (0.125 / 0.18288 mm):
+  vét cạn chứng minh tối ưu cả 16 bài; GA, GA+LS, NSGA-II **20/20 seed đúng tối ưu ở cả 16 bài** (ngân sách 10 000).
+  Le Riche & Haftka: trùng tối ưu công bố 3973.01 / 9998.19 / 13518.66, Ny/Nx = 0.25 tìm được 12678.78 (+0.031 %
+  so với thiết kế GA trong luận án); bài 1995: n* = 48 lớp và thiết kế ca 2, 3 trùng nguyên văn bài báo.
+  pytest: 76 đạt, 1 bỏ qua (test MATLAB, vì sự cố dưới).
+- Giảm khối lượng so với tựa đẳng hướng (lớp 0.125 mm): -50 % kéo một phương, -37.5 % kéo hai phương, -25 % cắt thuần
+  và kéo+cắt, -16.7 % nén một phương và nén+cắt, -8.3 % nén hai phương; tải rất lớn: không khả thi <= 64 lớp.
+- Hạn chế chính: công thức đóng không có mất ổn định do cắt (Ritz: phương án cắt thuần 12 lớp chỉ chịu 2.3 % tải,
+  cần 46 lớp); bỏ qua D16/D26 (tỉ số <= 0.15); bài LC3 1995 "đánh lừa GA" chỉ 3/20.
+- Sửa trong lúc làm: NSGA-II của pymoo làm mất tối ưu khi nhiều thiết kế cùng (số lớp, biên) -> khoảng cách chen chúc
+  tính trên vector mục tiêu khác nhau (test hồi quy); GA thêm tìm kiếm cục bộ + bước bớt lớp (LC2 1995: 6/20 -> 20/20).
+- **SỰ CỐ MÁY (28/10 ~02:10-02:18)**: sau một lần chạy song song 16 tiến trình bị lỗi cấp phát bộ nhớ OpenBLAS, dịch vụ
+  WMI của Windows treo: `tasklist`, `taskkill`, `Get-CimInstance`, `platform.platform()` của Python, `import pandas`
+  (qua platform) và `import matlab.engine` đều treo -> **demo cũ (demo.py, run_demo.bat) hiện cũng sẽ treo** dù không
+  file nào của demo bị sửa. Không có quyền admin để khởi động lại WMI; theo dõi 45 phút không tự hồi phục.
+  **CẦN LÀM trước 30/10: khởi động lại máy**, rồi chạy: `venv\Scripts\python.exe python\demo.py` (phải PASS 0.00238 / 4),
+  `run_demo.bat`, `run_demo.bat --offline`, và trong thư mục `python`:
+  `..\venv\Scripts\python.exe -m optimization.experiments.matlab_recheck` (kiểm tra 83 phương án tối ưu bằng MATLAB).
+  Module tối ưu tự tránh WMI (`optimization/__init__.py`, `run_tests.py`) nên vẫn chạy được trong lúc WMI treo.
+
 ## Việc 1 + 2 (27/10 tối, phiên 2): XONG - chi tiết trong deliverables/benchmark/KET_QUA_VIEC_1_2.md
 Mốc trước khi sửa: tag `before-task12` (`e0a9162`). Demo gốc: online 25 s, offline 39 s, demo.py PASS (log trong
 deliverables/benchmark/baseline_before_task12/).

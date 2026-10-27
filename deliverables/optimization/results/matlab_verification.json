@@ -1,0 +1,25 @@
+{
+ "n_cases": 60,
+ "seed": 2026,
+ "tolerance": 1e-09,
+ "n_pass": 60,
+ "max_e_ABD": 2.1414996949337667e-15,
+ "max_e_stress": 2.4685589941834665e-15,
+ "max_e_FI": 2.4930853945040077e-15,
+ "n_nonsymmetric": 52,
+ "n_with_moments": 22,
+ "materials": [
+  "AS4/8552",
+  "CFRP (ML)",
+  "E-glass/MY750",
+  "GFRP (ML)",
+  "IM7/8552",
+  "KEVLAR (ML)",
+  "Kevlar 49/epoxy",
+  "S2-glass/BT250E-6",
+  "T1100G/3960",
+  "T300/5208",
+  "T650/5250-5"
+ ],
+ "time_s": 10.577380900038406
+}
