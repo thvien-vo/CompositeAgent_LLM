@@ -14,7 +14,7 @@ Lần chạy gần nhất: 0.0023807 / 4 / 5.93995e7 → **PASS** (chạy lại 
 ## Mục tiêu 1 - Agent LLM → ML → MATLAB → LLM: XONG
 Lỗi tìm thấy trong llm.py gốc (v1):
 1. Với Hugging Face, prompt không đưa cấu trúc JSON → gpt-oss-120b đặt Nx, Ny... ở ngoài `"loads"` →
-   `_fix_units` âm thầm điền 0 → CLT chạy với **tải = 0** và báo "an toàn". Xảy ra ở **28/28** đề thử.
+   `_fix_units` âm thầm điền 0 → CLT chạy với **tải = 0** và báo "an toàn". Xảy ra ở **27/28** đề thử (đề còn lại T4: HF trả về nội dung rỗng → crash).
 2. Prompt giải thích yêu cầu so sánh σ2 với độ bền ngang nhưng không đưa độ bền vào prompt.
 3. gpt-oss là model suy luận: `max_tokens` nhỏ → `content = None`.
 
