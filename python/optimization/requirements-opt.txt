@@ -1,0 +1,28 @@
+# Extra packages for python/optimization (installed into D:\CompositeAgent\venv, Python 3.12.10).
+# The agent's own requirements.txt is unchanged. Versions are the ones installed and tested on 2026-10-28.
+pymoo==0.6.2
+pytest==9.1.1
+matplotlib==3.11.2
+# already present in the venv and used here (unchanged):
+numpy==2.5.4
+scipy==1.18.1
+pandas==3.0.6
+matlabengine==25.1.2
+# pulled in by the three packages above:
+autograd==1.9.1
+cma==4.5.0
+moocore==0.3.2
+alive-progress==3.3.0
+about-time==4.2.1
+Deprecated==3.0.0
+wrapt==2.5.1
+cffi==2.1.1
+pycparser==3.12
+platformdirs==4.13.6
+contourpy==1.4.0
+cycler==0.12.1
+fonttools==4.68.0
+kiwisolver==1.5.1
+pyparsing==3.3.3
+pluggy==1.7.0
+iniconfig==2.3.1
