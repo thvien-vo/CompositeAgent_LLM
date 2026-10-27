@@ -454,7 +454,9 @@ optimization.experiments.matlab_recheck` (trong thư mục `python`) sẽ kiểm
 
 ```
 python\optimization\run_optimization.bat           (pytest + toàn bộ thí nghiệm, khoảng 1–1.5 giờ trên 20 nhân)
-python\optimization\run_optimization.bat --quick   (pytest + bản rút gọn: ít seed, ngân sách nhỏ)
+python\optimization\run_optimization.bat --quick   (pytest + bản rút gọn: 3 seed, ngân sách 3 000; đã chạy thử:
+                                                   ~2.5 phút test + 10.6 phút thí nghiệm, trong đó ~5 phút chờ dò
+                                                   MATLAB khi engine hỏng; ghi vào results_quick\ và figures_quick\)
 ```
 Từng bước (trong thư mục `python`, dùng `..\venv\Scripts\python.exe`):
 `-m optimization.run_tests` · `-m optimization.experiments.verify_matlab` · `-m optimization.experiments.run_cases`
