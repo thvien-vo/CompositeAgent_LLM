@@ -4,3 +4,7 @@ matlabengine
 scikit-learn
 pandas
 joblib
+
+# only for building the slides / script in deliverables
+python-pptx
+python-docx

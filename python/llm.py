@@ -25,7 +25,8 @@ from schemas import CLTInput
 from ml import MATERIAL_DB
 from layup import LayupError, expand_layup
 
-OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+# 127.0.0.1, not "localhost": on Windows "localhost" first tries IPv6 and costs ~2 s per call
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
 MODEL = os.environ.get("OLLAMA_MODEL", "gemma3:4b")          # local model (Ollama)
 HF_MODEL = os.environ.get("HF_MODEL", "openai/gpt-oss-120b")  # cloud model (Hugging Face)
 # Cerebras answered in ~1 s in our tests (27/10/2026); if it fails the retry lets Hugging Face choose.

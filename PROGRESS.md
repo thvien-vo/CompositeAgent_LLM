@@ -42,8 +42,8 @@ Benchmark trích số liệu (28 đề viết tay, đáp án kiểm tra chéo b�
 Ollama 4 ca sai với code cuối: 3 ca agent từ chối + báo lỗi (H6, N5, T5), 1 ca sai âm thầm (N4: tải viết
 bằng lời "force of 2 N/mm in the x direction" bị đặt vào Nxy).
 → **Mặc định: HF gpt-oss-120b. Dự phòng khi mất mạng: Ollama gemma3:4b** (đã thử: proxy hỏng → tự chuyển).
-Thời gian: HF ~1-2 s/lần gọi, gemma3:4b ~5-7 s (lần đầu ~15 s do nạp model vào GPU).
-main.py trọn 4 bước: HF ~2-12 s (+ ~20 s khởi động MATLAB), Ollama ~15-20 s.
+Thời gian (sau khi sửa localhost → 127.0.0.1): HF ~1-2 s/lần gọi, gemma3:4b ~3-4 s/đề (lần đầu lâu hơn do nạp
+model vào GPU). Benchmark Ollama chạy lại sau khi sửa: độ chính xác không đổi (24/28, LLM một mình 10/28).
 
 ## Mục tiêu 2 - RAG: XONG (bản Python); pgvector: BỎ QUA
 - Docker chưa cài, WSL chưa cài ("Windows Subsystem for Linux is not installed") → Docker Desktop cần cài WSL
@@ -59,9 +59,13 @@ main.py trọn 4 bước: HF ~2-12 s (+ ~20 s khởi động MATLAB), Ollama ~15
 ## Mục tiêu 3 - run_demo.bat: XONG
 Phần 0 kiểm tra môi trường → Phần 1 số kiểm chứng → Phần 2 agent 2 đề (đề 1 an toàn FI=0.00238; đề 2 tiếng Việt
 quá tải FI=1.096 → FAILS) → Phần 3 RAG 4 câu. Đếm ngược 5-8 s giữa các phần (bấm phím để bỏ qua).
-Đã chạy: online 23 s; `--offline` 61 s; log trong logs\.
+Đã chạy (không tính thời gian dừng): online 17 s; `--offline` 39 s; giả lập mất mạng → tự chuyển Ollama, 18 s.
+Log trong logs\ (không commit); bản sao dự phòng: deliverables/demo_log_backup_online.txt, demo_log_backup_offline.txt.
 
-## Mục tiêu 4 - Tài liệu: ĐANG LÀM
+## Mục tiêu 4 - Tài liệu: XONG
+- deliverables/CompositeAgent_slides.pptx (14 slide song ngữ, có ghi chú người nói; tạo lại bằng make_slides.py).
+- deliverables/KICH_BAN_THUYET_TRINH.md + .docx (chuẩn bị, kịch bản từng slide, demo từng bước, xử lý sự cố,
+  số liệu cần nhớ, bảng thuật ngữ, câu hỏi dự kiến).
 ## Mục tiêu 5 - Fine-tune: KHÔNG CẦN (HF mặc định đúng 28/28). Ghi vào "bước tiếp theo" cho model offline.
 
 ## Nhật ký
@@ -75,3 +79,6 @@ quá tải FI=1.096 → FAILS) → Phần 3 RAG 4 câu. Đếm ngược 5-8 s gi
 - 27/10 18:54  run_demo online/offline OK; giả lập mất mạng → tự chuyển Ollama OK.
 - 27/10 18:58  evaluate_model.py chạy lại: số LOOCV không đổi (E1 R² 0.44, G12 0.302, Xt 0.305; E2 -0.023,
   nu12 -0.406, Xc -0.104, S -0.229; Yt 0.035, Yc 0.128).
+- 27/10 19:0x  slide + kịch bản. Soát lại: v1+HF tải = 0 ở 27/28 đề (đề T4: trả lời rỗng → crash), đã sửa chữ "28/28".
+- 27/10 19:18  Phát hiện Ollama qua "localhost" chậm ~2,1 s/lần gọi (Windows thử IPv6 trước) → đổi mặc định
+  sang 127.0.0.1 (0,05 s). Demo online 23-81 s → 17 s; offline 61 s → 39 s. demo.py PASS.

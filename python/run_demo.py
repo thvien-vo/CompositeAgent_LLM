@@ -54,10 +54,21 @@ def banner(title):
     print("\n" + "=" * 78 + f"\n  {title}\n" + "=" * 78, flush=True)
 
 
+WAITED = [0.0]  # seconds spent in countdowns (not counted in the part times)
+
+
 def wait(seconds, no_wait):
     """Countdown; any key skips it (Windows)."""
     if no_wait or seconds <= 0:
         return
+    t0 = time.time()
+    try:
+        _countdown(seconds)
+    finally:
+        WAITED[0] += time.time() - t0
+
+
+def _countdown(seconds):
     try:
         import msvcrt
     except ImportError:
@@ -225,21 +236,26 @@ def run():
     if not status["hf"]:
         llm.BACKEND = "ollama"
     parts = args.parts.split(",")
-    summary = {}
+    summary = {}  # name -> (ok, seconds without the countdowns)
+
+    def timed(name, fn, *a):
+        t, w = time.time(), WAITED[0]
+        summary[name] = (fn(*a), time.time() - t - (WAITED[0] - w))
+
     if "1" in parts:
-        summary["Part 1 reference check"] = part1()
+        timed("Part 1 reference check", part1)
         wait(5, args.no_wait)
     if "2" in parts:
-        summary["Part 2 agent"] = part2(args.lang, args.no_wait)
+        timed("Part 2 agent", part2, args.lang, args.no_wait)
         wait(8, args.no_wait)
     if "3" in parts:
-        summary["Part 3 RAG"] = part3(args.no_wait)
+        timed("Part 3 RAG", part3, args.no_wait)
     if args.interactive:
         part4(args.lang)
 
     banner("SUMMARY")
-    for k, v in summary.items():
-        print(f"  {k:28} {'OK' if v else 'FAILED'}")
+    for k, (ok, sec) in summary.items():
+        print(f"  {k:28} {'OK' if ok else 'FAILED':7} {sec:5.1f} s")
     print(f"  LLM used last: {llm.LAST_BACKEND}")
     print(f"  total time: {time.time() - t0:.0f} s   log: {log_path}")
     try:
