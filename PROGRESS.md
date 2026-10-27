@@ -40,9 +40,15 @@ deliverables/benchmark/baseline_before_task12/).
 | sai im lặng | nhiều (L3, L4: tải = 0) | **0** | L3, L4 tải = 0; L2 sai dấu | **0** |
 
 - RAG chạy lại: gemma 11/12 + 5/6, HF holdout 6/6 (như trước). test_checks.py: ALL PASS.
-- run_demo có thêm đề 3 (IM7/8552 + tải bằng lời) và đề 4 (tải không rõ hướng → agent phải từ chối). Online 45 s,
-  offline 55 s (không tính thời gian dừng, gồm khởi động MATLAB). demo.py vẫn PASS.
-- Hugging Face trong phiên 2: xem `logs\hf_calls.log` (giới hạn 150).
+- run_demo có thêm đề 3 (IM7/8552 + tải bằng lời) và đề 4 (tải không rõ hướng → agent phải từ chối). Online 20-45 s (2 lần đo),
+  offline 55-57 s (không tính thời gian dừng, gồm khởi động MATLAB). Chạy qua chính run_demo.bat cả 2 chế độ: OK.
+  demo.py vẫn PASS. Log dự phòng mới: deliverables/demo_log_backup_online.txt, demo_log_backup_offline.txt.
+- Hugging Face trong phiên 2: **96 lần gọi** (giới hạn 150): 8 demo gốc, 16 benchmark đề mới trước khi sửa,
+  44 benchmark sau khi sửa, 11 demo online thử, 6 RAG holdout, 11 demo online cuối (qua run_demo.bat).
+  Đếm trong `logs\hf_calls.log` (8 lần đầu đếm từ log demo gốc vì bộ đếm được thêm sau).
+- Hạn chế còn lại của Việc 1+2: chỉ 25 vật liệu có số đo; hướng tải đọc bằng luật từ khóa (Anh/Việt) - câu lạ bị từ
+  chối thay vì đoán; mô-men "bending moment of ... about the x axis" (không ký hiệu) bị từ chối vì quy ước Mx/My dễ
+  nhầm; các bộ đề cũ đã dùng để tìm lỗi nên không còn là đề mù; 16 đề mới do tôi tự viết.
 
 ## Mục tiêu 1 - Agent LLM → ML → MATLAB → LLM: XONG
 Lỗi tìm thấy trong llm.py gốc (v1):

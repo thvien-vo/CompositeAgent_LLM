@@ -1,4 +1,4 @@
-COMPOSITE AGENT DEMO  -  2026-10-27 22:01  -  log: D:\CompositeAgent\logs\demo_20261027_220126.log
+COMPOSITE AGENT DEMO  -  2026-10-27 22:09  -  log: D:\CompositeAgent\logs\demo_20261027_220921.log
 
 ==============================================================================
   PART 0 - Environment check
@@ -29,7 +29,7 @@ MATLAB engine is ready.
 [1/4] LLM reads the problem ...
 [llm.py] check failed (2 ply thicknesses were given but the layup '[0/45/-45/90]s' has 8 plies) -> asking the LLM to correct its answer
 [llm.py] note: ignored a list of 6 ply thicknesses (layup has 8 plies)
-  (Ollama (gemma3:4b), 21.5 s)
+  (Ollama (gemma3:4b), 21.7 s)
   material : CFRP
   plies    : 8  angles = [0.0, 45.0, -45.0, 90.0, 90.0, -45.0, 45.0, 0.0]
   thickness: [0.125] mm per ply, total 1 mm
@@ -50,9 +50,9 @@ MATLAB engine is ready.
   safety factor     = 420.0   -> SAFE
 
 [4/4] LLM explains the result ...
-  (Ollama (gemma3:4b), 2.9 s)
+  (Ollama (gemma3:4b), 2.6 s)
 
-Total time: 24.8 s
+Total time: 24.5 s
 
 ===== EXPLANATION (LLM) =====
 The Classical Laminate Theory calculation indicates a maximum failure index of 0.002381 across ply 4, which is oriented at 90.0 degrees. This ply is critical due to the highest calculated transverse stress of 0.1518 MPa, which is compared to the transverse tensile strength of 63.76 MPa. The governing mode is transverse (sigma2, tension). The laminate is classified as safe with a safety factor of 420.0, calculated as the inverse of the failure index. The program computed a load of 59400000.0 N/m, suggesting a significant load capacity.
@@ -64,7 +64,7 @@ The Classical Laminate Theory calculation indicates a maximum failure index of 0
 
 [1/4] LLM reads the problem ...
 [llm.py] note: ignored a list of 2 ply thicknesses (layup has 6 plies)
-  (Ollama (gemma3:4b), 3.5 s)
+  (Ollama (gemma3:4b), 3.9 s)
   material : GFRP
   plies    : 6  angles = [0.0, 45.0, -45.0, -45.0, 45.0, 0.0]
   thickness: [0.15] mm per ply, total 0.9 mm
@@ -85,9 +85,9 @@ The Classical Laminate Theory calculation indicates a maximum failure index of 0
   safety factor     = 0.9127   -> FAILS
 
 [4/4] LLM explains the result ...
-  (Ollama (gemma3:4b), 2.6 s)
+  (Ollama (gemma3:4b), 3.0 s)
 
-Total time: 6.7 s
+Total time: 7.0 s
 
 ===== EXPLANATION (LLM) =====
 The Classical Laminate Theory calculation indicates that the laminate is not safe, with a maximum failure index of 1.096. Ply number 4, at an angle of -45.0 degrees, is the critical ply due to its failure index exceeding 1.0. The governing mode of failure is transverse (sigma2, tension) with a governing stress of 49.49 MPa, compared to the transverse tensile strength of 45.17 MPa. This failure index represents the ratio of the maximum stress in the laminate to the material strength. The resulting safety factor is 0.9127, signifying a low margin of safety. The program calculated a nominal ABD11 N/m load of 28660000.0 N/m, which is significantly higher than the laminate’s capacity.
@@ -99,7 +99,7 @@ The Classical Laminate Theory calculation indicates that the laminate is not saf
 
 [1/4] LLM reads the problem ...
 [llm.py] note: ignored a list of 3 ply thicknesses (layup has 8 plies)
-  (Ollama (gemma3:4b), 3.7 s)
+  (Ollama (gemma3:4b), 4.1 s)
   material : CFRP
   plies    : 8  angles = [0.0, 45.0, -45.0, 90.0, 90.0, -45.0, 45.0, 0.0]
   thickness: [0.131] mm per ply, total 1.048 mm
@@ -119,9 +119,9 @@ The Classical Laminate Theory calculation indicates that the laminate is not saf
   safety factor     = 25.19   -> SAFE
 
 [4/4] LLM explains the result ...
-  (Ollama (gemma3:4b), 2.7 s)
+  (Ollama (gemma3:4b), 3.1 s)
 
-Total time: 6.4 s
+Total time: 7.2 s
 
 ===== EXPLANATION (LLM) =====
 The Classical Laminate Theory calculation for this 8-ply CFRP laminate indicates a maximum failure index of 0.03969, occurring in ply 4 at an angle of 90.0 degrees. This ply is critical due to the governing mode being transverse (sigma2, tension) with a governing stress of 2.544 MPa, compared with the transverse tensile strength of 64.1 MPa. The failure index is calculated as |2.544| / 64.1 = 0.03969. The laminate is classified as safe with a safety factor of 25.19. The program identified plies 4 and 5 as having the same maximum failure index. This critical ply is vulnerable to transverse tension, as evidenced by the high sigma2 stress and the corresponding tau12 value.
@@ -216,8 +216,8 @@ Sources of the retrieved rows:
 ==============================================================================
   SUMMARY
 ==============================================================================
-  Part 1 reference check       OK        6.4 s
-  Part 2 agent                 OK       40.8 s
-  Part 3 RAG                   OK        8.2 s
+  Part 1 reference check       OK        6.8 s
+  Part 2 agent                 OK       41.9 s
+  Part 3 RAG                   OK        8.4 s
   LLM used last: Ollama (gemma3:4b)
-  total time: 55 s   log: D:\CompositeAgent\logs\demo_20261027_220126.log
+  total time: 57 s   log: D:\CompositeAgent\logs\demo_20261027_220921.log
