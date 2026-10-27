@@ -11,13 +11,13 @@ Modules
   exhaustive  exact search (enumeration / count-level enumeration) for small design spaces
   ga          single-objective genetic algorithm
   nsga2       NSGA-II (pymoo) with repair
-  optimize    optimize(...) -> OptimizationResult  (entry point for Layer 2 / Layer 3)
+  api         optimize(...) -> OptimizationResult  (entry point for Layer 2 / Layer 3)
   matlab_check  re-check of designs with matlab/clt_engine.m
 
 Units: SI everywhere (Pa, m, N/m). Loads Nx, Ny, Nxy: tension positive, compression negative.
 """
 _EXPORTS = {"Material": "material", "get_material": "material", "Plate": "evaluate", "Problem": "evaluate",
-            "Rules": "rules", "optimize": "optimize", "OptimizationResult": "optimize"}
+            "Rules": "rules", "optimize": "api", "OptimizationResult": "api", "make_problem": "api", "quasi_isotropic": "api"}
 
 
 def __getattr__(name):  # lazy imports: "from optimization import optimize" without loading everything up front
