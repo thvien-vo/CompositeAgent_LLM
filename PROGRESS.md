@@ -9,7 +9,40 @@ Lần chạy gần nhất: 0.0023807 / 4 / 5.93995e7 → **PASS** (chạy lại 
 - Demo 1 bước: double-click `run_demo.bat` (hoặc `run_demo.bat --offline`, `--interactive`, `--lang vi`).
 - Agent: `venv\Scripts\python.exe python\main.py "CFRP [0/90]s, 0.125 mm plies, Nx = 1 kN/m"`
 - RAG: `venv\Scripts\python.exe python\rag.py "What is Xt of IM7/8552?"`
-- Benchmark: `python\benchmark_llm.py --set dev|holdout|holdout2|holdout3`, `python\benchmark_rag.py --set dev|holdout`
+- Benchmark: `python\benchmark_llm.py --set old28|new|dev|holdout|holdout2|holdout3`, `python\benchmark_rag.py --set dev|holdout`
+- Kiểm tra tất định (không gọi LLM): `python\test_checks.py` → ALL PASS
+- Số lần gọi Hugging Face: mỗi lần gọi ghi 1 dòng vào `logs\hf_calls.log`.
+
+## Việc 1 + 2 (27/10 tối, phiên 2): XONG - chi tiết trong deliverables/benchmark/KET_QUA_VIEC_1_2.md
+Mốc trước khi sửa: tag `before-task12` (`e0a9162`). Demo gốc: online 25 s, offline 39 s, demo.py PASS (log trong
+deliverables/benchmark/baseline_before_task12/).
+- **Việc 1** (`python\materials.py`, mới): schema LLM có thêm `material_name` (tên chép nguyên văn, phải có trong đề);
+  Python còn quét chính văn bản đề. Chỉ dùng số đo khi khớp **duy nhất cả sợi và nhựa** với 1 dòng CSV (bỏ qua
+  hoa/thường, "/", "-", khoảng trắng, tên hãng Hexcel, Cytec...). Chỉ ghi "IM7" (4 dòng), tên không có trong dữ liệu →
+  ML theo nhóm như cũ, in lý do. Đổi đơn vị GPa x1e9, MPa x1e6; IM7/8552: E1 = 1.621e11 Pa (đã kiểm tra).
+  Ô trống (S của T650/5250-5) và ν12 bất thường (0.164 của T40-800/5215, theo ml.EXCLUDE) → ML nhóm CFRP + cảnh báo
+  ghi rõ cột. Luôn in nguồn: "measured: NCAMP NCP-RP-2009-028 Rev B, p.37" hoặc "ML prediction (group CFRP)".
+  Không sửa ml.py, model, CSV. clt_engine.m nhận đúng các trường như cũ (material_name không gửi sang MATLAB).
+- **Việc 2** (`llm.py`, `numwords.py` mới): số viết bằng chữ (Anh/Việt: "one thousand five hundred", "hai") → chữ số;
+  đơn vị viết bằng chữ ("newtons per metre"); Python quét **mọi** đại lượng "số + đơn vị tải" trong đề và xác định tải
+  của nó từ chính mệnh đề chứa nó (ký hiệu Nx..., "along x", "y direction", "shear", "twisting", "compressive" → âm);
+  LLM đặt sai chỗ → sửa theo đề + cảnh báo; tải không rõ hướng → **từ chối, báo lỗi rõ** (không hỏi lại LLM vì vô ích);
+  đề có từ chỉ tải mà mọi tải = 0 → hỏi lại LLM 1 lần rồi báo lỗi; số trong đề không được dùng → cảnh báo.
+  Ngoài ra: góc / độ dày từng lớp liệt kê trong đề ("30°, -30°..." , "45° (0.3 mm)") được Python đọc thẳng.
+- 16 đề thử mới (bộ `new`, viết trước khi sửa): 8 tên vật liệu (đúng tên, tên hãng + đảo thứ tự, chỉ "IM7", tên không
+  có, ô trống S, ν12 bất thường, dòng giáo trình, GFRP), 8 tải (bằng lời, kN/m, N/mm, số bằng chữ Anh/Việt, mô-men
+  xoắn bằng lời, 2 đề mơ hồ phải từ chối).
+
+| Bộ đề | gemma trước | gemma sau | HF trước | HF sau |
+|---|---|---|---|---|
+| 28 đề cũ | 24/28 | **28/28** | 28/28 | **28/28** |
+| 16 đề mới | 4/16 | **16/16** | 5/16 | **16/16** |
+| sai im lặng | nhiều (L3, L4: tải = 0) | **0** | L3, L4 tải = 0; L2 sai dấu | **0** |
+
+- RAG chạy lại: gemma 11/12 + 5/6, HF holdout 6/6 (như trước). test_checks.py: ALL PASS.
+- run_demo có thêm đề 3 (IM7/8552 + tải bằng lời) và đề 4 (tải không rõ hướng → agent phải từ chối). Online 45 s,
+  offline 55 s (không tính thời gian dừng, gồm khởi động MATLAB). demo.py vẫn PASS.
+- Hugging Face trong phiên 2: xem `logs\hf_calls.log` (giới hạn 150).
 
 ## Mục tiêu 1 - Agent LLM → ML → MATLAB → LLM: XONG
 Lỗi tìm thấy trong llm.py gốc (v1):
