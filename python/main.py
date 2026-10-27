@@ -87,6 +87,17 @@ def main(user_text, backend=None, lang="en", explain=True):
             "answer": answer, "suspicious_numbers": suspicious}
 
 
+def print_explanation(out):
+    if not out["answer"]:
+        return
+    print("\n===== EXPLANATION (LLM) =====")
+    print(out["answer"].strip())
+    if out["suspicious_numbers"]:
+        print(f"\n[guardrail] numbers not found in the CLT data: {out['suspicious_numbers']} - check them")
+    else:
+        print("\n[guardrail] every number in the explanation matches the CLT data")
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description="CLT agent: text -> LLM -> ML -> MATLAB -> LLM")
@@ -105,11 +116,4 @@ if __name__ == "__main__":
     print(user_text.strip())
 
     out = main(user_text, backend=args.backend, lang=args.lang, explain=not args.no_explain)
-
-    if out["answer"]:
-        print("\n===== EXPLANATION (LLM) =====")
-        print(out["answer"].strip())
-        if out["suspicious_numbers"]:
-            print(f"\n[guardrail] numbers not found in the CLT data: {out['suspicious_numbers']} - check them")
-        else:
-            print("\n[guardrail] every number in the explanation matches the CLT data")
+    print_explanation(out)

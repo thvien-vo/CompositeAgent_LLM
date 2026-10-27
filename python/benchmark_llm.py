@@ -6,9 +6,9 @@ reads the text; we compare material, number of plies, angles, thicknesses and th
 A case counts as CORRECT only if everything matches (tolerance 1e-6 relative).
 
 Run:
-  python benchmark_llm.py                       -> dev set, versions v1+v2, backends hf+ollama
+  python benchmark_llm.py                       -> dev set, versions v1 (original) + v3 (current), hf+ollama
   python benchmark_llm.py --set holdout         -> held-out set (never used to tune the prompt)
-  python benchmark_llm.py --versions v2 --backends ollama --repeat 3
+  python benchmark_llm.py --versions v3 --backends ollama --repeat 3
 Results: ../deliverables/benchmark/llm_benchmark_<set>_<time>.json and .md
 """
 import argparse
@@ -98,7 +98,62 @@ HOLDOUT = [
      P("GFRP", [45, -45, 0, -45, 45], [0.0003, 0.0003, 0.0005, 0.0003, 0.0003], Nx=4000, Ny=1000)),
 ]
 
-SETS = {"dev": DEV, "holdout": HOLDOUT}
+# Written on 27/10/2026 18:35, AFTER holdout was run once (v3 ollama 4/6) and BEFORE the
+# thickness / ply-count checks were added; run only once after those changes.
+HOLDOUT2 = [
+    ("N1 en, [..]T notation, kN/m",
+     "Compute the CLT response of a [0/90/0/90]T E-glass/epoxy laminate. Each ply: 0.25 mm. "
+     "Loads: Nx = 5 kN/m, Ny = 5 kN/m.",
+     P("GFRP", [0, 90, 0, 90], 0.00025, Nx=5000, Ny=5000)),
+    ("N2 vi, 6 plies listed, total thickness, moment",
+     "Tấm 6 lớp sợi carbon/epoxy, các lớp lần lượt 0°, 60°, -60°, -60°, 60°, 0°, tổng chiều dày 0,9 mm. "
+     "Chịu Nx = 600 N/m, Mx = 1,2 N·m/m.",
+     P("CFRP", [0, 60, -60, -60, 60, 0], 0.00015, Nx=600, Mx=1.2)),
+    ("N3 en, Kevlar [0/90]s, shear + twisting moment",
+     "Kevlar/epoxy symmetric cross-ply [0/90]s with ply thickness 0.1 mm, subjected to shear "
+     "Nxy = 150 N/m and twisting moment Mxy = 0.05 N·m/m.",
+     P("KEVLAR", [0, 90, 90, 0], 0.0001, Nxy=150, Mxy=0.05)),
+    ("N4 en, graphite, load in words (no symbol)",
+     "A graphite/epoxy 4-ply laminate [45/-45/-45/45] with 0.15 mm plies carries an in-plane force of "
+     "2 N/mm in the x direction.",
+     P("CFRP", [45, -45, -45, 45], 0.00015, Nx=2000)),
+    ("N5 vi, 3 plies, thickness per ply",
+     "Tấm GFRP 3 lớp: lớp 1 góc 0° dày 0,4 mm; lớp 2 góc 90° dày 0,2 mm; lớp 3 góc 0° dày 0,4 mm. "
+     "Tải Nx = 2500 N/m, Ny = 400 N/m.",
+     P("GFRP", [0, 90, 0], [0.0004, 0.0002, 0.0004], Nx=2500, Ny=400)),
+    ("N6 en, [0/±45/90]s, total thickness, 4 loads",
+     "CFRP [0/±45/90]s, total laminate thickness 1.6 mm, Nx = -2 kN/m, Ny = 1 kN/m, Nxy = 0.5 kN/m, "
+     "Mx = 0.4 N·m/m.",
+     P("CFRP", [0, 45, -45, 90, 90, -45, 45, 0], 0.0002, Nx=-2000, Ny=1000, Nxy=500, Mx=0.4)),
+]
+
+# Written on 27/10/2026 18:45, BEFORE the SI-grounding + explicit-load reading were run on anything;
+# run only once with that final code.
+HOLDOUT3 = [
+    ("T1 en, S2-glass [90/0/90], kN/m mixed, Mxy",
+     "Laminate: S2-glass/epoxy, stacking [90/0/90], plies of 0.3 mm. Apply Nx = 900 N/m, Ny = 2.4 kN/m "
+     "and Mxy = 0.15 N·m/m.",
+     P("GFRP", [90, 0, 90], 0.0003, Nx=900, Ny=2400, Mxy=0.15)),
+    ("T2 vi, [0/90/±45]s, kN/m + moment",
+     "Cho tấm CFRP gồm 8 lớp xếp theo [0/90/±45]s, chiều dày mỗi lớp 0,2 mm. Tấm chịu kéo Nx = 4 kN/m "
+     "và mô-men uốn Mx = 3 N·m/m.",
+     P("CFRP", [0, 90, 45, -45, -45, 45, 90, 0], 0.0002, Nx=4000, Mx=3)),
+    ("T3 en, aramid [±60]s, negative shear",
+     "Aramid/epoxy [±60]s laminate; t = 0.125 mm per ply; loads Nx = 300 N/m, Nxy = -75 N/m.",
+     P("KEVLAR", [60, -60, -60, 60], 0.000125, Nx=300, Nxy=-75)),
+    ("T4 en, imperial thickness + lbf·in/in moment",
+     "IM7/8552 tape, [0/45/90/-45]s, 0.0072 in per ply. Mx = 5 lbf·in/in.",
+     P("CFRP", [0, 45, 90, -45, -45, 90, 45, 0], 0.0072 * 0.0254, Mx=5 * 4.4482216152605)),
+    ("T5 vi, angles listed, µm",
+     "Vật liệu sợi thủy tinh, 4 lớp với các góc 30°, -30°, -30°, 30°, mỗi lớp dày 150 µm. "
+     "Chỉ có lực cắt Nxy = 500 N/m.",
+     P("GFRP", [30, -30, -30, 30], 0.00015, Nxy=500)),
+    ("T6 en, 'Nx = Ny = 1.2 kN/m'",
+     "Carbon fibre laminate with plies 0°/90°/90°/0°, each 0.2 mm, under biaxial tension Nx = Ny = 1.2 kN/m.",
+     P("CFRP", [0, 90, 90, 0], 0.0002, Nx=1200, Ny=1200)),
+]
+
+SETS = {"dev": DEV, "holdout": HOLDOUT, "holdout2": HOLDOUT2, "holdout3": HOLDOUT3}
 
 
 def _close(a, b, rel=1e-6):
@@ -138,6 +193,7 @@ def run_one(version, backend, text):
             problem = llm_v1_baseline.parse_input(text)
             raw = None
         else:
+            llm.LAST_PARSE = {}
             problem = llm.parse_input(text, backend=backend)
             raw = llm.LAST_PARSE.get("raw")
         return problem, time.time() - t0, None, raw
@@ -145,10 +201,25 @@ def run_one(version, backend, text):
         return None, time.time() - t0, f"{type(e).__name__}: {str(e)[:300]}", None
 
 
+def llm_only_correct(version, exp):
+    """Would the FIRST LLM answer be correct without the Python checks against the text?
+    (unit conversion and layup expansion are still done by Python). v1 has no checks."""
+    if version == "v1":
+        return None
+    attempts = llm.LAST_PARSE.get("attempts") or []
+    if not attempts:
+        return False
+    try:
+        problem, _ = llm.build_problem(attempts[0], text=None)
+        return compare(exp, problem)[0]
+    except Exception:
+        return False
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", default="dev", choices=list(SETS))
-    ap.add_argument("--versions", default="v1,v2")
+    ap.add_argument("--versions", default="v1,v3", help="v1 = original llm.py; anything else = current llm.py")
     ap.add_argument("--backends", default="hf,ollama")
     ap.add_argument("--repeat", type=int, default=1)
     ap.add_argument("--cases", default="", help="comma list of case ids, e.g. D3,D7")
@@ -168,17 +239,23 @@ def main():
                     ok, checks, bad_loads, errors = compare(exp, problem)
                 else:
                     ok, checks, bad_loads, errors = False, {}, list(llm.LOAD_KEYS), [err]
+                alone = llm_only_correct(v, exp)
                 rows.append({"version": v, "backend": b, "repeat": rep, "case": name, "correct": ok,
-                             "checks": checks, "errors": errors, "seconds": round(sec, 2), "raw": raw,
+                             "llm_only_correct": alone, "checks": checks, "errors": errors,
+                             "seconds": round(sec, 2), "raw": raw,
+                             "attempts": None if v == "v1" else llm.LAST_PARSE.get("attempts"),
                              "parsed": problem.model_dump() if problem is not None else None})
                 print(f"[{v}/{b:6}] {'OK  ' if ok else 'FAIL'} {sec:6.1f}s  {name}"
+                      + ("" if alone is None else f"   (LLM alone: {'OK' if alone else 'wrong'})")
                       + ("" if ok else "\n      -> " + "; ".join(errors)), flush=True)
 
     # ---- summary table
     lines = [f"# LLM extraction benchmark ({args.set} set, {len(cases)} cases, repeat {args.repeat})",
              f"Run: {datetime.datetime.now():%Y-%m-%d %H:%M}. HF model: {llm.HF_MODEL}; Ollama model: {llm.MODEL}.", "",
-             "| version | backend | fully correct | material | plies+angles | thickness | loads (6 each) | parse errors | mean s/case |",
-             "|---|---|---|---|---|---|---|---|---|"]
+             "'fully correct' = final CLT input of the agent. 'LLM alone' = first LLM answer without the Python "
+             "checks against the text (v1 has no checks).", "",
+             "| version | backend | fully correct | LLM alone | material | plies+angles | thickness | loads (6 each) | parse errors | mean s/case |",
+             "|---|---|---|---|---|---|---|---|---|---|"]
     for v, b in combos:
         rs = [r for r in rows if r["version"] == v and r["backend"] == b]
         n = len(rs)
@@ -186,7 +263,8 @@ def main():
         load_ok = sum(6 - sum(1 for e in r["errors"] if e.split("=")[0] in llm.LOAD_KEYS) if r["checks"] else 0
                       for r in rs)
         crashed = sum(1 for r in rs if not r["checks"])
-        lines.append(f"| {v} | {b} | **{sum(r['correct'] for r in rs)}/{n}** | {c('material')}/{n} | "
+        alone = "-" if v == "v1" else f"{sum(1 for r in rs if r['llm_only_correct'])}/{n}"
+        lines.append(f"| {v} | {b} | **{sum(r['correct'] for r in rs)}/{n}** | {alone} | {c('material')}/{n} | "
                      f"{c('angles')}/{n} | {c('thickness')}/{n} | {load_ok}/{6 * n} | {crashed} | "
                      f"{sum(r['seconds'] for r in rs) / max(n, 1):.1f} |")
     lines += ["", "## Failures", ""]

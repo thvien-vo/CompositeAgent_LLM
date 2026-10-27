@@ -55,18 +55,33 @@ def _qty(units):
 EXTRACT_SCHEMA = {
     "type": "object",
     "properties": {
+        "fibre_words": {"type": "string"},
         "material": {"type": "string", "enum": list(MATERIAL_DB)},
         "layup": {"type": "string"},
         "ply_thickness": _qty(LENGTH_UNITS),
         "total_thickness": _qty(LENGTH_UNITS),
         "ply_thickness_list": {"type": "array", "items": _qty(LENGTH_UNITS)},
         "loads": {
-            "type": "object",
-            "properties": {k: _qty(FORCE_UNITS if k.startswith("N") else MOMENT_UNITS) for k in LOAD_KEYS},
-            "required": LOAD_KEYS,
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {"name": {"type": "string", "enum": LOAD_KEYS},
+                               "value": {"type": "number"},
+                               "unit": {"type": "string", "enum": list(FORCE_UNITS) + list(MOMENT_UNITS)}},
+                "required": ["name", "value", "unit"],
+            },
         },
     },
-    "required": ["material", "layup", "ply_thickness", "total_thickness", "ply_thickness_list", "loads"],
+    "required": ["fibre_words", "material", "layup", "ply_thickness", "total_thickness", "ply_thickness_list",
+                 "loads"],
+}
+
+# fibre words -> material class (checked on the ORIGINAL text, so a small LLM cannot pick the wrong class)
+MATERIAL_KEYWORDS = {
+    "GFRP": ["glass", "gfrp", "thủy tinh", "thuỷ tinh", "fiberglass", "fibreglass", "scotchply"],
+    "KEVLAR": ["kevlar", "aramid"],
+    "CFRP": ["carbon", "cfrp", "graphite", "cacbon", "các bon", "t300", "t700", "t800", "t1100", "t650",
+             "as4", "im7", "hts40", "cfrp"],
 }
 
 
@@ -187,23 +202,106 @@ TEXT:
 {text}
 
 Fields:
+- "fibre_words": the words of the text that name the fibre or material, e.g. "Glass fibre / epoxy".
 - "material": one of {materials}. Carbon or graphite fibre (T300, AS4, IM7, "sợi carbon"...) -> CFRP;
   glass fibre (E-glass, S-glass, fiberglass, "sợi thủy tinh") -> GFRP; aramid or Kevlar -> KEVLAR.
 - "layup": the stacking sequence copied exactly as written, e.g. "[0/±45]s", "[0/90]2s", "[45/-45]".
   If the plies are listed one by one, write all their angles in order separated by "/", e.g. "0/90/90/0".
-- "ply_thickness": thickness of ONE ply when all plies have the same thickness, otherwise value 0.
-- "total_thickness": the total laminate thickness, only if the text gives it instead of the ply thickness,
-  otherwise value 0.
+- "ply_thickness": thickness of ONE ply when the text gives it, otherwise value 0.
+- "total_thickness": the total laminate thickness when the text gives it, otherwise value 0.
 - "ply_thickness_list": only if the plies have DIFFERENT thicknesses: one entry per ply, same order as
   the layup. Otherwise [].
-- "loads": Nx, Ny, Nxy (force per unit length) and Mx, My, Mxy (moment per unit length) with their units.
-  Use value 0 for anything not mentioned. Keep the sign (-1.5 stays -1.5).
-  Write a decimal comma as a point (0,15 -> 0.15).
+- "loads": one entry for EACH load written in the text, with the symbol used in the text:
+  Nx, Ny, Nxy (force per unit length) or Mx, My, Mxy (moment per unit length).
+  Example: "Nxy = 300 N/m" -> {{"name": "Nxy", "value": 300, "unit": "N/m"}};
+           "My = 5 N.m/m" -> {{"name": "My", "value": 5, "unit": "N*m/m"}}.
+  Do not add loads that are not written. Keep the sign (-1.5 stays -1.5).
+Write a decimal comma as a point (0,15 -> 0.15).
 Unit names: length "m", "mm", "um" (= µm), "in"; force per length "N/m", "kN/m", "N/mm", "lbf/in";
 moment per length "N*m/m", "N*mm/mm", "N*mm/m", "kN*m/m", "lbf*in/in" (N.m/m and N·m/m are "N*m/m").
 
 Answer only with JSON.
 """
+
+_NUM = r"[-+]?\d+(?:[.,]\d+)?"
+_LAYUP_IN_TEXT = r"\[[^\[\]]+\](?:_?\d+)?(?:_?(?:sym(?:metric)?|[sSTt])(?![A-Za-z]))?"
+_LOAD_SYMBOL = r"(?<![A-Za-z])([NM])\s*_?\{?\s*(xy|yx|x|y)\}?(?![A-Za-z])"
+
+
+def _text_numbers(text):
+    """All numbers written in the text (decimal comma understood), as positive floats."""
+    nums = set()
+    for tok in re.findall(_NUM, text):
+        nums.add(abs(float(tok.replace(",", "."))))
+        for part in re.split(",", tok):  # "0,45" could also be the list 0, 45
+            nums.add(abs(float(part)))
+    return nums
+
+
+# how each unit is written in a text (the SI unit of each kind is always allowed)
+_D = r"[·.*⋅]?\s*"
+UNIT_PATTERNS = {
+    "mm": r"mm(?![a-z])", "um": r"µm|μm|\bum\b|micron|micromet", "in": r"\d\s*(?:in\b|inch)",
+    "kN/m": r"kN\s*/\s*m(?!m)", "N/mm": r"(?<![kK])N\s*/\s*mm", "lbf/in": r"lbf?\s*/\s*in",
+    "N/m": r"(?<![kK])N\s*/\s*m(?!m)",
+    "kN*m/m": rf"kN\s*{_D}m\s*/\s*m(?!m)", "N*mm/mm": rf"(?<![kK])N\s*{_D}mm\s*/\s*mm",
+    "N*mm/m": rf"(?<![kK])N\s*{_D}mm\s*/\s*m(?!m)", "N*m/m": rf"(?<![kK])N\s*{_D}m\s*/\s*m(?!m)",
+    "lbf*in/in": rf"lbf?\s*{_D}-?\s*in\s*/\s*in",
+}
+_ALWAYS = {"m", "N/m", "N*m/m", "N"}
+
+
+def _text_units(text):
+    return _ALWAYS | {u for u, p in UNIT_PATTERNS.items() if re.search(p, text)}
+
+
+def _grounded_si(si_value, nums, units, table):
+    """True if the SI value can be made from a number AND a unit that are both written in the text
+    (e.g. 5000 N/m <- '5' and 'kN/m'). Catches an LLM that converts the number but keeps the old unit."""
+    v = abs(float(si_value))
+    if v == 0:
+        return True
+    return any(abs(v - n * table[u]) <= 1e-6 * max(v, 1e-12) for n in nums for u in units if u in table)
+
+
+def _loads_from_text(text):
+    """Loads written explicitly as 'Nx = 5 kN/m', 'Mx=0,3 N.m/m' -> {name: SI value}. Only when the unit
+    is clear; everything else is left to the LLM."""
+    out = {}
+    for m in re.finditer(_LOAD_SYMBOL + r"\s*[=:]\s*(" + _NUM + r")\s*([^\s,;)]*)", text):
+        name = m.group(1) + m.group(2).replace("yx", "xy")
+        value = float(m.group(3).replace(",", "."))
+        unit_txt = m.group(4).rstrip(".")
+        table = FORCE_UNITS if name.startswith("N") else MOMENT_UNITS
+        unit = next((u for u in sorted(UNIT_PATTERNS, key=len, reverse=True)
+                     if u in table and re.fullmatch(r"(?:\d\s*)?(?:" + UNIT_PATTERNS[u] + r")", unit_txt)), None)
+        if unit is None and unit_txt in ("N/m", "N·m/m", "N.m/m", "N*m/m", "Nm/m"):
+            unit = "N/m" if name.startswith("N") else "N*m/m"
+        if value == 0:
+            out.setdefault(name, 0.0)
+        elif unit is not None:
+            out.setdefault(name, value * table[unit])
+    return out
+
+
+_WORD_NUM = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+             "twelve": 12, "sixteen": 16, "hai": 2, "ba": 3, "bốn": 4, "năm": 5, "sáu": 6, "bảy": 7, "tám": 8}
+_PLY_COUNT = r"(?<![\d.,])(\d+|" + "|".join(_WORD_NUM) + r")\s*[-‑ ]?\s*(?:plies|ply|lớp|layers?)(?!\w)"
+TOTAL_WORDS = ["total", "tổng", "overall", "laminate thickness", "chiều dày tấm", "độ dày tấm", "bề dày tấm"]
+PLY_WORDS = ["each", "per ply", "ply thickness", "ply:", "t_ply", "every ply", "mm plies", "µm plies", "um plies",
+             "mỗi lớp", "dày mỗi", "chiều dày lớp", "độ dày lớp", "chiều dày mỗi"]
+
+
+def _ply_count_in_text(text):
+    """'8-ply', '3 plies', 'two plies', '4 lớp' -> that number (None if absent or contradictory)."""
+    found = {int(m) if m.isdigit() else _WORD_NUM[m.lower()] for m in re.findall(_PLY_COUNT, text, flags=re.I)}
+    return found.pop() if len(found) == 1 else None
+
+
+def _material_from_text(text):
+    tl = text.lower()
+    found = [m for m, words in MATERIAL_KEYWORDS.items() if any(w in tl for w in words)]
+    return found[0] if len(found) == 1 else None
 
 
 def _si(q, table, what):
@@ -213,19 +311,88 @@ def _si(q, table, what):
     return float(q.get("value", 0) or 0) * table[unit]
 
 
-def build_problem(raw):
+def build_problem(raw, text=None):
     """Deterministic part of step 1: raw LLM JSON (values as written) -> CLTInput in SI units.
-    Returns (CLTInput, warnings)."""
+    If the original text is given, every LLM value is checked against it (grounding):
+    numbers that are not written in the text are dropped, a [..] layup written in the text wins,
+    the fibre class named in the text wins. Returns (CLTInput, warnings)."""
     warnings = []
-    try:
-        angles = expand_layup(raw.get("layup", ""))
-    except LayupError as e:
-        raise ValueError(f"cannot read the stacking sequence '{raw.get('layup')}': {e}") from None
-    n = len(angles)
+    nums = _text_numbers(text) if text else None
+    units = _text_units(text) if text else None
 
-    lst = [q for q in raw.get("ply_thickness_list") or [] if float(q.get("value", 0) or 0) > 0]
-    ply_t = raw.get("ply_thickness") or {}
-    tot_t = raw.get("total_thickness") or {}
+    # material
+    material = raw.get("material")
+    if text:
+        m_text = _material_from_text(text)
+        if m_text and m_text != material:
+            warnings.append(f"LLM said material {material}, text names {m_text} -> using {m_text}")
+            material = m_text
+
+    # stacking sequence
+    layup = raw.get("layup", "")
+    try:
+        angles = expand_layup(layup)
+    except LayupError as e:
+        angles, err = None, e
+    if text:
+        in_text = []
+        for cand in re.findall(_LAYUP_IN_TEXT, text):
+            try:
+                plies = expand_layup(cand)
+                if len(plies) >= 2:  # "[1]" is a citation, not a layup
+                    in_text.append(plies)
+            except LayupError:
+                pass
+        if in_text and all(a == in_text[0] for a in in_text) and angles != in_text[0]:
+            warnings.append(f"LLM wrote layup '{layup}', the text has {re.findall(_LAYUP_IN_TEXT, text)[0]}"
+                            " -> using the text")
+            angles = in_text[0]
+        elif not in_text and angles is not None and nums is not None:
+            missing = sorted({a for a in angles if a != 0 and abs(a) not in nums})
+            if missing:
+                raise ValueError(f"the layup '{layup}' has angle(s) {missing} that are not written in the text")
+    if angles is None:
+        raise ValueError(f"cannot read the stacking sequence '{layup}': {err}")
+    n = len(angles)
+    from_text = bool(text) and bool(in_text)  # the [..] notation in the text decided the plies
+    stated = _ply_count_in_text(text) if text else None
+    if stated and stated != n:
+        if from_text:
+            warnings.append(f"the text says {stated} plies but its layup notation gives {n} -> using {n}")
+        else:
+            raise ValueError(f"the text says {stated} plies but the layup '{layup}' has {n} plies")
+
+    # thickness: drop values that cannot be made from a number + unit written in the text
+    def keep(q, what):
+        if q and nums is not None and float(q.get("value", 0) or 0) > 0 and (
+                q.get("unit") not in LENGTH_UNITS or
+                not _grounded_si(_si(q, LENGTH_UNITS, what), nums, units, LENGTH_UNITS)):
+            warnings.append(f"{what} {q.get('value')} {q.get('unit')} is not written in the text -> ignored")
+            return {"value": 0, "unit": "mm"}
+        return q or {}
+
+    lst = [keep(q, "ply thickness") for q in raw.get("ply_thickness_list") or []]
+    lst = [q for q in lst if float(q.get("value", 0) or 0) > 0]
+    ply_t = keep(raw.get("ply_thickness"), "ply thickness")
+    tot_t = keep(raw.get("total_thickness"), "total thickness")
+    if lst and len(lst) != n and (len({(q["value"], q["unit"]) for q in lst}) > 1 or
+                                  (not from_text and len(lst) >= 2)):
+        raise ValueError(f"{len(lst)} ply thicknesses were given but the layup '{layup}' has {n} plies")
+    # ply thickness and total thickness both given but they disagree: the words of the text decide
+    if float(ply_t.get("value", 0) or 0) > 0 and float(tot_t.get("value", 0) or 0) > 0:
+        ply_si, tot_si = _si(ply_t, LENGTH_UNITS, "ply thickness"), _si(tot_t, LENGTH_UNITS, "total thickness")
+        if abs(ply_si * n - tot_si) > 0.01 * tot_si:
+            tl = (text or "").lower()
+            says_total, says_ply = any(w in tl for w in TOTAL_WORDS), any(w in tl for w in PLY_WORDS)
+            if says_total and not says_ply:
+                warnings.append(f"ply thickness x {n} != total thickness; the text speaks of a total -> using total")
+                ply_t = {"value": 0, "unit": "mm"}
+            elif says_ply and not says_total:
+                warnings.append(f"ply thickness x {n} != total thickness; the text speaks of each ply -> using ply")
+                tot_t = {"value": 0, "unit": "mm"}
+            else:
+                raise ValueError(f"ply thickness {ply_t.get('value')} {ply_t.get('unit')} x {n} plies does not "
+                                 f"match total thickness {tot_t.get('value')} {tot_t.get('unit')}")
     if lst and len(lst) == n:
         thick = [_si(q, LENGTH_UNITS, "ply thickness") for q in lst]
     elif float(ply_t.get("value", 0) or 0) > 0:
@@ -245,15 +412,43 @@ def build_problem(raw):
         thick = [t / 1000.0 if t > 0.005 else t for t in thick]
         warnings.append("ply thickness > 5 mm looked like millimetres -> divided by 1000")
 
-    loads = {}
-    for k in LOAD_KEYS:
-        q = (raw.get("loads") or {}).get(k) or {"value": 0, "unit": "N/m" if k.startswith("N") else "N*m/m"}
-        loads[k] = _si(q, FORCE_UNITS if k.startswith("N") else MOMENT_UNITS, k)
+    # loads: list of {name, value, unit}; check symbol, unit kind and value against the text
+    loads = {k: 0.0 for k in LOAD_KEYS}
+    symbols_in_text = None
+    if text:
+        symbols_in_text = {(a + b.replace("yx", "xy")) for a, b in re.findall(_LOAD_SYMBOL, text)}
+    for q in raw.get("loads") or []:
+        k, v, unit = q.get("name"), float(q.get("value", 0) or 0), q.get("unit")
+        if k not in loads or v == 0:
+            continue
+        table = FORCE_UNITS if k.startswith("N") else MOMENT_UNITS
+        if unit not in table:
+            warnings.append(f"{k} = {v:g} has unit '{unit}', which is not a "
+                            f"{'force' if k.startswith('N') else 'moment'} per length -> ignored")
+            continue
+        if symbols_in_text and k not in symbols_in_text:
+            warnings.append(f"{k} = {v:g} {unit}: the text has no {k} -> ignored")
+            continue
+        if nums is not None and not _grounded_si(v * table[unit], nums, units, table):
+            warnings.append(f"{k} = {v:g} {unit} is not written in the text -> ignored")
+            continue
+        if loads[k] != 0 and loads[k] != v * table[unit]:
+            warnings.append(f"{k} given twice by the LLM -> keeping the first value")
+            continue
+        loads[k] = v * table[unit]
+    # loads written explicitly as "Nx = 5 kN/m" are read by Python too; the text wins over the LLM
+    if text:
+        for k, si in _loads_from_text(text).items():
+            if abs(loads[k] - si) > 1e-9 * max(abs(si), 1e-12):
+                warnings.append(f"LLM read {k} = {loads[k]:g}, the text says {k} = {si:g} (SI) -> using the text")
+                loads[k] = si
     if all(v == 0 for v in loads.values()):
+        if text and re.search(_LOAD_SYMBOL + r"\s*[=:]\s*[-+]?\d*[.,]?\d*[1-9]", text):
+            raise ValueError("no load was read, but the text gives a non-zero load")
         warnings.append("all loads are 0")
 
     problem = CLTInput.model_validate({
-        "material": raw.get("material"),
+        "material": material,
         "plies": [{"angle": a, "thickness": t} for a, t in zip(angles, thick)],
         "loads": loads,
     })
@@ -261,14 +456,28 @@ def build_problem(raw):
 
 
 def parse_input(user_text, backend=None):
+    """LLM reads the text -> Python checks the answer against the text. If a check fails, the LLM gets
+    one more try with the list of problems (self-correction); if it fails again, a clear error is raised."""
     global LAST_PARSE
-    prompt = PARSE_PROMPT.format(text=user_text.strip(), materials=", ".join(MATERIAL_DB))
+    base = PARSE_PROMPT.format(text=user_text.strip(), materials=", ".join(MATERIAL_DB))
+    prompt = base
     t0 = time.time()
-    text = ask_llm(prompt, json_schema=EXTRACT_SCHEMA, backend=backend)
-    raw = _extract_json(text)
-    LAST_PARSE = {"raw": raw, "backend": LAST_BACKEND, "seconds": round(time.time() - t0, 2), "warnings": []}
-    problem, warnings = build_problem(raw)
-    LAST_PARSE["warnings"] = warnings
+    attempts = []
+    for attempt in (1, 2):
+        raw = _extract_json(ask_llm(prompt, json_schema=EXTRACT_SCHEMA, backend=backend))
+        attempts.append(raw)
+        try:
+            problem, warnings = build_problem(raw, user_text)
+            break
+        except ValueError as e:
+            if attempt == 2:
+                LAST_PARSE = {"raw": raw, "attempts": attempts, "backend": LAST_BACKEND, "error": str(e)}
+                raise ValueError(f"the LLM could not read the problem reliably: {e}") from None
+            print(f"[llm.py] check failed ({e}) -> asking the LLM to correct its answer")
+            prompt = (base + f"\nYour previous answer was:\n{json.dumps(raw, ensure_ascii=False)}\n"
+                      f"It has this problem: {e}.\nRead the TEXT again and answer with the corrected JSON.")
+    LAST_PARSE = {"raw": raw, "attempts": attempts, "backend": LAST_BACKEND,
+                  "seconds": round(time.time() - t0, 2), "warnings": warnings}
     for w in warnings:
         print(f"[llm.py] note: {w}")
     return problem

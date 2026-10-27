@@ -1,0 +1,1949 @@
+{
+ "args": {
+  "set": "holdout3",
+  "versions": "v1,v3",
+  "backends": "hf,ollama",
+  "repeat": 1,
+  "cases": ""
+ },
+ "rows": [
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T1 en, S2-glass [90/0/90], kN/m mixed, Mxy",
+   "correct": false,
+   "llm_only_correct": null,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nx=0 (want 900)",
+    "Ny=0 (want 2400)",
+    "Mxy=0 (want 0.15)"
+   ],
+   "seconds": 1.46,
+   "raw": null,
+   "attempts": null,
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 90.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0003
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T2 vi, [0/90/±45]s, kN/m + moment",
+   "correct": false,
+   "llm_only_correct": null,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nx=0 (want 4000)",
+    "Mx=0 (want 3)"
+   ],
+   "seconds": 0.78,
+   "raw": null,
+   "attempts": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T3 en, aramid [±60]s, negative shear",
+   "correct": false,
+   "llm_only_correct": null,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nx=0 (want 300)",
+    "Nxy=0 (want -75)"
+   ],
+   "seconds": 0.84,
+   "raw": null,
+   "attempts": null,
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 60.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T4 en, imperial thickness + lbf·in/in moment",
+   "correct": false,
+   "llm_only_correct": null,
+   "checks": {},
+   "errors": [
+    "AttributeError: 'NoneType' object has no attribute 'find'"
+   ],
+   "seconds": 1.09,
+   "raw": null,
+   "attempts": null,
+   "parsed": null
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T5 vi, angles listed, µm",
+   "correct": false,
+   "llm_only_correct": null,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nxy=0 (want 500)"
+   ],
+   "seconds": 0.59,
+   "raw": null,
+   "attempts": null,
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T6 en, 'Nx = Ny = 1.2 kN/m'",
+   "correct": false,
+   "llm_only_correct": null,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nx=0 (want 1200)",
+    "Ny=0 (want 1200)"
+   ],
+   "seconds": 0.86,
+   "raw": null,
+   "attempts": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T1 en, S2-glass [90/0/90], kN/m mixed, Mxy",
+   "correct": false,
+   "llm_only_correct": null,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Mxy=15 (want 0.15)"
+   ],
+   "seconds": 11.79,
+   "raw": null,
+   "attempts": null,
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 90.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0003
+     }
+    ],
+    "loads": {
+     "Nx": 900.0,
+     "Ny": 2400.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 15.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T2 vi, [0/90/±45]s, kN/m + moment",
+   "correct": false,
+   "llm_only_correct": null,
+   "checks": {
+    "material": true,
+    "n_plies": false,
+    "angles": false,
+    "thickness": false,
+    "loads": false
+   },
+   "errors": [
+    "angles [0.0, 90.0, 45.0, -45.0] (want [0.0, 90.0, 45.0, -45.0, -45.0, 45.0, 90.0, 0.0])",
+    "thickness [0.000125, 0.000125, 0.000125, 0.000125] (want [0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002])",
+    "Mx=3000 (want 3)"
+   ],
+   "seconds": 5.14,
+   "raw": null,
+   "attempts": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 4000.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 3000.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T3 en, aramid [±60]s, negative shear",
+   "correct": false,
+   "llm_only_correct": null,
+   "checks": {
+    "material": true,
+    "n_plies": false,
+    "angles": false,
+    "thickness": false,
+    "loads": true
+   },
+   "errors": [
+    "angles [60.0] (want [60.0, -60.0, -60.0, 60.0])",
+    "thickness [0.000125] (want [0.000125, 0.000125, 0.000125, 0.000125])"
+   ],
+   "seconds": 3.99,
+   "raw": null,
+   "attempts": null,
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 60.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 300.0,
+     "Ny": 0.0,
+     "Nxy": -75.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T4 en, imperial thickness + lbf·in/in moment",
+   "correct": false,
+   "llm_only_correct": null,
+   "checks": {
+    "material": true,
+    "n_plies": false,
+    "angles": false,
+    "thickness": false,
+    "loads": false
+   },
+   "errors": [
+    "angles [0.0, 45.0, 90.0, -45.0] (want [0.0, 45.0, 90.0, -45.0, -45.0, 90.0, 45.0, 0.0])",
+    "thickness [7.2e-06, 7.2e-06, 7.2e-06, 7.2e-06] (want [0.00018287999999999998, 0.00018287999999999998, 0.00018287999999999998, 0.00018287999999999998, 0.00018287999999999998, 0.00018287999999999998, 0.00018287999999999998, 0.00018287999999999998])",
+    "Nx=5 (want 0)",
+    "Mx=0 (want 22.2411)"
+   ],
+   "seconds": 5.23,
+   "raw": null,
+   "attempts": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 7.2e-06
+     },
+     {
+      "angle": 45.0,
+      "thickness": 7.2e-06
+     },
+     {
+      "angle": 90.0,
+      "thickness": 7.2e-06
+     },
+     {
+      "angle": -45.0,
+      "thickness": 7.2e-06
+     }
+    ],
+    "loads": {
+     "Nx": 5.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T5 vi, angles listed, µm",
+   "correct": false,
+   "llm_only_correct": null,
+   "checks": {
+    "material": false,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [
+    "material CFRP (want GFRP)"
+   ],
+   "seconds": 5.19,
+   "raw": null,
+   "attempts": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 500.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T6 en, 'Nx = Ny = 1.2 kN/m'",
+   "correct": true,
+   "llm_only_correct": null,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 5.04,
+   "raw": null,
+   "attempts": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 1200.0,
+     "Ny": 1200.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v3",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T1 en, S2-glass [90/0/90], kN/m mixed, Mxy",
+   "correct": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 2.36,
+   "raw": {
+    "fibre_words": "S2-glass/epoxy",
+    "material": "GFRP",
+    "layup": "[90/0/90]",
+    "ply_thickness": {
+     "value": 0.3,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 900,
+      "unit": "N/m"
+     },
+     {
+      "name": "Ny",
+      "value": 2.4,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Mxy",
+      "value": 0.15,
+      "unit": "N*m/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "S2-glass/epoxy",
+     "material": "GFRP",
+     "layup": "[90/0/90]",
+     "ply_thickness": {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 900,
+       "unit": "N/m"
+      },
+      {
+       "name": "Ny",
+       "value": 2.4,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Mxy",
+       "value": 0.15,
+       "unit": "N*m/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 90.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0003
+     }
+    ],
+    "loads": {
+     "Nx": 900.0,
+     "Ny": 2400.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.15
+    }
+   }
+  },
+  {
+   "version": "v3",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T2 vi, [0/90/±45]s, kN/m + moment",
+   "correct": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 0.84,
+   "raw": {
+    "fibre_words": "CFRP",
+    "material": "CFRP",
+    "layup": "[0/90/±45]s",
+    "ply_thickness": {
+     "value": 0.2,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 4,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Mx",
+      "value": 3,
+      "unit": "N*m/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "CFRP",
+     "material": "CFRP",
+     "layup": "[0/90/±45]s",
+     "ply_thickness": {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 4,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Mx",
+       "value": 3,
+       "unit": "N*m/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 4000.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 3.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v3",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T3 en, aramid [±60]s, negative shear",
+   "correct": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 2.01,
+   "raw": {
+    "fibre_words": "Aramid/epoxy",
+    "material": "KEVLAR",
+    "layup": "[±60]s",
+    "ply_thickness": {
+     "value": 0.125,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 300,
+      "unit": "N/m"
+     },
+     {
+      "name": "Nxy",
+      "value": -75,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Aramid/epoxy",
+     "material": "KEVLAR",
+     "layup": "[±60]s",
+     "ply_thickness": {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 300,
+       "unit": "N/m"
+      },
+      {
+       "name": "Nxy",
+       "value": -75,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 60.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 300.0,
+     "Ny": 0.0,
+     "Nxy": -75.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v3",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T4 en, imperial thickness + lbf·in/in moment",
+   "correct": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 1.07,
+   "raw": {
+    "fibre_words": "IM7/8552 tape",
+    "material": "CFRP",
+    "layup": "[0/45/90/-45]s",
+    "ply_thickness": {
+     "value": 0.0072,
+     "unit": "in"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "in"
+    },
+    "ply_thickness_list": [],
+    "loads": [
+     {
+      "name": "Mx",
+      "value": 5,
+      "unit": "lbf*in/in"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "IM7/8552 tape",
+     "material": "CFRP",
+     "layup": "[0/45/90/-45]s",
+     "ply_thickness": {
+      "value": 0.0072,
+      "unit": "in"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "in"
+     },
+     "ply_thickness_list": [],
+     "loads": [
+      {
+       "name": "Mx",
+       "value": 5,
+       "unit": "lbf*in/in"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00018287999999999998
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 22.2411080763025,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v3",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T5 vi, angles listed, µm",
+   "correct": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 0.94,
+   "raw": {
+    "fibre_words": "sợi thủy tinh",
+    "material": "GFRP",
+    "layup": "30/-30/-30/30",
+    "ply_thickness": {
+     "value": 150,
+     "unit": "um"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "um"
+    },
+    "ply_thickness_list": [],
+    "loads": [
+     {
+      "name": "Nxy",
+      "value": 500,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "sợi thủy tinh",
+     "material": "GFRP",
+     "layup": "30/-30/-30/30",
+     "ply_thickness": {
+      "value": 150,
+      "unit": "um"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "um"
+     },
+     "ply_thickness_list": [],
+     "loads": [
+      {
+       "name": "Nxy",
+       "value": 500,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 500.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v3",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "T6 en, 'Nx = Ny = 1.2 kN/m'",
+   "correct": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 0.64,
+   "raw": {
+    "fibre_words": "Carbon fibre",
+    "material": "CFRP",
+    "layup": "0/90/90/0",
+    "ply_thickness": {
+     "value": 0.2,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 1.2,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Ny",
+      "value": 1.2,
+      "unit": "kN/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Carbon fibre",
+     "material": "CFRP",
+     "layup": "0/90/90/0",
+     "ply_thickness": {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 1.2,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Ny",
+       "value": 1.2,
+       "unit": "kN/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 1200.0,
+     "Ny": 1200.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v3",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T1 en, S2-glass [90/0/90], kN/m mixed, Mxy",
+   "correct": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 11.05,
+   "raw": {
+    "fibre_words": "S2-glass/epoxy",
+    "material": "GFRP",
+    "layup": "[90/0/90]",
+    "ply_thickness": {
+     "value": 0.3,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     {
+      "value": 0.3,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 900,
+      "unit": "N/m"
+     },
+     {
+      "name": "Ny",
+      "value": 2400,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Mxy",
+      "value": 150,
+      "unit": "N*mm/mm"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "S2-glass/epoxy",
+     "material": "GFRP",
+     "layup": "[90/0/90]",
+     "ply_thickness": {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.3,
+       "unit": "mm"
+      },
+      {
+       "value": 0.3,
+       "unit": "mm"
+      },
+      {
+       "value": 0.3,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 900,
+       "unit": "N/m"
+      },
+      {
+       "name": "Ny",
+       "value": 2400,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Mxy",
+       "value": 150,
+       "unit": "N*mm/mm"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 90.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0003
+     }
+    ],
+    "loads": {
+     "Nx": 900.0,
+     "Ny": 2400.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.15
+    }
+   }
+  },
+  {
+   "version": "v3",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T2 vi, [0/90/±45]s, kN/m + moment",
+   "correct": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 5.35,
+   "raw": {
+    "fibre_words": "CFRP",
+    "material": "CFRP",
+    "layup": "[0/90/±45]s",
+    "ply_thickness": {
+     "value": 0.2,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 4,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Mx",
+      "value": 3,
+      "unit": "N*m/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "CFRP",
+     "material": "CFRP",
+     "layup": "[0/90/±45]s",
+     "ply_thickness": {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 4,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Mx",
+       "value": 3,
+       "unit": "N*m/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 4000.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 3.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v3",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T3 en, aramid [±60]s, negative shear",
+   "correct": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 4.87,
+   "raw": {
+    "fibre_words": "Aramid/epoxy",
+    "material": "KEVLAR",
+    "layup": "[±60]s",
+    "ply_thickness": {
+     "value": 0.125,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 300,
+      "unit": "N/m"
+     },
+     {
+      "name": "Nxy",
+      "value": -75,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Aramid/epoxy",
+     "material": "KEVLAR",
+     "layup": "[±60]s",
+     "ply_thickness": {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 300,
+       "unit": "N/m"
+      },
+      {
+       "name": "Nxy",
+       "value": -75,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 60.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 300.0,
+     "Ny": 0.0,
+     "Nxy": -75.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v3",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T4 en, imperial thickness + lbf·in/in moment",
+   "correct": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 5.6,
+   "raw": {
+    "fibre_words": "IM7/8552 tape",
+    "material": "CFRP",
+    "layup": "[0/45/90/-45]s",
+    "ply_thickness": {
+     "value": 0.0072,
+     "unit": "in"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "in"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.0072,
+      "unit": "in"
+     },
+     {
+      "value": 0.0072,
+      "unit": "in"
+     },
+     {
+      "value": 0.0072,
+      "unit": "in"
+     },
+     {
+      "value": 0.0072,
+      "unit": "in"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Mx",
+      "value": 5,
+      "unit": "lbf*in/in"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "IM7/8552 tape",
+     "material": "CFRP",
+     "layup": "[0/45/90/-45]s",
+     "ply_thickness": {
+      "value": 0.0072,
+      "unit": "in"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "in"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.0072,
+       "unit": "in"
+      },
+      {
+       "value": 0.0072,
+       "unit": "in"
+      },
+      {
+       "value": 0.0072,
+       "unit": "in"
+      },
+      {
+       "value": 0.0072,
+       "unit": "in"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Mx",
+       "value": 5,
+       "unit": "lbf*in/in"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00018287999999999998
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 22.2411080763025,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v3",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T5 vi, angles listed, µm",
+   "correct": false,
+   "llm_only_correct": false,
+   "checks": {},
+   "errors": [
+    "ValueError: the LLM could not read the problem reliably: the layup '0/30/-30/30/90' has angle(s) [90.0] that are not written in the text"
+   ],
+   "seconds": 10.77,
+   "raw": null,
+   "attempts": [
+    {
+     "fibre_words": "sợi thủy tinh",
+     "material": "GFRP",
+     "layup": "0/-30/-30/30/90",
+     "ply_thickness": {
+      "value": 150,
+      "unit": "um"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "um"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 150,
+       "unit": "um"
+      },
+      {
+       "value": 150,
+       "unit": "um"
+      },
+      {
+       "value": 150,
+       "unit": "um"
+      },
+      {
+       "value": 150,
+       "unit": "um"
+      },
+      {
+       "value": 150,
+       "unit": "um"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nxy",
+       "value": 500,
+       "unit": "N/m"
+      }
+     ]
+    },
+    {
+     "fibre_words": "sợi thủy tinh",
+     "material": "GFRP",
+     "layup": "0/30/-30/30/90",
+     "ply_thickness": {
+      "value": 150,
+      "unit": "um"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "um"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 150,
+       "unit": "um"
+      },
+      {
+       "value": 150,
+       "unit": "um"
+      },
+      {
+       "value": 150,
+       "unit": "um"
+      },
+      {
+       "value": 150,
+       "unit": "um"
+      },
+      {
+       "value": 150,
+       "unit": "um"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nxy",
+       "value": 500,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": null
+  },
+  {
+   "version": "v3",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T6 en, 'Nx = Ny = 1.2 kN/m'",
+   "correct": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 6.0,
+   "raw": {
+    "fibre_words": "Carbon fibre",
+    "material": "CFRP",
+    "layup": "0/90/90/0",
+    "ply_thickness": {
+     "value": 0.2,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 1.2,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Ny",
+      "value": 1.2,
+      "unit": "kN/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Carbon fibre",
+     "material": "CFRP",
+     "layup": "0/90/90/0",
+     "ply_thickness": {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 1.2,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Ny",
+       "value": 1.2,
+       "unit": "kN/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 1200.0,
+     "Ny": 1200.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  }
+ ]
+}
