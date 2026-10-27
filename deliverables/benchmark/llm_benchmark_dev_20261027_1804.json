@@ -1,0 +1,1465 @@
+{
+ "args": {
+  "set": "dev",
+  "versions": "v1,v2",
+  "backends": "hf",
+  "repeat": 1,
+  "cases": ""
+ },
+ "rows": [
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D1 en, 4 plies list, mm",
+   "correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nx=0 (want 1000)",
+    "Ny=0 (want 500)",
+    "Nxy=0 (want 100)"
+   ],
+   "seconds": 5.95,
+   "raw": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D2 en, [..]s 8 plies (= demo.py case)",
+   "correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nx=0 (want 1000)",
+    "Ny=0 (want 500)",
+    "Nxy=0 (want 100)"
+   ],
+   "seconds": 0.96,
+   "raw": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D3 en, [..]2s, kN/m, negative load",
+   "correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": false,
+    "angles": false,
+    "thickness": false,
+    "loads": false
+   },
+   "errors": [
+    "angles [0.0, 90.0, 90.0, 0.0] (want [0.0, 90.0, 0.0, 90.0, 90.0, 0.0, 90.0, 0.0])",
+    "thickness [0.0002, 0.0002, 0.0002, 0.0002] (want [0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002])",
+    "Nx=0 (want 2000)",
+    "Ny=0 (want -1500)"
+   ],
+   "seconds": 2.1,
+   "raw": null,
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D4 en, Kevlar, thickness in m, moment",
+   "correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nx=0 (want 500)",
+    "Mx=0 (want 2)"
+   ],
+   "seconds": 0.56,
+   "raw": null,
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D5 vi, [0/±45]s, decimal comma, moment",
+   "correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nx=0 (want 1200)",
+    "Nxy=0 (want 300)",
+    "My=0 (want 5)"
+   ],
+   "seconds": 1.67,
+   "raw": null,
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D6 en, total thickness, N/mm",
+   "correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nx=0 (want 1500)",
+    "Ny=0 (want 500)"
+   ],
+   "seconds": 1.05,
+   "raw": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D7 en, different ply thickness, µm, pure bending",
+   "correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Mx=0 (want 10)",
+    "My=0 (want -4)",
+    "Mxy=0 (want 1)"
+   ],
+   "seconds": 1.1,
+   "raw": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0001
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0001
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D8 en, T300/5208, [±30]2s, negative shear",
+   "correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": false,
+    "angles": false,
+    "thickness": false,
+    "loads": false
+   },
+   "errors": [
+    "angles [30.0, -30.0, 30.0, -30.0] (want [30.0, -30.0, 30.0, -30.0, -30.0, 30.0, -30.0, 30.0])",
+    "thickness [0.000127, 0.000127, 0.000127, 0.000127] (want [0.000127, 0.000127, 0.000127, 0.000127, 0.000127, 0.000127, 0.000127, 0.000127])",
+    "Nxy=0 (want -250)"
+   ],
+   "seconds": 0.89,
+   "raw": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.000127
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D9 vi, 5 plies list, kN/m, N·mm/m",
+   "correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nx=0 (want 3000)",
+    "Mxy=0 (want 1.5)"
+   ],
+   "seconds": 1.62,
+   "raw": null,
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 60.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00025
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v1",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D10 en, aramid 2 plies, all 6 loads",
+   "correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": false
+   },
+   "errors": [
+    "Nx=0 (want 800)",
+    "Ny=0 (want 200)",
+    "Nxy=0 (want 50)",
+    "Mx=0 (want 0.5)",
+    "My=0 (want 0.2)",
+    "Mxy=0 (want 0.1)"
+   ],
+   "seconds": 0.66,
+   "raw": null,
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 45.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0003
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v2",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D1 en, 4 plies list, mm",
+   "correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 1.12,
+   "raw": {
+    "material": "CFRP",
+    "layup": "0/45/-45/90",
+    "ply_thickness": {
+     "value": 0.125,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": {
+     "Nx": {
+      "value": 1000,
+      "unit": "N/m"
+     },
+     "Ny": {
+      "value": 500,
+      "unit": "N/m"
+     },
+     "Nxy": {
+      "value": 100,
+      "unit": "N/m"
+     },
+     "Mx": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "My": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "Mxy": {
+      "value": 0,
+      "unit": "N*m/m"
+     }
+    }
+   },
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 1000.0,
+     "Ny": 500.0,
+     "Nxy": 100.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v2",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D2 en, [..]s 8 plies (= demo.py case)",
+   "correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 1.16,
+   "raw": {
+    "material": "CFRP",
+    "layup": "[0/45/-45/90]s",
+    "ply_thickness": {
+     "value": 0.125,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": {
+     "Nx": {
+      "value": 1000,
+      "unit": "N/m"
+     },
+     "Ny": {
+      "value": 500,
+      "unit": "N/m"
+     },
+     "Nxy": {
+      "value": 100,
+      "unit": "N/m"
+     },
+     "Mx": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "My": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "Mxy": {
+      "value": 0,
+      "unit": "N*m/m"
+     }
+    }
+   },
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 1000.0,
+     "Ny": 500.0,
+     "Nxy": 100.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v2",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D3 en, [..]2s, kN/m, negative load",
+   "correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 0.82,
+   "raw": {
+    "material": "GFRP",
+    "layup": "[0/90]2s",
+    "ply_thickness": {
+     "value": 0.2,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": {
+     "Nx": {
+      "value": 2,
+      "unit": "kN/m"
+     },
+     "Ny": {
+      "value": -1.5,
+      "unit": "kN/m"
+     },
+     "Nxy": {
+      "value": 0,
+      "unit": "kN/m"
+     },
+     "Mx": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "My": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "Mxy": {
+      "value": 0,
+      "unit": "N*m/m"
+     }
+    }
+   },
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 2000.0,
+     "Ny": -1500.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v2",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D4 en, Kevlar, thickness in m, moment",
+   "correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 1.35,
+   "raw": {
+    "material": "KEVLAR",
+    "layup": "0/90/0",
+    "ply_thickness": {
+     "value": 0.00015,
+     "unit": "m"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "m"
+    },
+    "ply_thickness_list": [],
+    "loads": {
+     "Nx": {
+      "value": 500,
+      "unit": "N/m"
+     },
+     "Ny": {
+      "value": 0,
+      "unit": "N/m"
+     },
+     "Nxy": {
+      "value": 0,
+      "unit": "N/m"
+     },
+     "Mx": {
+      "value": 2,
+      "unit": "N*m/m"
+     },
+     "My": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "Mxy": {
+      "value": 0,
+      "unit": "N*m/m"
+     }
+    }
+   },
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 500.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 2.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v2",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D5 vi, [0/±45]s, decimal comma, moment",
+   "correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 0.96,
+   "raw": {
+    "material": "GFRP",
+    "layup": "[0/±45]s",
+    "ply_thickness": {
+     "value": 0.15,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": {
+     "Nx": {
+      "value": 1200,
+      "unit": "N/m"
+     },
+     "Ny": {
+      "value": 0,
+      "unit": "N/m"
+     },
+     "Nxy": {
+      "value": 300,
+      "unit": "N/m"
+     },
+     "Mx": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "My": {
+      "value": 5,
+      "unit": "N*m/m"
+     },
+     "Mxy": {
+      "value": 0,
+      "unit": "N*m/m"
+     }
+    }
+   },
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 1200.0,
+     "Ny": 0.0,
+     "Nxy": 300.0,
+     "Mx": 0.0,
+     "My": 5.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v2",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D6 en, total thickness, N/mm",
+   "correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 1.72,
+   "raw": {
+    "material": "CFRP",
+    "layup": "[0/90/45/-45]s",
+    "ply_thickness": {
+     "value": 0.15,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 1.2,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": {
+     "Nx": {
+      "value": 1.5,
+      "unit": "N/mm"
+     },
+     "Ny": {
+      "value": 0.5,
+      "unit": "N/mm"
+     },
+     "Nxy": {
+      "value": 0,
+      "unit": "N/mm"
+     },
+     "Mx": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "My": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "Mxy": {
+      "value": 0,
+      "unit": "N*m/m"
+     }
+    }
+   },
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 1500.0,
+     "Ny": 500.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v2",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D7 en, different ply thickness, µm, pure bending",
+   "correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 0.8,
+   "raw": {
+    "material": "CFRP",
+    "layup": "0/90/90/0",
+    "ply_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 200,
+      "unit": "um"
+     },
+     {
+      "value": 100,
+      "unit": "um"
+     },
+     {
+      "value": 100,
+      "unit": "um"
+     },
+     {
+      "value": 200,
+      "unit": "um"
+     }
+    ],
+    "loads": {
+     "Nx": {
+      "value": 0,
+      "unit": "N/m"
+     },
+     "Ny": {
+      "value": 0,
+      "unit": "N/m"
+     },
+     "Nxy": {
+      "value": 0,
+      "unit": "N/m"
+     },
+     "Mx": {
+      "value": 10,
+      "unit": "N*m/m"
+     },
+     "My": {
+      "value": -4,
+      "unit": "N*m/m"
+     },
+     "Mxy": {
+      "value": 1,
+      "unit": "N*m/m"
+     }
+    }
+   },
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00019999999999999998
+     },
+     {
+      "angle": 90.0,
+      "thickness": 9.999999999999999e-05
+     },
+     {
+      "angle": 90.0,
+      "thickness": 9.999999999999999e-05
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00019999999999999998
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 10.0,
+     "My": -4.0,
+     "Mxy": 1.0
+    }
+   }
+  },
+  {
+   "version": "v2",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D8 en, T300/5208, [±30]2s, negative shear",
+   "correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 0.76,
+   "raw": {
+    "material": "CFRP",
+    "layup": "[±30]2s",
+    "ply_thickness": {
+     "value": 0.127,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": {
+     "Nx": {
+      "value": 0,
+      "unit": "N/m"
+     },
+     "Ny": {
+      "value": 0,
+      "unit": "N/m"
+     },
+     "Nxy": {
+      "value": -250,
+      "unit": "N/m"
+     },
+     "Mx": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "My": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "Mxy": {
+      "value": 0,
+      "unit": "N*m/m"
+     }
+    }
+   },
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.000127
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": -250.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    }
+   }
+  },
+  {
+   "version": "v2",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D9 vi, 5 plies list, kN/m, N·mm/m",
+   "correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 1.31,
+   "raw": {
+    "material": "CFRP",
+    "layup": "0/30/60/90/0",
+    "ply_thickness": {
+     "value": 0.25,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": {
+     "Nx": {
+      "value": 3,
+      "unit": "kN/m"
+     },
+     "Ny": {
+      "value": 0,
+      "unit": "N/m"
+     },
+     "Nxy": {
+      "value": 0,
+      "unit": "N/m"
+     },
+     "Mx": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "My": {
+      "value": 0,
+      "unit": "N*m/m"
+     },
+     "Mxy": {
+      "value": 1500,
+      "unit": "N*mm/m"
+     }
+    }
+   },
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 60.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00025
+     }
+    ],
+    "loads": {
+     "Nx": 3000.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 1.5
+    }
+   }
+  },
+  {
+   "version": "v2",
+   "backend": "hf",
+   "repeat": 0,
+   "case": "D10 en, aramid 2 plies, all 6 loads",
+   "correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 32.34,
+   "raw": {
+    "material": "KEVLAR",
+    "layup": "[45/-45]",
+    "ply_thickness": {
+     "value": 0.3,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": {
+     "Nx": {
+      "value": 800,
+      "unit": "N/m"
+     },
+     "Ny": {
+      "value": 200,
+      "unit": "N/m"
+     },
+     "Nxy": {
+      "value": 50,
+      "unit": "N/m"
+     },
+     "Mx": {
+      "value": 0.5,
+      "unit": "N*m/m"
+     },
+     "My": {
+      "value": 0.2,
+      "unit": "N*m/m"
+     },
+     "Mxy": {
+      "value": 0.1,
+      "unit": "N*m/m"
+     }
+    }
+   },
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 45.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0003
+     }
+    ],
+    "loads": {
+     "Nx": 800.0,
+     "Ny": 200.0,
+     "Nxy": 50.0,
+     "Mx": 0.5,
+     "My": 0.2,
+     "Mxy": 0.1
+    }
+   }
+  }
+ ]
+}
