@@ -34,8 +34,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 from .evaluate import Evaluator, Problem
-from .rules import (EMPTY, FAMILY_OF_PLY, PLY, STACK, contiguity_ok_batch, full_laminate,
-                    satisfies)
+from .rules import FAMILY_OF_PLY, PLY, contiguity_ok_batch, full_laminate, satisfies
 
 CHUNK = 1 << 19
 
@@ -303,8 +302,7 @@ def count_upper_bounds(problem: Problem) -> Dict:
             continue
         plies = enc.decode(np.array([np.repeat(np.arange(len(c)), c) for c in tuples], dtype=np.int8))
         counts = np.stack([(plies == k).sum(axis=1) for k in range(4)], axis=1)
-        strength = Problem(**{**problem.__dict__, "criteria": tuple(c for c in problem.criteria if c != "buckling")}) \
-            if "buckling" in problem.criteria else problem
+        strength = replace(problem, criteria=tuple(c for c in problem.criteria if c != "buckling"))
         ub = Evaluator(strength).compute_plies(plies)["margin"] if strength.criteria else np.full(len(plies), np.inf)
         if "buckling" in problem.criteria and problem.has_compression:
             j = np.arange(W)[::-1]

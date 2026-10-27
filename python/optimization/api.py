@@ -23,7 +23,7 @@ from .evaluate import Plate, Problem, analyze_design
 from .exhaustive import exhaustive, strength_only_exact
 from .ga import GAConfig, GeneticAlgorithm
 from .material import DEFAULT_PLY_THICKNESS, Material, get_material
-from .rules import ANGLES, Rules, check_rules, full_laminate, notation
+from .rules import Rules, check_rules, full_laminate, notation
 
 
 @dataclass

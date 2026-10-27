@@ -12,7 +12,7 @@ laminates of the same ply count).
 """
 from __future__ import annotations
 
-from typing import Dict, Optional, Sequence
+from typing import Dict, Sequence
 
 import numpy as np
 

@@ -4,6 +4,7 @@ REM  run_optimization.bat - Layer 1: stacking sequence optimization (no LLM)
 REM    run_optimization.bat           tests + all experiments (about 1-1.5 hours on 20 cores)
 REM    run_optimization.bat --quick   tests + short experiments (fewer seeds, smaller budgets)
 REM  Results: deliverables\optimization\results\*.csv, *.json, tables.md; figures\*.png
+REM           (--quick writes to results_quick\ and figures_quick\ instead)
 REM ==========================================================================
 chcp 65001 >nul
 set PYTHONIOENCODING=utf-8
@@ -18,6 +19,6 @@ if errorlevel 1 (
 )
 
 "%~dp0..\..\venv\Scripts\python.exe" -m optimization.experiments.run_all %*
-"%~dp0..\..\venv\Scripts\python.exe" -m optimization.experiments.make_tables
+"%~dp0..\..\venv\Scripts\python.exe" -m optimization.experiments.make_tables %*
 echo.
 echo Done. See deliverables\optimization\

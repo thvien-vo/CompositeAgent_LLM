@@ -20,11 +20,11 @@ from dataclasses import replace
 import numpy as np
 
 from optimization import leriche_haftka as LH
-from optimization.buckling import closed_form
+
 from optimization.evaluate import analyze_design
 from optimization.exhaustive import exhaustive
 from optimization.ga import GAConfig, GeneticAlgorithm
-from optimization.rules import STACK, full_laminate, notation
+from optimization.rules import notation
 from optimization.experiments.common import Timer, setup, write_csv, write_json
 
 

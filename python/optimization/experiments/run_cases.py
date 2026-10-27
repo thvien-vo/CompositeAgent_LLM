@@ -23,7 +23,7 @@ from optimization.exhaustive import count_upper_bounds, exhaustive, strength_onl
 from optimization.material import get_material
 from optimization.rules import notation
 from optimization.experiments.cases import (CASES, MATERIAL, PLATE, SAFETY_FACTOR, SHEAR_CASES, THICKNESSES)
-from optimization.experiments.common import RESULTS, Timer, read_json, setup, write_csv, write_json
+from optimization.experiments.common import Timer, read_json, setup, write_csv, write_json
 
 RTOL = 1e-9
 METHODS = ("ga", "ga_ls", "nsga2")   # GA, GA + local search (memetic), NSGA-II

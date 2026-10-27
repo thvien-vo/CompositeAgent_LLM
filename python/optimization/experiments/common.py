@@ -10,8 +10,10 @@ from typing import Dict, Iterable, List
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 OUT = os.path.join(ROOT, "deliverables", "optimization")
-RESULTS = os.path.join(OUT, "results")
-FIGS = os.path.join(OUT, "figures")
+# --quick runs write to results_quick / figures_quick so they never overwrite the full results
+QUICK = "--quick" in sys.argv[1:]
+RESULTS = os.path.join(OUT, "results_quick" if QUICK else "results")
+FIGS = os.path.join(OUT, "figures_quick" if QUICK else "figures")
 
 
 def setup() -> None:
