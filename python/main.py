@@ -1,7 +1,8 @@
 """
 main.py - CLT agent, 4 steps:
   (1) LLM reads the problem text  -> structured input (llm.parse_input)
-  (2) ML predicts 9 ply properties -> E1, E2, G12, nu12, Xt, Xc, Yt, Yc, S (ml.predict_material)
+  (2) 9 ply properties E1, E2, G12, nu12, Xt, Xc, Yt, Yc, S: measured values from the CSV when the text names
+      one known material system (materials.py), else the ML prediction for the group (ml.predict_material)
   (3) MATLAB runs CLT              -> ABD, ply stresses, Max Stress failure index (clt_engine.m)
   (4) LLM explains the numbers     -> short text (llm.explain_result), numbers checked by a guardrail
 
@@ -17,7 +18,7 @@ import time
 
 import llm
 from llm import check_explanation, explain_result, parse_input, summarize
-from ml import predict_material
+from materials import ply_properties
 from matlab_clt import run_clt
 
 EXAMPLE = """
@@ -49,9 +50,14 @@ def main(user_text, backend=None, lang="en", explain=True):
     print(f"  ({llm.LAST_BACKEND}, {time.time() - t:.1f} s)")
     print_problem(problem)
 
-    # 2 ML: material properties
-    print("\n[2/4] ML predicts ply properties (Random Forest, 25-material dataset) ...")
-    material = predict_material(problem.material)
+    # 2 ply properties: measured (CSV) if one known material is named, else ML prediction for the group
+    print("\n[2/4] Ply properties ...")
+    material, source, notes = ply_properties(problem)
+    print(f"  source   : {source}")
+    if problem.material_note and problem.material_note != "no specific material system named":
+        print(f"  why      : {problem.material_note}")
+    for w in notes:
+        print(f"  [warning] {w}")
     print(f"  E1={material['E1'] / 1e9:.4g} GPa  E2={material['E2'] / 1e9:.4g} GPa  G12={material['G12'] / 1e9:.4g} GPa  "
           f"nu12={material['nu12']:.3g}")
     print(f"  Xt={material['Xt'] / 1e6:.4g}  Xc={material['Xc'] / 1e6:.4g}  Yt={material['Yt'] / 1e6:.4g}  "

@@ -17,6 +17,8 @@ class Loads(BaseModel):
 
 
 class CLTInput(BaseModel):
-    material: str
+    material: str                # group: CFRP / GFRP / KEVLAR (ML prediction)
     plies: List[Ply]
     loads: Loads
+    material_name: str = ""      # CSV material whose measured properties are used ("" = ML group prediction)
+    material_note: str = ""      # why a named material was or was not used

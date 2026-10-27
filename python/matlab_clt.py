@@ -20,7 +20,8 @@ def _get_engine():
 
 def run_clt(problem, material):
     eng = _get_engine()
-    result = eng.clt_engine(problem.model_dump(), material, nargout=1)
+    # clt_engine.m only needs material, plies and loads
+    result = eng.clt_engine(problem.model_dump(exclude={"material_name", "material_note"}), material, nargout=1)
     return result
 
 

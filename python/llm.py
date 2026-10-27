@@ -21,9 +21,11 @@ import time
 import urllib.error
 import urllib.request
 
+import materials
 from schemas import CLTInput
 from ml import MATERIAL_DB
 from layup import LayupError, expand_layup
+from numwords import convert as numbers_from_words
 
 # 127.0.0.1, not "localhost": on Windows "localhost" first tries IPv6 and costs ~2 s per call
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
@@ -57,6 +59,7 @@ EXTRACT_SCHEMA = {
     "type": "object",
     "properties": {
         "fibre_words": {"type": "string"},
+        "material_name": {"type": "string"},
         "material": {"type": "string", "enum": list(MATERIAL_DB)},
         "layup": {"type": "string"},
         "ply_thickness": _qty(LENGTH_UNITS),
@@ -73,8 +76,8 @@ EXTRACT_SCHEMA = {
             },
         },
     },
-    "required": ["fibre_words", "material", "layup", "ply_thickness", "total_thickness", "ply_thickness_list",
-                 "loads"],
+    "required": ["fibre_words", "material_name", "material", "layup", "ply_thickness", "total_thickness",
+                 "ply_thickness_list", "loads"],
 }
 
 # fibre words -> material class (checked on the ORIGINAL text, so a small LLM cannot pick the wrong class)
@@ -226,6 +229,9 @@ TEXT:
 
 Fields:
 - "fibre_words": the words of the text that name the fibre or material, e.g. "Glass fibre / epoxy".
+- "material_name": the specific material system (fibre grade / resin grade) copied exactly as written,
+  e.g. "IM7/8552", "T300/5208", "Hexcel 8552 / IM7". Use "" if the text only gives a generic name such as
+  "carbon/epoxy", "CFRP" or "glass fibre".
 - "material": one of {materials}. Carbon or graphite fibre (T300, AS4, IM7, "sợi carbon"...) -> CFRP;
   glass fibre (E-glass, S-glass, fiberglass, "sợi thủy tinh") -> GFRP; aramid or Kevlar -> KEVLAR.
 - "layup": the stacking sequence copied exactly as written, e.g. "[0/±45]s", "[0/90]2s", "[45/-45]".
@@ -239,6 +245,9 @@ Fields:
   Example: "Nxy = 300 N/m" -> {{"name": "Nxy", "value": 300, "unit": "N/m"}};
            "My = 5 N.m/m" -> {{"name": "My", "value": 5, "unit": "N*m/m"}}.
   Do not add loads that are not written. Keep the sign (-1.5 stays -1.5).
+  Loads may be described in words: "a tensile load of 1000 N/m along x" -> Nx = 1000;
+  "a compressive force of 2 kN/m in the y direction" -> Ny = -2 kN/m; "shear force" -> Nxy;
+  "twisting moment" -> Mxy. If the text does not say the direction of a load, do NOT guess: leave it out.
 Write a decimal comma as a point (0,15 -> 0.15).
 Unit names: length "m", "mm", "um" (= µm), "in"; force per length "N/m", "kN/m", "N/mm", "lbf/in";
 moment per length "N*m/m", "N*mm/mm", "N*mm/m", "kN*m/m", "lbf*in/in" (N.m/m and N·m/m are "N*m/m").
@@ -263,12 +272,16 @@ def _text_numbers(text):
 
 # how each unit is written in a text (the SI unit of each kind is always allowed)
 _D = r"[·.*⋅]?\s*"
+_PER_M = r"\s+per\s+met(?:er|re)s?\b"
 UNIT_PATTERNS = {
     "mm": r"mm(?![a-z])", "um": r"µm|μm|\bum\b|micron|micromet", "in": r"\d\s*(?:in\b|inch)",
-    "kN/m": r"kN\s*/\s*m(?!m)", "N/mm": r"(?<![kK])N\s*/\s*mm", "lbf/in": r"lbf?\s*/\s*in",
-    "N/m": r"(?<![kK])N\s*/\s*m(?!m)",
+    "kN/m": rf"kN\s*/\s*m(?!m)|kilonewtons?{_PER_M}|kN{_PER_M}",
+    "N/mm": r"(?<![kK])N\s*/\s*mm|(?<!kilo)newtons?\s+per\s+millimet(?:er|re)s?\b",
+    "lbf/in": r"lbf?\s*/\s*in",
+    "N/m": rf"(?<![kK])N\s*/\s*m(?!m)|(?<!kilo)newtons?{_PER_M}|(?<![kK])N{_PER_M}",
     "kN*m/m": rf"kN\s*{_D}m\s*/\s*m(?!m)", "N*mm/mm": rf"(?<![kK])N\s*{_D}mm\s*/\s*mm",
-    "N*mm/m": rf"(?<![kK])N\s*{_D}mm\s*/\s*m(?!m)", "N*m/m": rf"(?<![kK])N\s*{_D}m\s*/\s*m(?!m)",
+    "N*mm/m": rf"(?<![kK])N\s*{_D}mm\s*/\s*m(?!m)",
+    "N*m/m": rf"(?<![kK])N\s*{_D}m\s*/\s*m(?!m)|newton[- ]?met(?:er|re)s?{_PER_M}",
     "lbf*in/in": rf"lbf?\s*{_D}-?\s*in\s*/\s*in",
 }
 _ALWAYS = {"m", "N/m", "N*m/m", "N"}
@@ -291,7 +304,7 @@ def _loads_from_text(text):
     """Loads written explicitly as 'Nx = 5 kN/m', 'Mx=0,3 N.m/m' -> {name: SI value}. Only when the unit
     is clear; everything else is left to the LLM."""
     out = {}
-    for m in re.finditer(_LOAD_SYMBOL + r"\s*[=:]\s*(" + _NUM + r")\s*([^\s,;)]*)", text):
+    for m in re.finditer(_LOAD_SYMBOL + r"\s*(?:[=:]|\bof\b|\bis\b|là|bằng)\s*(" + _NUM + r")\s*([^\s,;)]*)", text):
         name = m.group(1) + m.group(2).replace("yx", "xy")
         value = float(m.group(3).replace(",", "."))
         unit_txt = m.group(4).rstrip(".")
@@ -327,6 +340,132 @@ def _material_from_text(text):
     return found[0] if len(found) == 1 else None
 
 
+class AmbiguousTextError(ValueError):
+    """The problem text itself is ambiguous (e.g. a load without direction): asking the LLM again cannot help."""
+
+
+_ASSIGN = r"\s*(?:[=:]|\bof\b|\bis\b|là|bằng)\s*"
+_CLAUSE_SPLIT = re.compile(r"(?<!\d)[.;,](?!\d)|\band\b|\bvà\b|\bwith\b|\bplus\b")
+LOAD_WORDS = (r"\bload|\bforce|\bmoment|\btension|\btensile|compress|\bshear|bending|twist|torsion|tải|lực|"
+              r"mô[- ]?men|momen|kéo|nén|uốn|xoắn")
+NO_LOAD = r"no load|unloaded|not loaded|zero load|không (?:chịu )?tải"
+_LETTER = r"a-zà-ỹ"
+
+
+def _clause(text, start, end):
+    """The part of the sentence around text[start:end], cut at , ; . 'and' 'with' 'và'."""
+    left = 0
+    for m in _CLAUSE_SPLIT.finditer(text[:start]):
+        left = m.end()
+    m = _CLAUSE_SPLIT.search(text, end)
+    return text[left:m.start() if m else len(text)]
+
+
+def _load_quantities(text):
+    """Every 'number + force or moment per length unit' in the text (also in words: '1500 newtons per metre')."""
+    found = {}
+    for u, pattern in UNIT_PATTERNS.items():
+        if u not in FORCE_UNITS and u not in MOMENT_UNITS:
+            continue
+        kind, table = ("N", FORCE_UNITS) if u in FORCE_UNITS else ("M", MOMENT_UNITS)
+        for m in re.finditer(r"(?<![\w.])(" + _NUM + r")\s*(?:" + pattern + r")", text):
+            s = m.start(1)
+            if s not in found or m.end() > found[s]["end"]:
+                value = float(m.group(1).replace(",", "."))
+                found[s] = {"start": s, "end": m.end(), "text": m.group(0).strip(), "value": value, "unit": u,
+                            "kind": kind, "si": value * table[u]}
+    return sorted(found.values(), key=lambda q: q["start"])
+
+
+def _expected_keys(text, q):
+    """Which load(s) a quantity of the text belongs to, from its own words. -> (set of keys or None, sign, clause).
+    'Nx = Ny = 1.2 kN/m' -> {Nx, Ny}; 'a compressive force of 2 kN/m in the y direction' -> {Ny}, -1;
+    'shear force of 500 N/m' -> {Nxy}; 'twisting moment' -> {Mxy}; 'load 1000 N/m' -> None (direction unknown)."""
+    cl = _clause(text, q["start"], q["end"])
+    chain = re.search(r"((?:" + _LOAD_SYMBOL + _ASSIGN + r")+)$", text[:q["start"]])
+    syms = [a + b.replace("yx", "xy") for a, b in re.findall(_LOAD_SYMBOL, chain.group(1))] if chain else []
+    if not syms:
+        in_clause = {a + b.replace("yx", "xy") for a, b in re.findall(_LOAD_SYMBOL, cl)}
+        syms = list(in_clause) if len(in_clause) == 1 else []
+    syms = [s for s in syms if s[0] == q["kind"]]
+    if syms:
+        return set(syms), 1, cl
+    low = cl.lower()
+    sign = -1 if q["value"] > 0 and re.search(r"compress|nén", low) else 1
+    x = re.search(rf"(?<![{_LETTER}])x(?![{_LETTER}])|\baxial|uniaxial|longitudinal|\b0\s*°\s*direction", low)
+    y = re.search(rf"(?<![{_LETTER}])y(?![{_LETTER}])|\b90\s*°\s*direction", low)
+    if q["kind"] == "N":
+        key = "Nxy" if re.search(r"shear|cắt", low) else "Nx" if x and not y else "Ny" if y and not x else None
+    elif re.search(r"twist|torsion|xoắn", low):
+        key = "Mxy"
+    else:
+        key = None if "about" in low else "Mx" if x and not y else "My" if y and not x else None
+    return ({key} if key else None), sign, cl
+
+
+def _check_quantities(text, loads, warnings):
+    """Every non-zero load written in the text must end up in exactly the load it belongs to.
+    Loads with a clear direction are set from the text; a load without direction stops the agent."""
+    qs = [q for q in _load_quantities(text) if q["si"] != 0]
+    claimed, owner = {}, {}
+    for q in qs:
+        keys, sign, cl = _expected_keys(text, q)
+        if keys is None:
+            raise AmbiguousTextError(
+                f"the text gives the load '{q['text']}' (in '{cl.strip()}') but not its direction (x, y, shear or "
+                f"twisting) - please write it e.g. as 'Nx = {q['text']}'")
+        want = sign * q["si"]
+        for k in keys:
+            if k in claimed and abs(claimed[k] - want) > 1e-9 * max(abs(want), 1e-12):
+                raise AmbiguousTextError(f"the text gives two different values for {k}: {owner[k]} and '{q['text']}'")
+            claimed[k], owner[k] = want, f"'{q['text']}'"
+    for k, want in claimed.items():
+        if abs(loads[k] - want) > 1e-9 * max(abs(want), 1e-12):
+            warnings.append(f"LLM read {k} = {loads[k]:g}, the text gives {owner[k]} for {k} -> {k} = {want:g} (SI)")
+            loads[k] = want
+    for k in LOAD_KEYS:  # a value the LLM put in the wrong load
+        if loads[k] != 0 and k not in claimed and any(abs(abs(loads[k]) - abs(q["si"])) <= 1e-9 * abs(q["si"])
+                                                       for q in qs):
+            warnings.append(f"LLM put {loads[k]:g} in {k}, but the text gives that value to another load -> {k} = 0")
+            loads[k] = 0.0
+    return qs
+
+
+_LENGTH_WORDS = {"mm": 1e-3, "µm": 1e-6, "μm": 1e-6, "um": 1e-6, "micron": 1e-6, "microns": 1e-6, "m": 1.0,
+                 "in": 0.0254, "inch": 0.0254, "inches": 0.0254}
+
+
+def _unused_numbers(text, angles, thick, n, qs, name_text):
+    """Numbers written in the text that the agent did not use (Vf, a forgotten load...). Warning only."""
+    spans = [(m.start(), m.end()) for m in re.finditer(_LAYUP_IN_TEXT, text)]
+    spans += [(q["start"], q["end"]) for q in qs]
+    spans += [(m.start(), m.end()) for m in re.finditer(r"[\w-]+\s*/\s*[\w-]+", text)
+              if re.search(r"[A-Za-z]", m.group())]  # material names such as IM7/8552, 5250-5 / T650
+    spans += [(m.start(), m.end()) for m in re.finditer(_LOAD_SYMBOL + _ASSIGN + r"0+(?:[.,]0+)?(?!\d)", text)]
+    abs_angles = {abs(a) for a in angles}
+    sizes = {round(t, 12) for t in thick} | {round(sum(thick), 12)}
+    unused = []
+    for m in re.finditer(r"(?<![A-Za-z0-9_.,])[-+]?\d+(?:[.,]\d+)?(?!\d)", text):
+        if any(a <= m.start() < b for a, b in spans):
+            continue
+        tok = m.group()
+        v = abs(float(tok.replace(",", ".")))
+        after, before = text[m.end():m.end() + 14], text[max(0, m.start() - 10):m.start()]
+        if v == 0 or tok.lstrip("+-") in name_text:
+            continue
+        if re.match(r"\s*°", after) or (v in abs_angles and not re.match(r"\s*[a-zµμ]", after, re.I)):
+            continue
+        if re.match(r"\s*[-‑ ]?\s*(?:plies|ply|lớp|layers?)\b", after, re.I) and v == n:
+            continue
+        if re.search(r"(?:ply|lớp|layer)\s*$", before, re.I):
+            continue
+        lm = re.match(r"\s*(mm|µm|μm|um|microns?|m|inch(?:es)?|in)\b", after)
+        if lm and any(abs(v * _LENGTH_WORDS[lm.group(1)] - s) <= 1e-9 for s in sizes):
+            continue
+        unused.append(tok)
+    return unused
+
+
 def _si(q, table, what):
     unit = str(q.get("unit", "")).strip()
     if unit not in table:
@@ -340,16 +479,25 @@ def build_problem(raw, text=None):
     numbers that are not written in the text are dropped, a [..] layup written in the text wins,
     the fibre class named in the text wins. Returns (CLTInput, warnings)."""
     warnings = []
+    if text:
+        text = numbers_from_words(text)[0]  # "two kN/m" -> "2 kN/m" so every number can be checked
     nums = _text_numbers(text) if text else None
     units = _text_units(text) if text else None
 
-    # material
+    # material group (CFRP / GFRP / KEVLAR) and, if named, the specific material system of the CSV
     material = raw.get("material")
     if text:
         m_text = _material_from_text(text)
         if m_text and m_text != material:
             warnings.append(f"LLM said material {material}, text names {m_text} -> using {m_text}")
             material = m_text
+    material_name, material_note = "", ""
+    if text:
+        material_name, material_note = materials.resolve(raw.get("material_name", ""), text)
+        group = materials.group_of(material_name) if material_name else None
+        if group and group != material:
+            warnings.append(f"{material_name} is {group}, not {material} -> using {group}")
+            material = group
 
     # stacking sequence
     layup = raw.get("layup", "")
@@ -460,20 +608,38 @@ def build_problem(raw, text=None):
             continue
         loads[k] = v * table[unit]
     # loads written explicitly as "Nx = 5 kN/m" are read by Python too; the text wins over the LLM
+    qs, explicit = [], {}
     if text:
-        for k, si in _loads_from_text(text).items():
+        explicit = _loads_from_text(text)
+        for k, si in explicit.items():
             if abs(loads[k] - si) > 1e-9 * max(abs(si), 1e-12):
                 warnings.append(f"LLM read {k} = {loads[k]:g}, the text says {k} = {si:g} (SI) -> using the text")
                 loads[k] = si
+        # every load quantity of the text ("1000 N/m along x", "2 kN/m") must be in the right load
+        qs = _check_quantities(text, loads, warnings)
     if all(v == 0 for v in loads.values()):
-        if text and re.search(_LOAD_SYMBOL + r"\s*[=:]\s*[-+]?\d*[.,]?\d*[1-9]", text):
-            raise ValueError("no load was read, but the text gives a non-zero load")
-        warnings.append("all loads are 0")
+        low = (text or "").lower()
+        if text and (re.search(LOAD_WORDS, low) or re.search(_LOAD_SYMBOL, text)):
+            if re.search(NO_LOAD, low) or (explicit and all(v == 0 for v in explicit.values())):
+                warnings.append("all loads are 0 (the text says so)")
+            else:
+                raise ValueError("the text speaks of a load, but every load read is 0")
+        else:
+            warnings.append("the text gives no load: all loads are 0")
+
+    if text:
+        unused = _unused_numbers(text, angles, thick, n, qs,
+                                 f"{raw.get('material_name', '')} {material_name}")
+        if unused:
+            warnings.append(f"numbers in the text that the agent did not use: {unused} - check that none of "
+                            "them is a load or a thickness")
 
     problem = CLTInput.model_validate({
         "material": material,
         "plies": [{"angle": a, "thickness": t} for a, t in zip(angles, thick)],
         "loads": loads,
+        "material_name": material_name,
+        "material_note": material_note,
     })
     return problem, warnings
 
@@ -482,7 +648,10 @@ def parse_input(user_text, backend=None):
     """LLM reads the text -> Python checks the answer against the text. If a check fails, the LLM gets
     one more try with the list of problems (self-correction); if it fails again, a clear error is raised."""
     global LAST_PARSE
-    base = PARSE_PROMPT.format(text=user_text.strip(), materials=", ".join(MATERIAL_DB))
+    text, words = numbers_from_words(user_text.strip())
+    for w, v in words:
+        print(f"[llm.py] note: number written in words '{w}' read as {v:g}")
+    base = PARSE_PROMPT.format(text=text, materials=", ".join(MATERIAL_DB))
     prompt = base
     t0 = time.time()
     attempts = []
@@ -490,8 +659,11 @@ def parse_input(user_text, backend=None):
         raw = _extract_json(ask_llm(prompt, json_schema=EXTRACT_SCHEMA, backend=backend))
         attempts.append(raw)
         try:
-            problem, warnings = build_problem(raw, user_text)
+            problem, warnings = build_problem(raw, text)
             break
+        except AmbiguousTextError as e:  # the text itself is unclear: asking again cannot help
+            LAST_PARSE = {"raw": raw, "attempts": attempts, "backend": LAST_BACKEND, "error": str(e)}
+            raise ValueError(f"the problem text is ambiguous: {e}") from None
         except ValueError as e:
             if attempt == 2:
                 LAST_PARSE = {"raw": raw, "attempts": attempts, "backend": LAST_BACKEND, "error": str(e)}
