@@ -150,3 +150,14 @@ def test_local_search_never_worsens(im7, rng):
         key0 = (int(r0["n_plies"][0]), float(r0["margin"][0]))
         g2, key2 = ga._local_search(g, key0)
         assert key2 == key0 or better(key2, key0, p.safety_factor)
+
+
+def test_nsga2_keeps_the_optimum_in_the_final_population(im7):
+    """Regression: with pymoo's default crowding (objective-space duplicates not filtered) the optimum of this case
+    was found and then lost (seed 0 ended at 22 plies). The final answer must be the exact optimum."""
+    p = Problem(loads=(1.0e6, 0.5e6, 0.0), material=im7)
+    ex = strength_only_exact(p)
+    r = run_nsga2(p, seed=0, budget=10000)
+    assert r["n_plies"] == ex["best"]["n"]
+    assert r["margin"] == pytest.approx(ex["best"]["max_margin"], rel=1e-9)
+    assert len(r["pareto"]) == len(set(range(8, 66, 2)))  # one non-dominated point per ply count 8..64

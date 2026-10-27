@@ -8,6 +8,9 @@ satisfies the active design rules. Duplicates are eliminated by pymoo on the can
 The run is driven with pymoo's ask / tell interface so that it stops exactly on the evaluation budget
 (distinct designs analysed, same definition as the GA).
 
+Crowding distance is computed on distinct objective vectors (see run_nsga2): with pymoo's default the optimum was
+sometimes found and later lost from the population (C2: final answer right in 11/20 runs only).
+
 The answer to the "fewest plies" question is read from the final population: the feasible design
 (margin >= safety factor) with the fewest plies, ties broken by the larger margin. The whole non-dominated
 set is returned as the Pareto front (best margin for each ply count found).
@@ -24,6 +27,8 @@ from pymoo.core.mutation import Mutation
 from pymoo.core.problem import Problem as PymooProblem
 from pymoo.core.repair import Repair
 from pymoo.core.sampling import Sampling
+from pymoo.operators.survival.rank_and_crowding import RankAndCrowding
+from pymoo.operators.survival.rank_and_crowding.metrics import FunctionalDiversity, calc_crowding_distance
 from pymoo.termination.max_gen import MaximumGenerationTermination
 
 from .evaluate import Evaluator, Problem, lexi_rank
@@ -94,9 +99,13 @@ def run_nsga2(problem: Problem, seed: int = 0, pop_size: int = 40, budget: int =
     repairer, ev = helper.repairer, helper.ev
     sf = problem.safety_factor
     pproblem = _LamProblem(ev, helper.n_genes, problem.enc.n_symbols)
+    # NSGA-II crowding distance, computed on DISTINCT objective vectors (copies get 0): many different stacking
+    # sequences share exactly the same (plies, margin); pymoo's default "cd" treats them as separate points and can
+    # drop every copy of a Pareto point when the first front is truncated (observed: the optimum found, then lost).
+    survival = RankAndCrowding(crowding_func=FunctionalDiversity(calc_crowding_distance, filter_out_duplicates=True))
     algo = NSGA2(pop_size=pop_size, sampling=_Sampling(repairer), crossover=_Crossover(cfg.p_crossover),
                  mutation=_Mutation(helper), repair=_Repair(repairer, np.random.default_rng(seed + 10_000)),
-                 eliminate_duplicates=True)
+                 survival=survival, eliminate_duplicates=True)
     algo.setup(pproblem, termination=MaximumGenerationTermination(max_generations), seed=seed, verbose=False)
     history, hit_at, gen, stall, last = [], None, 0, 0, -1
     while algo.has_next():

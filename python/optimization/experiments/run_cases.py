@@ -209,10 +209,13 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
                "matlab_pass": None, "margin_matlab": None}
         for m in METHODS:
             rr = rows[m]
-            hits = [x["hit_evals"] for x in rr if x["hit_evals"] is not None]
+            # success = the FINAL answer is the global optimum (same ply count, margin within 1e-9)
+            ok = [x for x in rr if x["n_plies"] == det["n_plies"] and x["margin"] >= det["margin"] * (1 - RTOL)]
+            hits = [x["hit_evals"] for x in ok if x["hit_evals"] is not None]
             row[f"{m}_runs"] = len(rr)
-            row[f"{m}_success"] = len(hits) if proven else None
-            row[f"{m}_success_rate"] = (len(hits) / len(rr)) if proven else None
+            row[f"{m}_success"] = len(ok) if proven else None
+            row[f"{m}_success_rate"] = (len(ok) / len(rr)) if proven else None
+            row[f"{m}_hit_during_run"] = sum(x["hit_evals"] is not None for x in rr) if proven else None
             row[f"{m}_evals_to_hit_mean"] = float(np.mean(hits)) if hits else None
             row[f"{m}_evals_to_hit_median"] = float(np.median(hits)) if hits else None
             row[f"{m}_evals_to_hit_max"] = int(max(hits)) if hits else None
