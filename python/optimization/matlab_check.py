@@ -25,6 +25,24 @@ MATLAB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.pat
 TOL = 1e-9
 
 _eng = None
+_available = None
+
+
+def available(timeout: float = 120.0) -> bool:
+    """Probe in a child process whether the MATLAB engine can start (an import that hangs cannot be
+    interrupted in-process). Result cached for this process."""
+    global _available
+    if _available is None:
+        import subprocess
+        import sys
+        code = ("import sys; sys.modules['_wmi'] = None\nimport matlab.engine\n"
+                "e = matlab.engine.start_matlab(); print(e.sqrt(4.0)); e.quit()")
+        try:
+            r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=timeout)
+            _available = r.returncode == 0 and "2.0" in r.stdout
+        except subprocess.TimeoutExpired:
+            _available = False
+    return _available
 
 
 def engine():

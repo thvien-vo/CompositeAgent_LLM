@@ -16,6 +16,16 @@ Modules
 
 Units: SI everywhere (Pa, m, N/m). Loads Nx, Ny, Nxy: tension positive, compression negative.
 """
+import sys as _sys
+
+# Python's platform module queries WMI on Windows (via _wmi); when the WMI service hangs, every
+# platform.* call - and pandas / sklearn imports that use it - hang forever (seen on this machine on
+# 2026-10-28). Without _wmi, platform falls back to the registry / sys.getwindowsversion(), which is all
+# that is needed here. Set COMPOSITE_USE_WMI=1 to keep the default behaviour.
+import os as _os
+if _os.environ.get("COMPOSITE_USE_WMI") != "1" and "_wmi" not in _sys.modules:
+    _sys.modules["_wmi"] = None
+
 _EXPORTS = {"Material": "material", "get_material": "material", "Plate": "evaluate", "Problem": "evaluate",
             "Rules": "rules", "optimize": "api", "OptimizationResult": "api", "make_problem": "api", "quasi_isotropic": "api"}
 

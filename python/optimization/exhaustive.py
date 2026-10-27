@@ -80,12 +80,13 @@ def _valid_mask(problem: Problem, plies: np.ndarray) -> np.ndarray:
 
 
 def exhaustive(problem: Problem, time_limit: float = 600.0, front_to_n: Optional[int] = None,
-               objective: str = "min_plies", verbose: bool = False) -> Dict:
+               objective: str = "min_plies", n_start: Optional[int] = None, verbose: bool = False) -> Dict:
     """Exact search over all valid designs, ascending ply count.
 
     objective "min_plies": stops after the first length with a feasible design (n*), unless front_to_n asks
     for more lengths (best margin per ply count, for Pareto-front comparisons).
     objective "max_margin": all allowed lengths are enumerated (use rules.n_min = n_max for a fixed thickness).
+    n_start: skip ply counts below it (use only with a PROVEN lower bound, e.g. count_upper_bounds()).
     """
     t0 = time.perf_counter()
     enc = problem.enc
@@ -98,8 +99,11 @@ def exhaustive(problem: Problem, time_limit: float = 600.0, front_to_n: Optional
     complete = True
     rate = None  # strings per second, measured
     n_eval = 0
+    chunk = CHUNK if problem.buckling_model == "closed_form" else CHUNK // 32  # Ritz: ~0.3 ms per design
     for L in problem.rules.string_lengths(enc):
         n = L * enc.plies_per_symbol * problem.rules.multiplier()
+        if n_start is not None and n < n_start:
+            continue
         total = base ** L
         remaining = time_limit - (time.perf_counter() - t0)
         if rate is not None and total / rate > remaining:
@@ -109,8 +113,16 @@ def exhaustive(problem: Problem, time_limit: float = 600.0, front_to_n: Optional
             break
         tL = time.perf_counter()
         best_m, best_plies, n_valid, n_opt = -np.inf, None, 0, 0
-        for start in range(0, total, CHUNK):
-            sym = _digits(start, min(total, start + CHUNK), base, L)
+        aborted = False
+        for start in range(0, total, chunk):
+            if start == chunk:  # after the first chunk: extrapolate the cost of this length
+                est = (time.perf_counter() - tL) * total / chunk
+                if est > remaining:
+                    aborted = True
+                    if verbose:
+                        print(f"  exhaustive: n={n} aborted (estimated {est:.0f} s > {remaining:.0f} s left)")
+                    break
+            sym = _digits(start, min(total, start + chunk), base, L)
             if reduced:
                 sym = sym[(sym == 1).sum(axis=1) % 2 == 0]
                 plies = _family_to_plies(sym)
@@ -129,8 +141,11 @@ def exhaustive(problem: Problem, time_limit: float = 600.0, front_to_n: Optional
             elif m[k] >= best_m * (1 - 1e-9):
                 n_opt += int(np.sum(m >= best_m * (1 - 1e-9)))
         dt = time.perf_counter() - tL
-        rate = max(total / max(dt, 1e-3), 1.0)
         n_eval += n_valid
+        if aborted:
+            complete = False
+            break
+        rate = max(total / max(dt, 1e-3), 1.0)
         if best_plies is None:
             per_n.append({"n": n, "max_margin": None, "n_valid": 0, "time_s": dt})
             continue
@@ -206,7 +221,8 @@ def arrange(problem: Problem, counts: Tuple[int, ...]) -> Optional[List[int]]:
     def go(rem: Tuple[int, ...], last: int, run: int, first: bool) -> Optional[Tuple[int, ...]]:
         if sum(rem) == 0:
             return ()
-        for s in range(len(rem)):
+        # most plentiful symbol first, preferring a change of symbol -> interleaved, readable sequences
+        for s in sorted(range(len(rem)), key=lambda k: (-rem[k], k == last, k)):
             if rem[s] == 0:
                 continue
             if s == last and single[s]:
