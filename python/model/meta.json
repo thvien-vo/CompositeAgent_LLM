@@ -1,0 +1,9 @@
+{
+  "sklearn_version": "1.9.1",
+  "default_vf": {
+    "CFRP": 0.589,
+    "GFRP": 0.541,
+    "KEVLAR": 0.6
+  },
+  "n_rows": 25
+}

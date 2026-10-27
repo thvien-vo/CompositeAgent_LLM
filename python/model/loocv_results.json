@@ -1,0 +1,65 @@
+{
+  "E1_GPa": {
+    "n": 25,
+    "MAE": 21.3263,
+    "MAE_baseline_mean": 33.3075,
+    "R2": 0.44,
+    "MAPE_pct": 17.9
+  },
+  "E2_GPa": {
+    "n": 25,
+    "MAE": 1.8501,
+    "MAE_baseline_mean": 2.251,
+    "R2": -0.023,
+    "MAPE_pct": 19.4
+  },
+  "G12_GPa": {
+    "n": 25,
+    "MAE": 0.6098,
+    "MAE_baseline_mean": 0.9209,
+    "R2": 0.302,
+    "MAPE_pct": 15.5
+  },
+  "nu12": {
+    "n": 24,
+    "MAE": 0.0275,
+    "MAE_baseline_mean": 0.0238,
+    "R2": -0.406,
+    "MAPE_pct": 9.3
+  },
+  "Xt_MPa": {
+    "n": 25,
+    "MAE": 421.4855,
+    "MAE_baseline_mean": 549.9167,
+    "R2": 0.305,
+    "MAPE_pct": 21.2
+  },
+  "Xc_MPa": {
+    "n": 25,
+    "MAE": 326.4966,
+    "MAE_baseline_mean": 355.65,
+    "R2": -0.104,
+    "MAPE_pct": 40.9
+  },
+  "Yt_MPa": {
+    "n": 25,
+    "MAE": 15.0988,
+    "MAE_baseline_mean": 16.178,
+    "R2": 0.035,
+    "MAPE_pct": 40.1
+  },
+  "Yc_MPa": {
+    "n": 25,
+    "MAE": 41.7173,
+    "MAE_baseline_mean": 41.09,
+    "R2": 0.128,
+    "MAPE_pct": 29.0
+  },
+  "S_MPa": {
+    "n": 24,
+    "MAE": 12.5971,
+    "MAE_baseline_mean": 10.9203,
+    "R2": -0.229,
+    "MAPE_pct": 20.1
+  }
+}
