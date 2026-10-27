@@ -1,4 +1,4 @@
-COMPOSITE AGENT DEMO  -  2026-10-27 19:18  -  log: D:\CompositeAgent\logs\demo_20261027_191840.log
+COMPOSITE AGENT DEMO  -  2026-10-27 22:01  -  log: D:\CompositeAgent\logs\demo_20261027_220126.log
 
 ==============================================================================
   PART 0 - Environment check
@@ -20,22 +20,24 @@ MATLAB engine is ready.
   -> PASS
 
 ==============================================================================
-  PART 2 - Agent: text -> LLM -> ML -> MATLAB -> LLM
+  PART 2 - Agent: text -> LLM -> ply properties -> MATLAB -> LLM
 ==============================================================================
 
------ Problem 1/2: English, symmetric 8-ply carbon laminate (same case as the reference check)
+----- Problem 1/4: English, symmetric 8-ply carbon laminate (same case as the reference check)
   "Carbon/epoxy laminate [0/45/-45/90]s, each ply 0.125 mm thick. In-plane loads: Nx = 1000 N/m, Ny = 500 N/m, Nxy = 100 N/m."
 
 [1/4] LLM reads the problem ...
-[llm.py] note: LLM wrote layup '[0/45/-45/90]', the text has [0/45/-45/90]s -> using the text
-[llm.py] note: ignored a list of 4 ply thicknesses (layup has 8 plies)
-  (Ollama (gemma3:4b), 15.8 s)
+[llm.py] check failed (2 ply thicknesses were given but the layup '[0/45/-45/90]s' has 8 plies) -> asking the LLM to correct its answer
+[llm.py] note: ignored a list of 6 ply thicknesses (layup has 8 plies)
+  (Ollama (gemma3:4b), 21.5 s)
   material : CFRP
   plies    : 8  angles = [0.0, 45.0, -45.0, 90.0, 90.0, -45.0, 45.0, 0.0]
   thickness: [0.125] mm per ply, total 1 mm
   loads    : Nx=1000  Ny=500  Nxy=100 N/m   Mx=0  My=0  Mxy=0 N*m/m
 
-[2/4] ML predicts ply properties (Random Forest, 25-material dataset) ...
+[2/4] Ply properties ...
+  source   : ML prediction (group CFRP)
+  why      : 'carbon/epoxy' is not in the database (25 materials)
   E1=140.5 GPa  E2=8.948 GPa  G12=4.515 GPa  nu12=0.32
   Xt=2194  Xc=1446  Yt=63.76  Yc=218  S=81.34 MPa
 
@@ -48,27 +50,29 @@ MATLAB engine is ready.
   safety factor     = 420.0   -> SAFE
 
 [4/4] LLM explains the result ...
-  (Ollama (gemma3:4b), 2.2 s)
+  (Ollama (gemma3:4b), 2.9 s)
 
-Total time: 18.5 s
+Total time: 24.8 s
 
 ===== EXPLANATION (LLM) =====
 The Classical Laminate Theory calculation indicates a maximum failure index of 0.002381 across ply 4, which is oriented at 90.0 degrees. This ply is critical due to the highest calculated transverse stress of 0.1518 MPa, which is compared to the transverse tensile strength of 63.76 MPa. The governing mode is transverse (sigma2, tension). The laminate is classified as safe with a safety factor of 420.0, calculated as the inverse of the failure index. The program computed a load of 59400000.0 N/m, suggesting a significant load capacity.
 
 [guardrail] every number in the explanation matches the CLT data
 
------ Problem 2/2: Vietnamese, glass fibre, kN/m, decimal comma, bending moment - high load, failure expected
+----- Problem 2/4: Vietnamese, glass fibre, kN/m, decimal comma, bending moment - high load, failure expected
   "Tấm composite sợi thủy tinh/epoxy, xếp lớp [0/±45]s, mỗi lớp dày 0,15 mm. Tải trọng: Nx = 150 kN/m, Nxy = 40 kN/m, mô-men uốn My = 10 N.m/m."
 
 [1/4] LLM reads the problem ...
 [llm.py] note: ignored a list of 2 ply thicknesses (layup has 6 plies)
-  (Ollama (gemma3:4b), 3.6 s)
+  (Ollama (gemma3:4b), 3.5 s)
   material : GFRP
   plies    : 6  angles = [0.0, 45.0, -45.0, -45.0, 45.0, 0.0]
   thickness: [0.15] mm per ply, total 0.9 mm
   loads    : Nx=150000  Ny=0  Nxy=40000 N/m   Mx=0  My=10  Mxy=0 N*m/m
 
-[2/4] ML predicts ply properties (Random Forest, 25-material dataset) ...
+[2/4] Ply properties ...
+  source   : ML prediction (group GFRP)
+  why      : material name 'glass fibre/epoxy' from the LLM is not written in the text -> ignored
   E1=49.88 GPa  E2=13.08 GPa  G12=4.035 GPa  nu12=0.305
   Xt=1400  Xc=958.5  Yt=45.17  Yc=156.1  S=70.7 MPa
 
@@ -89,6 +93,47 @@ Total time: 6.7 s
 The Classical Laminate Theory calculation indicates that the laminate is not safe, with a maximum failure index of 1.096. Ply number 4, at an angle of -45.0 degrees, is the critical ply due to its failure index exceeding 1.0. The governing mode of failure is transverse (sigma2, tension) with a governing stress of 49.49 MPa, compared to the transverse tensile strength of 45.17 MPa. This failure index represents the ratio of the maximum stress in the laminate to the material strength. The resulting safety factor is 0.9127, signifying a low margin of safety. The program calculated a nominal ABD11 N/m load of 28660000.0 N/m, which is significantly higher than the laminate’s capacity.
 
 [guardrail] every number in the explanation matches the CLT data
+
+----- Problem 3/4: Named material IM7/8552 (measured NCAMP values), loads written in words
+  "IM7/8552 laminate [0/±45/90]s, 0.131 mm per ply, under a tensile load of 20 kN/m along x and a shear force of 5 kN/m."
+
+[1/4] LLM reads the problem ...
+[llm.py] note: ignored a list of 3 ply thicknesses (layup has 8 plies)
+  (Ollama (gemma3:4b), 3.7 s)
+  material : CFRP
+  plies    : 8  angles = [0.0, 45.0, -45.0, 90.0, 90.0, -45.0, 45.0, 0.0]
+  thickness: [0.131] mm per ply, total 1.048 mm
+  loads    : Nx=20000  Ny=0  Nxy=5000 N/m   Mx=0  My=0  Mxy=0 N*m/m
+
+[2/4] Ply properties ...
+  source   : measured: NCAMP NCP-RP-2009-028 Rev B, p.37
+  E1=162.1 GPa  E2=8.96 GPa  G12=4.69 GPa  nu12=0.316
+  Xt=2212  Xc=1731  Yt=64.1  Yc=286  S=91.1 MPa
+
+[3/4] MATLAB computes CLT ...
+  (0.0 s)
+  ABD(1,1)          = 7.08e+07 N/m
+  max failure index = 0.03969   (Max Stress; >= 1 means failure)
+  critical ply      = 4 (angle 90 deg), same index in plies [4, 5]
+  governing mode    = transverse (sigma2, tension): 2.544 MPa vs Yt = 64.1 MPa
+  safety factor     = 25.19   -> SAFE
+
+[4/4] LLM explains the result ...
+  (Ollama (gemma3:4b), 2.7 s)
+
+Total time: 6.4 s
+
+===== EXPLANATION (LLM) =====
+The Classical Laminate Theory calculation for this 8-ply CFRP laminate indicates a maximum failure index of 0.03969, occurring in ply 4 at an angle of 90.0 degrees. This ply is critical due to the governing mode being transverse (sigma2, tension) with a governing stress of 2.544 MPa, compared with the transverse tensile strength of 64.1 MPa. The failure index is calculated as |2.544| / 64.1 = 0.03969. The laminate is classified as safe with a safety factor of 25.19. The program identified plies 4 and 5 as having the same maximum failure index. This critical ply is vulnerable to transverse tension, as evidenced by the high sigma2 stress and the corresponding tau12 value.
+
+[guardrail] every number in the explanation matches the CLT data
+
+----- Problem 4/4: Ambiguous text: a load without direction - the agent must refuse, not guess
+  "CFRP [0/90]s, 0.125 mm plies, load 1000 N/m."
+
+[1/4] LLM reads the problem ...
+
+  [REFUSED, as it should] the problem text is ambiguous: the text gives the load '1000 N/m' (in 'load 1000 N/m') but not its direction (x, y, shear or twisting) - please write it e.g. as 'Nx = 1000 N/m'
 
 ==============================================================================
   PART 3 - RAG: questions about the material database (with sources)
@@ -171,8 +216,8 @@ Sources of the retrieved rows:
 ==============================================================================
   SUMMARY
 ==============================================================================
-  Part 1 reference check       OK        6.2 s
-  Part 2 agent                 OK       25.2 s
-  Part 3 RAG                   OK        7.5 s
+  Part 1 reference check       OK        6.4 s
+  Part 2 agent                 OK       40.8 s
+  Part 3 RAG                   OK        8.2 s
   LLM used last: Ollama (gemma3:4b)
-  total time: 39 s   log: D:\CompositeAgent\logs\demo_20261027_191840.log
+  total time: 55 s   log: D:\CompositeAgent\logs\demo_20261027_220126.log

@@ -848,6 +848,7 @@ def check_explanation(text, problem, result, material):
     norm = re.sub(r"\s*[x×·*]\s*10\s*\^?\s*\(?([-+⁻⁺−]?[0-9⁰¹²³⁴⁵⁶⁷⁸⁹]+)\)?",
                   lambda m: "e" + m.group(1).translate(sup).replace("−", "-"), text)
     norm = norm.replace("−", "-").replace("‑", "-")
+    norm = re.sub(r"(\d)\s+[eE]\s*([-+]?\d+)\b", r"\1e\2", norm)  # "7.08 e7" -> "7.08e7"
     suspicious = []
     for m in re.finditer(r"(?<![\w.])[-+]?\d+(?:[.,]\d+)?(?:[eE][-+]?\d+)?", norm):
         tok = m.group()
