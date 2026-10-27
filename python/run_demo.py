@@ -20,13 +20,18 @@ import urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 
-PROBLEMS = [
+PROBLEMS = [  # (title, text, the agent must refuse?)
     ("English, symmetric 8-ply carbon laminate (same case as the reference check)",
      "Carbon/epoxy laminate [0/45/-45/90]s, each ply 0.125 mm thick. "
-     "In-plane loads: Nx = 1000 N/m, Ny = 500 N/m, Nxy = 100 N/m."),
+     "In-plane loads: Nx = 1000 N/m, Ny = 500 N/m, Nxy = 100 N/m.", False),
     ("Vietnamese, glass fibre, kN/m, decimal comma, bending moment - high load, failure expected",
      "Tấm composite sợi thủy tinh/epoxy, xếp lớp [0/±45]s, mỗi lớp dày 0,15 mm. "
-     "Tải trọng: Nx = 150 kN/m, Nxy = 40 kN/m, mô-men uốn My = 10 N.m/m."),
+     "Tải trọng: Nx = 150 kN/m, Nxy = 40 kN/m, mô-men uốn My = 10 N.m/m.", False),
+    ("Named material IM7/8552 (measured NCAMP values), loads written in words",
+     "IM7/8552 laminate [0/±45/90]s, 0.131 mm per ply, under a tensile load of 20 kN/m along x "
+     "and a shear force of 5 kN/m.", False),
+    ("Ambiguous text: a load without direction - the agent must refuse, not guess",
+     "CFRP [0/90]s, 0.125 mm plies, load 1000 N/m.", True),
 ]
 QUESTIONS = [
     "What is the longitudinal tensile strength Xt of IM7/8552?",
@@ -157,18 +162,24 @@ def part1():
 
 def part2(lang, no_wait):
     import main as agent
-    banner("PART 2 - Agent: text -> LLM -> ML -> MATLAB -> LLM")
+    banner("PART 2 - Agent: text -> LLM -> ply properties -> MATLAB -> LLM")
     results = []
-    for i, (title, text) in enumerate(PROBLEMS, 1):
+    for i, (title, text, must_refuse) in enumerate(PROBLEMS, 1):
         print(f"\n----- Problem {i}/{len(PROBLEMS)}: {title}")
         print(f"  \"{text}\"")
         try:
             out = agent.main(text, lang=lang)
             agent.print_explanation(out)
-            results.append(True)
+            if must_refuse:
+                print("  [FAIL] the agent computed a result although the text is ambiguous")
+            results.append(not must_refuse)
         except Exception as e:
-            print(f"  [FAIL] {type(e).__name__}: {e}")
-            results.append(False)
+            if must_refuse and isinstance(e, ValueError):
+                print(f"\n  [REFUSED, as it should] {e}")
+                results.append(True)
+            else:
+                print(f"  [FAIL] {type(e).__name__}: {e}")
+                results.append(False)
         if i < len(PROBLEMS):
             wait(8, no_wait)
     return all(results)
