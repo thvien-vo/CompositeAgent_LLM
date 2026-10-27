@@ -88,20 +88,25 @@ def convergence(tkey="t0125", model="closed_form"):
     """Share of runs that have found the exact optimum vs number of evaluations (ECDF of evals-to-hit)."""
     runs = read_json("runs_history.json")
     meta = read_json("run_cases_meta.json")
+    opt = {(r["case"], r["thickness"], r["model"]): (int(r["n_opt"]), float(r["margin_opt"]))
+           for r in _read_csv("cases_summary.csv")}
     budget = meta["budget"]
     fig, axes = plt.subplots(2, 4, figsize=(13, 6.0), constrained_layout=True, sharey=True)
     for ax, c in zip(axes.flat, CASES):
+        n_o, m_o = opt[(c["id"], tkey, model)]
         for m, col, lab in METHOD_STYLE:
             rr = [r for r in runs if (r["case"], r["tkey"], r["model"], r["method"]) == (c["id"], tkey, model, m)]
             if not rr:
                 continue
-            hits = sorted(r["hit_evals"] for r in rr if r["hit_evals"] is not None)
+            # a run counts only if its FINAL answer is the optimum; x = evaluations when it was first reached
+            final_ok = [r for r in rr if r["history"][-1][1] == n_o and r["history"][-1][2] >= m_o * (1 - 1e-9)]
+            hits = sorted(r["hit_evals"] for r in final_ok if r["hit_evals"] is not None)
             xs = np.concatenate([[0], np.repeat(hits, 2), [budget]])
             ys = np.concatenate([[0, 0], np.repeat(np.arange(1, len(hits) + 1) / len(rr), 2)])[: len(xs)]
             ax.plot(xs, ys, "-", color=col, label=f"{lab} ({len(hits)}/{len(rr)} runs)")
         ax.set_title(f"{c['id']} {c['en']}")
         ax.set_xlabel("distinct designs evaluated (-)")
-        ax.set_ylabel("share of runs at the exact optimum (-)")
+        ax.set_ylabel("share of runs ending at the optimum (-)")
         ax.set_xlim(0, budget)
         ax.set_ylim(0, 1.05)
         ax.legend(loc="lower right", fontsize=8)
@@ -152,7 +157,8 @@ def best_so_far(tkey="t0125", model="closed_form", case="C4"):
 
 def quasi_iso():
     rows = [r for r in _read_csv("cases_summary.csv") if r["model"] == "closed_form"]
-    fig, axes = plt.subplots(1, 2, figsize=(13, 4.2), constrained_layout=True, sharey=True)
+    import textwrap
+    fig, axes = plt.subplots(1, 2, figsize=(15, 4.8), constrained_layout=True, sharey=True)
     for ax, tk in zip(axes, ("t0125", "t0183")):
         rr = [r for r in rows if r["thickness"] == tk]
         x = np.arange(len(rr))
@@ -164,13 +170,15 @@ def quasi_iso():
         for i, r in enumerate(rr):
             red = _num(r["mass_reduction_pct"])
             feas = r["feasible"] == "True"
-            lab = f"-{red:.0f} %" if red is not None else ("infeasible\n<= 64 plies" if not feas else "")
-            ax.text(x[i] + w / 2, (opt[i] or 0) + 1.5, lab, ha="center", va="bottom", fontsize=8, color=INK)
+            lab = f"{int(opt[i])}\n-{red:.0f} %" if red is not None else \
+                (f"{int(opt[i])}\nno design\n<= 64 plies" if not feas else f"{int(opt[i])}")
+            ax.text(x[i] + w / 2 + 0.01, (opt[i] or 0) + 1.0, lab, ha="center", va="bottom", fontsize=7.5, color=INK)
             if qi[i]:
-                ax.text(x[i] - w / 2, qi[i] + 0.5, f"{int(qi[i])}", ha="center", va="bottom", fontsize=7, color=INK2)
+                ax.text(x[i] - w / 2, qi[i] + 1.0, f"{int(qi[i])}", ha="center", va="bottom", fontsize=7.5, color=INK2)
         ax.axhline(64, color=INK2, lw=1.0, ls="--")
-        ax.text(len(rr) - 0.5, 64, "optimizer limit 64 plies", ha="right", va="bottom", fontsize=8, color=INK2)
-        ax.set_xticks(x, [f"{r['case']}\n{r['name_en']}" for r in rr], fontsize=7.5)
+        ax.text(-0.6, 65, "optimizer limit: 64 plies", ha="left", va="bottom", fontsize=8, color=INK2)
+        ax.set_xticks(x, [r["case"] + "\n" + "\n".join(textwrap.wrap(r["name_en"], 11)) for r in rr], fontsize=7.5)
+        ax.set_ylim(0, 118)
         ax.set_ylabel("plies needed for margin >= 1.5 (-)")
         ax.set_title(f"ply {THICKNESS_LABEL[tk]}  (label: mass saving vs quasi-isotropic)")
         ax.legend(loc="upper left", fontsize=8)

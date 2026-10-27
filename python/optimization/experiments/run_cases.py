@@ -248,6 +248,7 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
     write_json("runs_history.json", [{k: x[k] for k in ("case", "tkey", "model", "method", "seed", "history",
                                                         "hit_evals", "n_evaluations")} for x in runs])
     write_json("fronts.json", fronts)
+    write_json("runs_full.json", runs)
     write_json("run_cases_meta.json", {"quick": quick, "seeds": seeds, "budget": budget,
                                        "exhaustive_time_limit_s": ex_time, "front_to_n": front_to,
                                        "material": mat.to_dict(), "total_time_s": T()})

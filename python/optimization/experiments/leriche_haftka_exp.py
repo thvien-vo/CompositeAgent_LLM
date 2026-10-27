@@ -81,7 +81,7 @@ def main(quick: bool = False):
     setup()
     T = Timer()
     seeds = list(range(5 if quick else 20))
-    budget = 3000
+    budget = 6000  # = the 6000-analysis cap per search used by Le Riche & Haftka (1995)
     designs, summary, histories = [], [], {}
     for v in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
         os.environ[v] = "1"

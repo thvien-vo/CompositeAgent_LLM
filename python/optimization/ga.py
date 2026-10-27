@@ -18,7 +18,10 @@ Memetic variant (local_search=True, added after the baseline GA missed the optim
 minimum-thickness cases of Le Riche & Haftka 1995): every time the best design improves, a steepest-ascent
 local search explores its neighbourhood - every swap of two plies of different orientation, every change of one
 ply to another orientation, and (fewest plies) every removal of one ply - all repaired, evaluated in one batch,
-counted in the same budget. Local improvement of GA designs follows Kogiso et al. (1994), cited in [P].
+counted in the same budget; at a feasible local optimum it then tries to THIN the design: every one-ply
+removal is repaired, the few thinner designs with the best margins are re-optimised at their ply count
+(swaps / single-ply changes), and the first one reaching the safety factor is accepted. Local improvement of GA
+designs follows Kogiso et al. (1994), cited in [P].
 """
 from __future__ import annotations
 
@@ -48,6 +51,8 @@ class GAConfig:
     objective: str = "min_plies"
     local_search: bool = False           # memetic variant: hill-climb from every new best design
     ls_max_neighbors: int = 0            # 0 = whole neighbourhood, else a random subset of this size per step
+    ls_thinning: bool = True             # fewest plies: at a local optimum, try removing a ply + re-optimising
+    ls_thinning_starts: int = 3          # thinner designs (best margins) from which the fixed-thickness climb starts
 
 
 def _rank(res: Dict[str, np.ndarray], sf: float, objective: str) -> np.ndarray:
@@ -102,7 +107,7 @@ class GeneticAlgorithm:
                 s[i], s[j] = s[j], s[i]
                 return
 
-    def _neighbours(self, g: np.ndarray) -> np.ndarray:
+    def _neighbours(self, g: np.ndarray, deletions: bool = True) -> np.ndarray:
         s = [int(x) for x in g if x >= 0]
         L = len(s)
         out = []
@@ -118,7 +123,7 @@ class GeneticAlgorithm:
                     t = s.copy()
                     t[i] = k
                     out.append(t)
-        if self.cfg.objective == "min_plies" and L > self.repairer.Lmin:
+        if deletions and self.cfg.objective == "min_plies" and L > self.repairer.Lmin:
             out += [s[:i] + s[i + 1:] for i in range(L)]
         if self.cfg.ls_max_neighbors and len(out) > self.cfg.ls_max_neighbors:
             idx = self.rng.choice(len(out), self.cfg.ls_max_neighbors, replace=False)
@@ -141,7 +146,48 @@ class GeneticAlgorithm:
             if not improved:
                 break
             g, key = nb[k].copy(), cand
+        if (self.cfg.objective == "min_plies" and self.cfg.ls_thinning and key[1] >= sf
+                and self.ev.n_unique < self.cfg.budget):
+            thin = self._thin(g)
+            if thin is not None:
+                return self._local_search(*thin)
         return g, key
+
+    def _climb_fixed(self, g: np.ndarray, key: tuple) -> tuple:
+        """Steepest ascent of the margin at a fixed ply count (swaps and single-ply changes only)."""
+        n0 = key[0]
+        while self.ev.n_unique < self.cfg.budget:
+            nb = self._neighbours(g, deletions=False)
+            res = self.ev.evaluate(nb)
+            same = np.where(res["n_plies"] == n0)[0]
+            if len(same) == 0:
+                break
+            k = same[int(np.argmax(res["margin"][same]))]
+            if res["margin"][k] <= key[1]:
+                break
+            g, key = nb[k].copy(), (n0, float(res["margin"][k]))
+        return g, key
+
+    def _thin(self, g: np.ndarray):
+        """From a feasible local optimum: remove one ply (every position), re-optimise the margin of the best
+        few thinner designs at their ply count; return the first one that becomes feasible, else None."""
+        s = [int(x) for x in g if x >= 0]
+        if len(s) <= self.repairer.Lmin:
+            return None
+        arr = np.full((len(s), self.n_genes), EMPTY, dtype=np.int8)
+        for i in range(len(s)):
+            t = s[:i] + s[i + 1:]
+            arr[i, self.n_genes - len(t):] = t
+            arr[i] = self.repairer.repair(arr[i], self.rng)
+        arr = np.unique(arr, axis=0)
+        res = self.ev.evaluate(arr)
+        n_now = 2 * len(s) * self.p.enc.plies_per_symbol if self.p.rules.symmetric else len(s) * self.p.enc.plies_per_symbol
+        thinner = np.where(res["n_plies"] < n_now)[0]
+        for k in thinner[np.argsort(-res["margin"][thinner])][: self.cfg.ls_thinning_starts]:
+            g2, key2 = self._climb_fixed(arr[k].copy(), (int(res["n_plies"][k]), float(res["margin"][k])))
+            if key2[1] >= self.p.safety_factor:
+                return g2, key2
+        return None
 
     def _tournament(self, rank_pos: np.ndarray) -> int:
         cand = self.rng.choice(len(rank_pos), self.cfg.tournament, replace=False)
