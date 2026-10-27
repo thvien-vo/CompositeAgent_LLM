@@ -124,6 +124,19 @@ def _ask_ollama(prompt, json_schema=None):
     return _post("/api/chat", payload)["message"]["content"]
 
 
+HF_CALL_LOG = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs", "hf_calls.log")
+
+
+def _count_hf_call(provider):
+    """One line per request sent to Hugging Face (credits are limited) -> logs/hf_calls.log."""
+    try:
+        os.makedirs(os.path.dirname(HF_CALL_LOG), exist_ok=True)
+        with open(HF_CALL_LOG, "a", encoding="utf-8") as f:
+            f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')}\t{provider}\n")
+    except OSError:
+        pass
+
+
 def _ask_hf(prompt, json_schema=None):
     from huggingface_hub import InferenceClient  # imported here so Ollama-only use needs no HF
     if not os.environ.get("HF_TOKEN"):
@@ -134,6 +147,7 @@ def _ask_hf(prompt, json_schema=None):
     last_err = None
     for attempt, provider in enumerate(HF_PROVIDERS):  # retry once, with another provider
         client = InferenceClient(provider=provider, timeout=HF_TIMEOUT)  # reads HF_TOKEN from the environment
+        _count_hf_call(provider)
         try:
             resp = client.chat.completions.create(
                 model=HF_MODEL,

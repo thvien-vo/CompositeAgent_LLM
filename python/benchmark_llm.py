@@ -23,11 +23,18 @@ import llm_v1_baseline
 LBF_IN = 4.4482216152605 / 0.0254  # 1 lbf/in in N/m
 
 
-def P(material, angles, t, **loads):
-    """Expected answer. t = one thickness (m) for all plies, or a list per ply."""
+def P(material, angles, t, row=None, refuse=False, **loads):
+    """Expected answer. t = one thickness (m) for all plies, or a list per ply.
+    row = the CSV material whose MEASURED properties must be used ("" = ML group prediction; None = not checked).
+    refuse = True when the only correct behaviour is a clear error (the text is ambiguous)."""
     ts = t if isinstance(t, list) else [t] * len(angles)
-    return {"material": material, "angles": [float(a) for a in angles], "thickness": ts,
-            "loads": {k: float(loads.get(k, 0.0)) for k in llm.LOAD_KEYS}}
+    return {"material": material, "angles": [float(a) for a in angles], "thickness": ts, "row": row,
+            "refuse": refuse, "loads": {k: float(loads.get(k, 0.0)) for k in llm.LOAD_KEYS}}
+
+
+# Old problems that name a material: which CSV row should give measured properties (reported in an
+# extra column only, so the 'fully correct' score of the old sets keeps its original meaning).
+OLD_ROWS = {"D4": "Kevlar 49/epoxy", "D8": "T300/5208", "H1": "IM7/8552", "H4": "AS4/3501-6", "T4": "IM7/8552"}
 
 
 DEV = [
@@ -153,7 +160,64 @@ HOLDOUT3 = [
      P("CFRP", [0, 90, 90, 0], 0.0002, Nx=1200, Ny=1200)),
 ]
 
-SETS = {"dev": DEV, "holdout": HOLDOUT, "holdout2": HOLDOUT2, "holdout3": HOLDOUT3}
+# Written on 27/10/2026 21:40, BEFORE the material-name and load-detection changes (task 1 and 2).
+NEW = [
+    # --- task 1: named materials -> measured properties from the CSV, or the ML group with a reason
+    ("M1 IM7/8552 + load in words",
+     "IM7/8552 laminate [0/90]s, ply thickness 0.131 mm, under a tension of 5 kN/m along the x axis.",
+     P("CFRP", [0, 90, 90, 0], 0.000131, row="IM7/8552", Nx=5000)),
+    ("M2 brand name, reversed order 'Hexcel 8552 / IM7'",
+     "Hexcel 8552 / IM7 prepreg, layup [0/45/-45/90]s, 0.125 mm plies, Nx = 1000 N/m, Ny = 500 N/m.",
+     P("CFRP", [0, 45, -45, 90, 90, -45, 45, 0], 0.000125, row="IM7/8552", Nx=1000, Ny=500)),
+    ("M3 ambiguous name 'IM7' (4 rows)",
+     "IM7 carbon/epoxy [0/90]s with 0.125 mm plies, Nx = 1 kN/m.",
+     P("CFRP", [0, 90, 90, 0], 0.000125, row="", Nx=1000)),
+    ("M4 name not in the database",
+     "T800S/3900-2 carbon/epoxy laminate [0/90]2s with 0.19 mm plies under Nx = 3 kN/m.",
+     P("CFRP", [0, 90, 0, 90, 90, 0, 90, 0], 0.00019, row="", Nx=3000)),
+    ("M5 T650/5250-5 (S not reported -> ML fill)",
+     "Cytec Cycom 5250-5 / T650 unitape, [0/±45/90]s, 0.14 mm per ply, Nxy = 2 kN/m.",
+     P("CFRP", [0, 45, -45, 90, 90, -45, 45, 0], 0.00014, row="T650/5250-5", Nxy=2000)),
+    ("M6 T40-800/5215 (nu12 anomalous -> ML fill)",
+     "T40-800/5215 laminate [0/90]s, 0.145 mm plies, Nx = 1.5 kN/m.",
+     P("CFRP", [0, 90, 90, 0], 0.000145, row="T40-800/5215", Nx=1500)),
+    ("M7 T300/5208 textbook row, moment",
+     "T300/5208 [0/±45/90]s, t_ply = 0.125 mm, Nx = 500 N/m, Mx = 1 N·m/m.",
+     P("CFRP", [0, 45, -45, 90, 90, -45, 45, 0], 0.000125, row="T300/5208", Nx=500, Mx=1)),
+    ("M8 S2-glass/BT250E-6 (GFRP measured)",
+     "S2-glass/BT250E-6, [0/90/0], 0.23 mm plies, Ny = 800 N/m.",
+     P("GFRP", [0, 90, 0], 0.00023, row="S2-glass/BT250E-6", Ny=800)),
+    # --- task 2: loads written in words, number words, kN/m, N/mm, ambiguous loads
+    ("L1 'tensile load of 1000 N/m along x'",
+     "CFRP [0/90]s, 0.125 mm plies, under a tensile load of 1000 N/m along x.",
+     P("CFRP", [0, 90, 90, 0], 0.000125, row="", Nx=1000)),
+    ("L2 compressive y + shear, in words, kN/m",
+     "Glass/epoxy [0/±45]s, each ply 0.15 mm; it carries a compressive force of 2 kN/m in the y direction "
+     "and an in-plane shear force of 500 N/m.",
+     P("GFRP", [0, 45, -45, -45, 45, 0], 0.00015, row="", Ny=-2000, Nxy=500)),
+    ("L3 English number words + unit words",
+     "Carbon/epoxy [0/90]s with 0.125 mm plies, loaded by one thousand five hundred newtons per metre "
+     "in the x direction.",
+     P("CFRP", [0, 90, 90, 0], 0.000125, row="", Nx=1500)),
+    ("L4 Vietnamese number word 'hai kN/m'",
+     "Tấm CFRP [0/90]s, mỗi lớp 0,125 mm, chịu lực kéo hai kN/m theo phương x.",
+     P("CFRP", [0, 90, 90, 0], 0.000125, row="", Nx=2000)),
+    ("L5 N/mm + 'Mx of 0.5' (no '=')",
+     "Kevlar/epoxy [0/90]s, 0.2 mm plies, Nx = 0.8 N/mm and a bending moment Mx of 0.5 N·m/m.",
+     P("KEVLAR", [0, 90, 90, 0], 0.0002, row="", Nx=800, Mx=0.5)),
+    ("L6 twisting moment in words",
+     "CFRP [0/90]s, 0.125 mm plies, subjected only to a twisting moment of 0.2 N·m/m.",
+     P("CFRP", [0, 90, 90, 0], 0.000125, row="", Mxy=0.2)),
+    ("L7 load without direction -> must refuse",
+     "CFRP [0/90]s, 0.125 mm plies, load 1000 N/m.",
+     P("CFRP", [0, 90, 90, 0], 0.000125, refuse=True)),
+    ("L8 extra load not assigned -> must refuse",
+     "CFRP [0/90]s, 0.125 mm plies, Nx = 1000 N/m, and a second load of 300 N/m.",
+     P("CFRP", [0, 90, 90, 0], 0.000125, refuse=True)),
+]
+
+SETS = {"dev": DEV, "holdout": HOLDOUT, "holdout2": HOLDOUT2, "holdout3": HOLDOUT3, "new": NEW,
+        "old28": DEV + HOLDOUT + HOLDOUT2 + HOLDOUT3}
 
 
 def _close(a, b, rel=1e-6):
@@ -181,7 +245,20 @@ def compare(exp, problem):
         errors.append(f"thickness {got_t} (want {exp['thickness']})")
     for k in bad_loads:
         errors.append(f"{k}={loads[k]:g} (want {exp['loads'][k]:g})")
+    if exp.get("row") is not None:  # new set: the source of the ply properties is part of the answer
+        got_row = getattr(problem, "material_name", "") or ""
+        checks["material_row"] = got_row == exp["row"]
+        if not checks["material_row"]:
+            errors.append(f"properties from '{got_row or 'ML group'}' (want '{exp['row'] or 'ML group'}')")
     return all(checks.values()), checks, bad_loads, errors
+
+
+def row_info(name, problem):
+    """Old sets only (not part of 'fully correct'): did the agent use the right measured row / ML group?"""
+    if problem is None:
+        return None
+    want = OLD_ROWS.get(name.split()[0], "")
+    return (getattr(problem, "material_name", "") or "") == want
 
 
 def run_one(version, backend, text):
@@ -207,7 +284,7 @@ def llm_only_correct(version, exp):
     if version == "v1":
         return None
     attempts = llm.LAST_PARSE.get("attempts") or []
-    if not attempts:
+    if not attempts or exp.get("refuse"):
         return False
     try:
         problem, _ = llm.build_problem(attempts[0], text=None)
@@ -235,38 +312,53 @@ def main():
         for rep in range(args.repeat):
             for name, text, exp in cases:
                 problem, sec, err, raw = run_one(v, b, text)
-                if problem is not None:
+                if exp.get("refuse"):  # the only correct answer is a clear error
+                    ok, checks, bad_loads = problem is None, {}, []
+                    errors = [] if ok else [f"did not refuse: loads {problem.loads.model_dump()}"]
+                elif problem is not None:
                     ok, checks, bad_loads, errors = compare(exp, problem)
                 else:
                     ok, checks, bad_loads, errors = False, {}, list(llm.LOAD_KEYS), [err]
                 alone = llm_only_correct(v, exp)
                 rows.append({"version": v, "backend": b, "repeat": rep, "case": name, "correct": ok,
+                             "refuse_case": bool(exp.get("refuse")), "refusal_message": err,
+                             "row_info": row_info(name, problem) if exp.get("row") is None else None,
                              "llm_only_correct": alone, "checks": checks, "errors": errors,
                              "seconds": round(sec, 2), "raw": raw,
                              "attempts": None if v == "v1" else llm.LAST_PARSE.get("attempts"),
                              "parsed": problem.model_dump() if problem is not None else None})
                 print(f"[{v}/{b:6}] {'OK  ' if ok else 'FAIL'} {sec:6.1f}s  {name}"
                       + ("" if alone is None else f"   (LLM alone: {'OK' if alone else 'wrong'})")
+                      + (f"\n      refused: {err}" if ok and exp.get("refuse") else "")
                       + ("" if ok else "\n      -> " + "; ".join(errors)), flush=True)
 
     # ---- summary table
     lines = [f"# LLM extraction benchmark ({args.set} set, {len(cases)} cases, repeat {args.repeat})",
              f"Run: {datetime.datetime.now():%Y-%m-%d %H:%M}. HF model: {llm.HF_MODEL}; Ollama model: {llm.MODEL}.", "",
-             "'fully correct' = final CLT input of the agent. 'LLM alone' = first LLM answer without the Python "
-             "checks against the text (v1 has no checks).", "",
-             "| version | backend | fully correct | LLM alone | material | plies+angles | thickness | loads (6 each) | parse errors | mean s/case |",
-             "|---|---|---|---|---|---|---|---|---|---|"]
+             "'fully correct' = final CLT input of the agent (for the 'new' set also the source of the ply "
+             "properties; 'must refuse' cases are correct only if the agent stops with a clear error). "
+             "'LLM alone' = first LLM answer without the Python checks against the text (v1 has no checks). "
+             "Component columns count only the cases that must not be refused. 'source' = measured CSV row or "
+             "ML group as expected (old sets: information only, not in 'fully correct').", "",
+             "| version | backend | fully correct | LLM alone | material | plies+angles | thickness | loads (6 each) "
+             "| source | refused correctly | parse errors | mean s/case |",
+             "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for v, b in combos:
-        rs = [r for r in rows if r["version"] == v and r["backend"] == b]
-        n = len(rs)
+        rs_all = [r for r in rows if r["version"] == v and r["backend"] == b]
+        rs = [r for r in rs_all if not r["refuse_case"]]
+        ref = [r for r in rs_all if r["refuse_case"]]
+        n, n_all = len(rs), len(rs_all)
         c = lambda key: sum(1 for r in rs if r["checks"].get(key))
         load_ok = sum(6 - sum(1 for e in r["errors"] if e.split("=")[0] in llm.LOAD_KEYS) if r["checks"] else 0
                       for r in rs)
         crashed = sum(1 for r in rs if not r["checks"])
-        alone = "-" if v == "v1" else f"{sum(1 for r in rs if r['llm_only_correct'])}/{n}"
-        lines.append(f"| {v} | {b} | **{sum(r['correct'] for r in rs)}/{n}** | {alone} | {c('material')}/{n} | "
-                     f"{c('angles')}/{n} | {c('thickness')}/{n} | {load_ok}/{6 * n} | {crashed} | "
-                     f"{sum(r['seconds'] for r in rs) / max(n, 1):.1f} |")
+        alone = "-" if v == "v1" else f"{sum(1 for r in rs_all if r['llm_only_correct'])}/{n_all}"
+        src = [r["checks"].get("material_row") if "material_row" in r["checks"] else r["row_info"] for r in rs]
+        src_txt = f"{sum(1 for s in src if s)}/{n}"
+        lines.append(f"| {v} | {b} | **{sum(r['correct'] for r in rs_all)}/{n_all}** | {alone} | {c('material')}/{n} | "
+                     f"{c('angles')}/{n} | {c('thickness')}/{n} | {load_ok}/{6 * n} | {src_txt} | "
+                     f"{sum(r['correct'] for r in ref)}/{len(ref)} | {crashed} | "
+                     f"{sum(r['seconds'] for r in rs_all) / max(n_all, 1):.1f} |")
     lines += ["", "## Failures", ""]
     for r in rows:
         if not r["correct"]:

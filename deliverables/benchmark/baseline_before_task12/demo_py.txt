@@ -1,0 +1,1 @@
+CHECK max_failure_index=0.002381 (ref 0.00238), critical_ply=4 (ref 4), ABD(1,1)=5.93995e+07 N/m (ref 5.94e7) -> PASS
