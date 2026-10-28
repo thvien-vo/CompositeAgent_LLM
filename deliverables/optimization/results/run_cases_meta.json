@@ -23,6 +23,8 @@
   19
  ],
  "budget": 10000,
+ "model": "ritz_full",
+ "workers": 3,
  "exhaustive_time_limit_s": 600.0,
  "front_to_n": 32,
  "material": {
@@ -39,5 +41,5 @@
   "source": "measured: NCAMP NCP-RP-2009-028 Rev B, p.37",
   "warnings": []
  },
- "total_time_s": 1246.2622776998905
+ "total_time_s": 1769.5202596999989
 }

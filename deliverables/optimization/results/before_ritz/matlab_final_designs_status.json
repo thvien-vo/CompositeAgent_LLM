@@ -1,0 +1,9 @@
+{
+ "done": true,
+ "n_designs": 83,
+ "n_pass": 83,
+ "all_pass": true,
+ "max_e_ABD": 1.6543250502638441e-15,
+ "max_e_stress": 3.0762607685970754e-15,
+ "time_s": 77.52626349999991
+}
