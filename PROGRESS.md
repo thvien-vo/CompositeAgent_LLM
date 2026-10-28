@@ -1,5 +1,7 @@
 # PROGRESS - CompositeAgent
 
+Repo: https://github.com/thvien-vo/CompositeAgent_LLM (chuyển sang repo này ngày 28/10/2026; slide và kịch bản
+thuyết trình lưu ngoài repo).
 Hạn: chạy ổn định trước 29/10/2026, thuyết trình 30/10/2026.
 Số kiểm chứng (demo.py, CFRP [0/45/-45/90]s, 0.125 mm, Nx=1000, Ny=500, Nxy=100 N/m):
 max_failure_index ≈ 0.00238, critical_ply = 4, ABD(1,1) ≈ 5.94e7 N/m. demo.py tự in `CHECK ... PASS/FAIL`.
@@ -156,3 +158,5 @@ Log trong logs\ (không commit); bản sao dự phòng: deliverables/demo_log_ba
   sang 127.0.0.1 (0,05 s). Demo online 23-81 s → 17 s; offline 61 s → 39 s. demo.py PASS.
 - 28/10 12:1x  Khởi động lại máy: demo.py PASS, run_demo.bat (có mạng, --offline) OK, MATLAB tính lại 83/83 phương án tối ưu.
 - 28/10 sau đó  Slide 19 trang + kịch bản (phần tối ưu); pytest module tối ưu 78/78.
+- 28/10 cuối ngày  Chuyển sang repo CompositeAgent_LLM: lịch sử không còn slide / kịch bản thuyết trình; demo.py PASS,
+  pytest 78/78 trước khi push.
