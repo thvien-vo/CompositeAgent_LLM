@@ -1,7 +1,7 @@
 @echo off
 REM ==========================================================================
 REM  run_optimization.bat - Layer 1: stacking sequence optimization (no LLM)
-REM    run_optimization.bat           tests + all experiments (about 1-1.5 hours on 20 cores)
+REM    run_optimization.bat           tests + all experiments (about 1.5 hours, at most 4 processes)
 REM    run_optimization.bat --quick   tests + short experiments (fewer seeds, smaller budgets)
 REM  Results: deliverables\optimization\results\*.csv, *.json, tables.md; figures\*.png
 REM           (--quick writes to results_quick\ and figures_quick\ instead)

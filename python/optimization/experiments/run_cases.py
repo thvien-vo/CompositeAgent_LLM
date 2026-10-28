@@ -1,10 +1,12 @@
 """
 Experiment 2 - the 8 load cases: exact answer (exhaustive / count-level / certified bound), GA and NSGA-II over
 many seeds (success rate = exact global optimum found within the evaluation budget), Pareto fronts,
-quasi-isotropic comparison, MATLAB re-check of the final designs (matlab_recheck.py), two ply thicknesses, and a supplementary run
-with Ritz buckling (includes Nxy) for the shear cases.
+quasi-isotropic comparison, MATLAB re-check of the final designs (matlab_recheck.py), two ply thicknesses.
+Buckling model: Rayleigh-Ritz with D16, D26 and Nxy ("ritz_full"), checked whenever there is compression or shear.
+The number of terms of each case is chosen by a convergence study (choose_terms) and recorded.
+The results of the previous version (closed form without Nxy, D16 = D26 = 0) are kept in results/before_ritz/.
 
-Run:  python -m optimization.experiments.run_cases            (full: 20 seeds, budget 10 000, ~30-60 min)
+Run:  python -m optimization.experiments.run_cases            (full: 20 seeds, budget 10 000, 4 processes)
       python -m optimization.experiments.run_cases --quick    (3 seeds, budget 3 000, short exhaustive)
 """
 from __future__ import annotations
@@ -16,29 +18,73 @@ from typing import Dict, List, Optional
 
 import numpy as np
 
+from optimization import buckling
 from optimization.api import make_problem, optimize, quasi_isotropic
 from optimization.ga import GAConfig
-from optimization.evaluate import Plate, Problem, analyze_design
-from optimization.exhaustive import count_upper_bounds, exhaustive, strength_only_exact
+from optimization.evaluate import Evaluator, Plate, Problem, analyze_design
+from optimization.exhaustive import count_upper_bounds, exact_full, exhaustive, strength_only_exact
 from optimization.material import get_material
 from optimization.rules import notation
-from optimization.experiments.cases import (CASES, MATERIAL, PLATE, SAFETY_FACTOR, SHEAR_CASES, THICKNESSES)
+from optimization.experiments.cases import CASES, MATERIAL, PLATE, SAFETY_FACTOR, THICKNESSES
 from optimization.experiments.common import Timer, read_json, setup, write_csv, write_json
 
 RTOL = 1e-9
 METHODS = ("ga", "ga_ls", "nsga2")   # GA, GA + local search (memetic), NSGA-II
 METHOD_LABEL = {"ga": "GA", "ga_ls": "GA + local search", "nsga2": "NSGA-II"}
+MODEL = "ritz_full"
+WORKERS = 4          # at most 4 processes at a time (a run with 16 processes once hung the Windows WMI service)
 
 
-def build_problem(mat, case: Dict, tkey: str, model: str) -> Problem:
+def build_problem(mat, case: Dict, tkey: str, model: str = MODEL, terms: int = 10) -> Problem:
     return make_problem(case["loads"], material=mat, safety_factor=SAFETY_FACTOR, plate=Plate(*PLATE),
-                        ply_thickness=THICKNESSES[tkey], buckling_model=model, ritz_terms=10)
+                        ply_thickness=THICKNESSES[tkey], buckling_model=model, ritz_terms=terms)
+
+
+def choose_terms(p: Problem, k0: int = 8, tol: float = 0.005, k_max: int = 20) -> Dict:
+    """Number of terms (size k, M x N = buckling.terms_for(k)) for one case: the smallest k >= k0 for which the
+    critical load factor of the reference designs changes by less than tol when k grows by 2. Reference designs:
+    quasi-isotropic laminates [0/45/-45/90]_ms (m = 1, 2, 4, 6, 8) and laminates with the +-45 plies outside (large
+    D16 / D26, slowest convergence). The final designs are checked again in analyze_design (buckling.converge)."""
+    if not (p.buckling_model == MODEL and "buckling" in p.criteria and p.has_compression):
+        return {"k": None, "evidence": []}
+    a, b = p.plate.a, p.plate.b
+    ev = Evaluator(p)
+    halves = [[0, 1, 2, 3] * m for m in (1, 2, 4, 6, 8)]
+    halves += [[1, 2] * m + [0, 3] for m in (2, 4, 7)] + [[1] * 2 + [2] * 2 + [1] * 2 + [2] * 2 + [0, 3, 0, 3]]
+    t = p.ply_thickness
+    Q = ev.Qb
+    Ds = []
+    for h in halves:
+        j = np.arange(len(h))[::-1]
+        w = 2.0 * t ** 3 * ((j + 1.0) ** 3 - j ** 3) / 3.0
+        Ds.append(np.einsum("w,wij->ij", w, Q[np.array(h)]))
+    evidence = []
+    k = k0
+    while True:
+        worst = 0.0
+        rows = []
+        for h, Dm in zip(halves, Ds):
+            l1 = float(buckling.ritz_full(Dm, *p.loads, a, b, *buckling.terms_for(k, a, b))[0])
+            l2 = float(buckling.ritz_full(Dm, *p.loads, a, b, *buckling.terms_for(k + 2, a, b))[0])
+            ch = 0.0 if (np.isinf(l1) and np.isinf(l2)) else abs(l1 - l2) / abs(l2)
+            rows.append({"n": 2 * len(h), "lambda_k": l1, "lambda_k_plus_2": l2, "change": ch})
+            worst = max(worst, ch)
+        evidence.append({"k": k, "terms": buckling.terms_for(k, a, b), "max_change": worst, "designs": rows})
+        if worst < tol or k >= k_max:
+            return {"k": k, "evidence": evidence, "converged": worst < tol}
+        k += 2
 
 
 def exact_answer(p: Problem, time_limit: float, front_to_n: Optional[int], start_at_bound: bool = False) -> Dict:
     """Exact answer. start_at_bound: skip the ply counts PROVEN infeasible by count_upper_bounds (used for the
     expensive Ritz model; the per-n maxima below the bound are then not enumerated)."""
     t = Timer()
+    if p.buckling_model == MODEL and "buckling" in p.criteria and p.has_compression:
+        r = exact_full(p, time_limit=time_limit, front_to_n=front_to_n)
+        r["method"] = ("branch and bound with proven Rayleigh-quotient bounds (D16, D26, Nxy)"
+                       + ("" if r["complete"] else " (stopped: time limit or too many arrangements)"))
+        r["time_s"] = t()
+        return r
     bounds = count_upper_bounds(p)
     if not p.has_compression or "buckling" not in p.criteria:
         r = strength_only_exact(p)
@@ -98,8 +144,12 @@ def run_one(task: Dict) -> Dict:
             "pareto": [[q["n"], q["margin"]] for q in res.pareto], "stacking": res.stacking_deg}
 
 
-def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None, ritz: bool = True,
-         recompute: bool = False):
+def _exact_task(args):
+    p, lim, front_to = args
+    return exact_answer(p, lim, front_to)
+
+
+def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None, recompute: bool = False):
     setup()
     T = Timer()
     seeds = list(range(3 if quick else 20))
@@ -108,51 +158,60 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
     front_to = None if quick else 32
     mat = get_material(MATERIAL)
     cases = [c for c in CASES if not only or c["id"] in only]
-    configs = [(c, tk, "closed_form") for tk in THICKNESSES for c in cases]
-    if ritz:
-        configs += [(c, tk, "ritz") for tk in THICKNESSES for c in cases if c["id"] in SHEAR_CASES]
+    configs = [(c, tk, MODEL) for tk in THICKNESSES for c in cases]
+    n_workers = max(1, min(workers or WORKERS, WORKERS))
+    for v in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):  # one BLAS thread per process
+        os.environ[v] = "1"
 
-    # 1) exact answers ---------------------------------------------------------------------------------
+    # 0) number of Ritz terms per case (convergence study) ------------------------------------------------
+    terms, problems = {}, {}
+    for c, tk, model in configs:
+        ct = choose_terms(build_problem(mat, c, tk, model))
+        terms[(c["id"], tk)] = ct
+        problems[(c["id"], tk, model)] = build_problem(mat, c, tk, model, ct["k"] or 10)
+        if ct["k"]:
+            last = ct["evidence"][-1]
+            print(f"[terms] {c['id']} {tk}: k = {ct['k']} (M x N = {last['terms']}), largest change k -> k+2 = "
+                  f"{100 * last['max_change']:.3f} %", flush=True)
+
+    # 1) exact answers (4 processes) ---------------------------------------------------------------------
     exact = {}
     cache_name = f"exact_cache_{'quick' if quick else 'full'}.json"
     try:
         cache = {} if recompute else read_json(cache_name)
     except FileNotFoundError:
         cache = {}
-    for c, tk, model in configs:
-        p = build_problem(mat, c, tk, model)
-        lim = ex_time if model == "closed_form" else (20.0 if quick else 600.0)
-        ck = f"{c['id']}|{tk}|{model}|{c['loads']}"
-        if ck in cache:
-            r = cache[ck]
-            r["from_cache"] = True
-        else:
-            r = exact_answer(p, lim, front_to if model == "closed_form" else None, start_at_bound=(model == "ritz"))
-            cache[ck] = r
+    keys = [f"{c['id']}|{tk}|{model}|k={problems[(c['id'], tk, model)].ritz_terms}|{c['loads']}"
+            for c, tk, model in configs]
+    todo = [i for i, ck in enumerate(keys) if ck not in cache]
+    with ProcessPoolExecutor(max_workers=n_workers) as pool:
+        for i, r in zip(todo, pool.map(_exact_task, [(problems[configs[i][0]["id"], configs[i][1], configs[i][2]],
+                                                       ex_time, front_to) for i in todo])):
+            cache[keys[i]] = r
             write_json(cache_name, cache)
+    for (c, tk, model), ck in zip(configs, keys):
+        p = problems[(c["id"], tk, model)]
+        r = cache[ck]
         r["n_lower_bound_effective"] = effective_lower_bound(p, r)
         exact[(c["id"], tk, model)] = r
         b = r["best"]
-        print(f"[exact] {c['id']} {tk} {model:11s} status={r['status']:<22s} "
+        print(f"[exact] {c['id']} {tk} {model:9s} status={r['status']:<22s} "
               f"n={b['n'] if b else None} margin={b['max_margin'] if b else float('nan'):.6g} "
               f"lower bound n>={r['bounds']['n_lower_bound']} (effective {r['n_lower_bound_effective']})  "
-              f"({r['time_s']:.1f} s{', cached' if r.get('from_cache') else ''})", flush=True)
+              f"({r['time_s']:.1f} s{', cached' if (keys.index(ck) not in todo) else ''})", flush=True)
 
     # 2) GA / NSGA-II runs ------------------------------------------------------------------------------
     tasks = []
     for c, tk, model in configs:
-        p = build_problem(mat, c, tk, model)
+        p = problems[(c["id"], tk, model)]
         r = exact[(c["id"], tk, model)]
         proven = r["status"] in ("optimal", "infeasible") and r["best"] is not None
         target = (r["best"]["n"], r["best"]["max_margin"]) if proven else None
         for method in METHODS:
-            for s in (seeds if model == "closed_form" else seeds[:10]):
+            for s in seeds:
                 tasks.append({"problem": p, "case": c["id"], "tkey": tk, "model": model, "method": method,
                               "seed": s, "budget": budget, "target": target})
     print(f"exact phase done ({T():.0f} s)", flush=True)
-    n_workers = workers or max(1, min(12, (os.cpu_count() or 2) - 4))
-    for v in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):  # one BLAS thread per process
-        os.environ[v] = "1"
     print(f"running {len(tasks)} GA / NSGA-II runs on {n_workers} processes ...", flush=True)
     with ProcessPoolExecutor(max_workers=n_workers) as pool:
         runs = list(pool.map(run_one, tasks, chunksize=2))
@@ -163,7 +222,7 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
     summary, to_check, fronts = [], [], {}
     for c, tk, model in configs:
         key = (c["id"], tk, model)
-        p = build_problem(mat, c, tk, model)
+        p = problems[key]
         r = exact[key]
         b = r["best"]
         proven = r["status"] in ("optimal", "infeasible") and b is not None
@@ -180,13 +239,15 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
             ref_src = f"best of all GA / NSGA-II runs ({METHOD_LABEL[pick['method']]} seed {pick['seed']})"
         det = analyze_design(p, ref_full)
         qi = quasi_isotropic(p)
-        to_check.append({"case": c["id"], "thickness": tk, "model": model, "source": ref_src, "full": ref_full})
+        to_check.append({"case": c["id"], "thickness": tk, "model": model, "source": ref_src, "full": ref_full,
+                         "ritz_terms": p.ritz_terms})
         for m in METHODS:  # the best design of each method too, when it differs from the reference
             best = min(rows[m], key=lambda x: (not x["feasible"], x["n_plies"] if x["feasible"] else 0, -x["margin"]))
             full = [code[a] for a in best["stacking"]]
             if full != ref_full:
                 to_check.append({"case": c["id"], "thickness": tk, "model": model,
-                                 "source": f"best {m} run (seed {best['seed']})", "full": full})
+                                 "source": f"best {m} run (seed {best['seed']})", "full": full,
+                                 "ritz_terms": p.ritz_terms})
         tf = true_front(r["per_n"])
         fronts["|".join(key)] = {"exact_per_n": [{"n": x["n"], "max_margin": x.get("max_margin")} for x in r["per_n"]],
                                  "true_front": tf, "bounds": r["bounds"]["per_n"],
@@ -204,9 +265,23 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
                "rf_max_stress": det["rf"].get("max_stress"), "rf_tsai_wu": det["rf"].get("tsai_wu"),
                "rf_buckling": det["rf"].get("buckling"), "buckling_ritz_with_shear": det["buckling_ritz_with_shear"],
                "D16_over_D11": det["D16_over_D11"], "D26_over_D22": det["D26_over_D22"],
+               "buckling_closed_form": det["buckling_closed_form"],
+               "ritz_terms_k": p.ritz_terms if terms[(c["id"], tk)]["k"] else None,
+               "ritz_terms_MN": "x".join(map(str, buckling.terms_for(p.ritz_terms, *PLATE)))
+               if terms[(c["id"], tk)]["k"] else None,
+               "ritz_terms_study_max_change": terms[(c["id"], tk)]["evidence"][-1]["max_change"]
+               if terms[(c["id"], tk)]["k"] else None,
+               "exact_eigen_solved": r.get("n_eigen_solved"),
                "qi_n": qi["n"], "qi_margin": qi["margin"] if qi["found"] else None,
                "mass_reduction_pct": (100.0 * (qi["n"] - det["n_plies"]) / qi["n"]) if (qi["found"] and det["margin"] >= SAFETY_FACTOR) else None,
                "matlab_pass": None, "margin_matlab": None}
+        fm = det.get("buckling_ritz_full")
+        if fm:
+            row.update({"buckling_full_opt_terms": fm["lambda_optimization_terms"],
+                        "buckling_full_converged": fm["lambda_converged"],
+                        "buckling_full_converged_MN": "x".join(map(str, fm["converged_terms"])),
+                        "buckling_full_last_change": fm["last_change"],
+                        "buckling_full_sequence": "; ".join(f"{M}x{N}:{lam:.6g}" for M, N, lam in fm["sequence"])})
         for m in METHODS:
             rr = rows[m]
             # success = the FINAL answer is the global optimum (same ply count, margin within 1e-9)
@@ -249,7 +324,9 @@ def main(quick: bool = False, workers: int = 0, only: Optional[List[str]] = None
                                                         "hit_evals", "n_evaluations")} for x in runs])
     write_json("fronts.json", fronts)
     write_json("runs_full.json", runs)
-    write_json("run_cases_meta.json", {"quick": quick, "seeds": seeds, "budget": budget,
+    write_json("ritz_terms.json", {f"{k[0]}|{k[1]}": v for k, v in terms.items()})
+    write_json("run_cases_meta.json", {"quick": quick, "seeds": seeds, "budget": budget, "model": MODEL,
+                                       "workers": n_workers,
                                        "exhaustive_time_limit_s": ex_time, "front_to_n": front_to,
                                        "material": mat.to_dict(), "total_time_s": T()})
     print(f"done in {T():.0f} s ({len(to_check)} final designs written for the MATLAB re-check)")
@@ -261,7 +338,6 @@ if __name__ == "__main__":
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--workers", type=int, default=0)
     ap.add_argument("--only", nargs="*")
-    ap.add_argument("--no-ritz", action="store_true")
     ap.add_argument("--recompute", action="store_true", help="ignore the cached exhaustive results")
     a = ap.parse_args()
-    main(a.quick, a.workers, a.only, not a.no_ritz, a.recompute)
+    main(a.quick, a.workers, a.only, a.recompute)

@@ -36,7 +36,8 @@ def main(probe_timeout: float = 180.0) -> bool:
     for d in designs:
         c = cases[d["case"]]
         p = make_problem(c["loads"], material=mat, safety_factor=SAFETY_FACTOR, plate=Plate(*PLATE),
-                         ply_thickness=THICKNESSES[d["thickness"]], buckling_model=d["model"], ritz_terms=10)
+                         ply_thickness=THICKNESSES[d["thickness"]], buckling_model=d["model"],
+                         ritz_terms=d.get("ritz_terms") or 10)
         r = matlab_check.verify_design(p, d["full"])
         rows.append({"case": d["case"], "thickness": d["thickness"], "model": d["model"], "source": d["source"],
                      "design": notation(d["full"], True), "n_plies": len(d["full"]),
