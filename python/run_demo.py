@@ -1,4 +1,4 @@
-"""
+r"""
 run_demo.py - one-command demo for the presentation (started by ..\run_demo.bat).
   Part 0  environment check: Hugging Face (internet + token), Ollama + models
   Part 1  reference check, ML + MATLAB only: max FI 0.00238, critical ply 4, ABD(1,1) 5.94e7 N/m
