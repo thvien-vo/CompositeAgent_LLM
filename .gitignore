@@ -22,3 +22,12 @@ deliverables/optimization/figures_quick/
 
 # Office lock files
 ~$*
+
+# Presentation material (slides, presentation script and their exports), kept outside the repository
+*.pptx
+*.ppt
+KICH_BAN_THUYET_TRINH.*
+deliverables/CompositeAgent_slides*
+deliverables/make_slides.py
+deliverables/md_to_docx.py
+deliverables/*.pdf

@@ -57,8 +57,6 @@ python/
                                 exhaustive search, GA, NSGA-II, experiments, pytest suite
 matlab/clt_engine.m             CLT engine
 deliverables/
-  CompositeAgent_slides.pptx    presentation (bilingual English / Vietnamese)
-  KICH_BAN_THUYET_TRINH.md/.docx    presentation script (Vietnamese)
   benchmark/                    benchmark results of the LLM and RAG steps
   optimization/                 Layer 1 report (BAO_CAO_LOP1.md; section 9 is an English summary),
                                 result tables (results/) and figures (figures/)

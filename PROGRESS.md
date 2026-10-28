@@ -13,21 +13,15 @@ Lần chạy gần nhất: 0.0023807 / 4 / 5.93995e7 → **PASS** (chạy lại 
 - Kiểm tra tất định (không gọi LLM): `python\test_checks.py` → ALL PASS
 - Số lần gọi Hugging Face: mỗi lần gọi ghi 1 dòng vào `logs\hf_calls.log`.
 
-## Tài liệu thuyết trình cập nhật (28/10): XONG
-- Slide: 19 trang (thêm slide 13-16 về tối ưu Lớp 1: bài toán, phương pháp, kiểm chứng, kết quả). Slide 1 ghi người
-  trình bày Võ Nguyễn Thanh Viên, thầy hướng dẫn TS. Nguyễn Sỹ Ngọc (Khoa Cơ khí, HCMUT), đối tác GS. Masaaki Nishikawa
-  (ĐH Kyoto). Slide Hạn chế / Bước tiếp theo: thêm Lớp 2, Lớp 3, mất ổn định do cắt và hạn chế của chế độ offline.
+## Tài liệu thuyết trình (28/10): XONG - lưu ngoài repo
+- Slide (19 trang, song ngữ, phần tối ưu Lớp 1 ở slide 13-16) và kịch bản thuyết trình được giữ trên máy người trình
+  bày, không đưa vào repo.
 - Mức giảm khối lượng chỉ nêu cho ca không có lực cắt (-50 %, -37.5 %, nén -8.3 % đến -16.7 %); ca có lực cắt ghi rõ
-  chưa xét mất ổn định do cắt (Ritz: cắt thuần 12 lớp không đủ, cần khoảng 46 lớp). Hình so sánh tựa đẳng hướng được cắt
-  chỉ giữ 4 ca không có cắt.
-- Slide 13-16 và các thay đổi trên được sửa trực tiếp trong file .pptx; `make_slides.py` vẫn sinh bản 15 slide cũ
-  (chạy lại sẽ ghi đè các thay đổi này).
-- Kịch bản `KICH_BAN_THUYET_TRINH.md` + `.docx` (sinh lại bằng `md_to_docx.py`): phần nói slide 13-16, thuật ngữ tối ưu,
-  câu hỏi Q17-Q26, ghi chú: demo chạy chế độ có mạng; nếu buộc dùng `--offline` thì không đọc to lời giải thích của gemma3.
-- Kiểm tra bố cục: xuất PDF/PNG bằng PowerPoint, xem từng slide: không chồng chữ, không tràn khung.
+  chưa xét mất ổn định do cắt (Ritz: cắt thuần 12 lớp không đủ, cần khoảng 46 lớp).
+- Demo chạy chế độ có mạng; nếu buộc dùng `--offline` thì không đọc to lời giải thích của gemma3.
 
 ## Lớp 1 - Tối ưu thứ tự xếp lớp (28/10): XONG
-Mốc trước khi làm: tag `before-optimization` (`dec149b`). Chỉ THÊM file trong `python/optimization/` và
+Mốc trước khi làm: tag `before-optimization`. Chỉ THÊM file trong `python/optimization/` và
 `deliverables/optimization/` (+ mục này); `git diff before-optimization` trên các file cũ: trống.
 Báo cáo: `deliverables/optimization/BAO_CAO_LOP1.md` (tiếng Việt + 1 trang tiếng Anh cho GS. Nishikawa), bảng
 `results/*.csv`, `results/tables.md`, hình `figures/*.png`. Chạy lại: `python\optimization\run_optimization.bat [--quick]`.
@@ -54,7 +48,7 @@ Thư viện mới (venv): pymoo 0.6.2, pytest 9.1.1, matplotlib 3.11.2 (ghi tron
   `matlab_recheck` 83/83 đạt; pytest 78/78. Module tối ưu tự tránh WMI (`optimization/__init__.py`, `run_tests.py`).
 
 ## Việc 1 + 2 (27/10 tối): XONG - chi tiết trong deliverables/benchmark/KET_QUA_VIEC_1_2.md
-Mốc trước khi sửa: tag `before-task12` (`e0a9162`). Demo gốc: online 25 s, offline 39 s, demo.py PASS (log trong
+Mốc trước khi sửa: tag `before-task12`. Demo gốc: online 25 s, offline 39 s, demo.py PASS (log trong
 deliverables/benchmark/baseline_before_task12/).
 - **Việc 1** (`python\materials.py`, mới): schema LLM có thêm `material_name` (tên chép nguyên văn, phải có trong đề);
   Python còn quét chính văn bản đề. Chỉ dùng số đo khi khớp **duy nhất cả sợi và nhựa** với 1 dòng CSV (bỏ qua
@@ -142,14 +136,12 @@ quá tải FI=1.096 → FAILS) → Phần 3 RAG 4 câu. Đếm ngược 5-8 s gi
 Log trong logs\ (không commit); bản sao dự phòng: deliverables/demo_log_backup_online.txt, demo_log_backup_offline.txt.
 
 ## Mục tiêu 4 - Tài liệu: XONG
-- deliverables/CompositeAgent_slides.pptx (bản đầu 15 slide tạo bằng make_slides.py; bản hiện tại 19 slide, xem mục
-  "Tài liệu thuyết trình cập nhật" ở trên).
-- deliverables/KICH_BAN_THUYET_TRINH.md + .docx (chuẩn bị, kịch bản từng slide, demo từng bước, xử lý sự cố,
-  số liệu cần nhớ, bảng thuật ngữ, câu hỏi dự kiến).
+- Slide song ngữ có ghi chú người nói và kịch bản thuyết trình (chuẩn bị, kịch bản từng slide, demo từng bước, xử lý
+  sự cố, số liệu cần nhớ, bảng thuật ngữ, câu hỏi dự kiến): lưu ngoài repo (xem mục "Tài liệu thuyết trình" ở trên).
 ## Mục tiêu 5 - Fine-tune: KHÔNG CẦN (HF mặc định đúng 28/28). Ghi vào "bước tiếp theo" cho model offline.
 
 ## Nhật ký
-- 27/10 17:5x  git init, commit `2b15e21`; demo.py PASS.
+- 27/10 17:5x  git init, commit đầu tiên; demo.py PASS.
 - 27/10 18:04  v1 vs v2 trên HF (dev): 0/10 vs 10/10.
 - 27/10 18:21  Ollama dev: v1 4/10, v2 4/10 → thêm đối chiếu với văn bản (v3) → 9/10 → thêm hỏi lại → 10/10.
 - 27/10 18:30  holdout lần đầu: v3 HF 6/6, Ollama 4/6 → thêm luật số lớp / độ dày.

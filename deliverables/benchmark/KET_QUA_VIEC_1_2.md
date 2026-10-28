@@ -1,6 +1,6 @@
 # Kết quả Việc 1 (số đo thật cho vật liệu có tên) và Việc 2 (không để tải thành 0 im lặng)
 
-Ngày 27/10/2026, 21:30-22:05. Mốc trước khi sửa: git tag `before-task12` (commit `e0a9162`).
+Ngày 27/10/2026, 21:30-22:05. Mốc trước khi sửa: git tag `before-task12`.
 "Đúng hoàn toàn" = đầu vào CLT cuối cùng của agent đúng: vật liệu, mọi góc, độ dày, 6 tải; với bộ mới còn phải
 đúng **nguồn tính chất** (dòng CSV đo thật hay ML theo nhóm); 2 đề mơ hồ chỉ đúng khi agent **từ chối kèm lỗi rõ ràng**.
 
