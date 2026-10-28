@@ -45,8 +45,9 @@ class Problem:
     encoding: str = "ply"                                   # "ply" or "stack" (0_2, +-45, 90_2)
     criteria: Tuple[str, ...] = ("max_stress", "tsai_wu", "buckling")
     f12_star: float = -0.5
-    buckling_model: str = "closed_form"                     # "closed_form" (spec) or "ritz" (adds Nxy)
-    ritz_terms: int = 12
+    buckling_model: str = "closed_form"     # "closed_form" (Nx, Ny; D16 = D26 = 0), "ritz" (adds Nxy, D16 = D26 = 0),
+                                            # "ritz_full" (Nx, Ny, Nxy and D16, D26: the project model)
+    ritz_terms: int = 12                    # ritz_full: size k of the sine series, M x N = buckling.terms_for(k, a, b)
     buckling_modes: Optional[Tuple[int, int]] = None        # None = proven-complete mode scan
     strain_allowables: Optional[Tuple[float, float, float]] = None
     criterion_factors: Dict[str, float] = field(default_factory=dict)
@@ -59,8 +60,8 @@ class Problem:
             raise ValueError(f"unknown criteria {bad}")
         if "max_strain" in self.criteria and self.strain_allowables is None:
             raise ValueError("max_strain needs strain_allowables")
-        if self.buckling_model not in ("closed_form", "ritz"):
-            raise ValueError("buckling_model must be 'closed_form' or 'ritz'")
+        if self.buckling_model not in ("closed_form", "ritz", "ritz_full"):
+            raise ValueError("buckling_model must be 'closed_form', 'ritz' or 'ritz_full'")
 
     @property
     def enc(self) -> Encoding:
@@ -69,20 +70,26 @@ class Problem:
     @property
     def has_compression(self) -> bool:
         Nx, Ny, Nxy = self.loads
-        return Nx < 0 or Ny < 0 or (self.buckling_model == "ritz" and Nxy != 0)
+        return Nx < 0 or Ny < 0 or (self.buckling_model in ("ritz", "ritz_full") and Nxy != 0)
 
     def describe(self) -> Dict:
         return {"Nx": self.loads[0], "Ny": self.loads[1], "Nxy": self.loads[2], "material": self.material.name,
                 "safety_factor": self.safety_factor, "a": self.plate.a, "b": self.plate.b,
                 "ply_thickness": self.ply_thickness, "encoding": self.encoding, "criteria": list(self.criteria),
-                "f12_star": self.f12_star, "buckling_model": self.buckling_model,
+                "f12_star": self.f12_star, "buckling_model": self.buckling_model, "ritz_terms": self.ritz_terms,
                 "rules": {"symmetric": self.rules.symmetric, "balanced": self.rules.balanced,
                           "min_fraction": self.rules.min_fraction, "max_contiguous": self.rules.max_contiguous,
                           "n_min": self.rules.n_min, "n_max": self.rules.n_max}}
 
 
 class Evaluator:
-    """Batch evaluation with a cache. Counters: n_calls (designs requested), n_unique (designs analysed)."""
+    """Batch evaluation with a cache. Counters: n_calls (designs requested), n_unique (designs analysed).
+
+    ritz_full model: the basis integrals of the sine series are computed once (buckling.RitzModel), buckling
+    factors are cached by D matrix, and with lazy = True (default for this model) the buckling factor is computed
+    only for designs that already pass strength (strength RF >= safety factor). For the other designs the
+    margin returned is the strength RF (an upper bound of the true margin; they are infeasible either way) and
+    their buckling RF is reported as inf. NSGA-II sets lazy = False (it needs exact margins for its front)."""
 
     def __init__(self, problem: Problem, n_genes: Optional[int] = None):
         self.p = problem
@@ -97,6 +104,13 @@ class Evaluator:
         self.n_calls = 0
         self.n_unique = 0
         self.factors = np.array([problem.criterion_factors.get(c, 1.0) for c in problem.criteria])
+        self.ritz_model = None
+        self.lazy = False
+        if problem.buckling_model == "ritz_full" and "buckling" in problem.criteria:
+            a, b = problem.plate.a, problem.plate.b
+            self.ritz_model = buckling.RitzModel(a, b, *problem.loads, *buckling.terms_for(problem.ritz_terms, a, b))
+            self.lazy = True
+        self.n_buckling = 0   # designs whose buckling factor was computed
 
     # ------------------------------------------------------------------ public
     def evaluate(self, genes: np.ndarray) -> Dict[str, np.ndarray]:
@@ -143,9 +157,18 @@ class Evaluator:
     # ------------------------------------------------------------------ paths
     def _finish(self, n_plies, rf_strength: Dict[str, np.ndarray], D: np.ndarray):
         cols = []
+        need = None
+        if self.lazy and rf_strength:
+            fac = {c: self.factors[i] for i, c in enumerate(self.p.criteria)}
+            rs = np.min(np.stack([v / fac[c] for c, v in rf_strength.items()], axis=1), axis=1)
+            need = rs >= self.p.safety_factor
         for c in self.p.criteria:
             if c == "buckling":
-                cols.append(self.buckling_rf(D))
+                lam = np.full(len(D), np.inf)
+                idx = np.arange(len(D)) if need is None else np.where(need)[0]
+                if len(idx):
+                    lam[idx] = self.buckling_rf(D[idx])
+                cols.append(lam)
             else:
                 cols.append(rf_strength[c])
         rf = np.stack(cols, axis=1) / self.factors[None, :]
@@ -200,6 +223,9 @@ class Evaluator:
     def buckling_rf(self, D: np.ndarray) -> np.ndarray:
         Nx, Ny, Nxy = self.p.loads
         a, b = self.p.plate.a, self.p.plate.b
+        if self.p.buckling_model == "ritz_full":
+            self.n_buckling += len(D)
+            return self.ritz_model.lam_cached(buckling.d_vector(D))
         if self.p.buckling_model == "ritz":
             return buckling.ritz(D[:, 0, 0], D[:, 0, 1], D[:, 1, 1], D[:, 2, 2], Nx, Ny, Nxy, a, b,
                                  self.p.ritz_terms, self.p.ritz_terms)
@@ -232,11 +258,21 @@ def analyze_design(problem: Problem, full: Sequence[int]) -> Dict:
     lam_cf, mm, nn, capped = buckling.closed_form([D[0, 0]], [D[0, 1]], [D[1, 1]], [D[2, 2]], Nx, Ny, a, b,
                                                   problem.buckling_modes)
     lam_ritz = float(buckling.ritz([D[0, 0]], [D[0, 1]], [D[1, 1]], [D[2, 2]], Nx, Ny, Nxy, a, b, 20, 20)[0])
+    full_model = None
+    if problem.buckling_model == "ritz_full":
+        conv = buckling.converge(D, Nx, Ny, Nxy, a, b, start=6, step=2, tol=0.005)
+        mn = buckling.terms_for(problem.ritz_terms, a, b)
+        lam_opt = float(buckling.ritz_full(D, Nx, Ny, Nxy, a, b, *mn)[0])
+        full_model = {"lambda_optimization_terms": lam_opt, "optimization_terms": mn,
+                      "lambda_converged": conv["lambda"], "converged_terms": (conv["M"], conv["N"]),
+                      "converged": conv["converged"], "last_change": conv["last_change"], "sequence": conv["terms"]}
     rf = {c: float(np.min(v)) for c, v in per_ply.items()}
     crit_ply = {c: int(np.argmin(v)) + 1 for c, v in per_ply.items()}
     if "buckling" in problem.criteria:
-        rf["buckling"] = float(lam_ritz if problem.buckling_model == "ritz" else lam_cf[0]) / \
-            problem.criterion_factors.get("buckling", 1.0)
+        lam_used = lam_ritz if problem.buckling_model == "ritz" else float(lam_cf[0])
+        if full_model is not None:   # the lower of the two upper bounds (optimisation terms, converged series)
+            lam_used = min(full_model["lambda_converged"], full_model["lambda_optimization_terms"])
+        rf["buckling"] = float(lam_used) / problem.criterion_factors.get("buckling", 1.0)
     governing = min(rf, key=lambda c: rf[c])
     margin = rf[governing]
     ms_ratios = failure.max_stress_ratios(stress, m)
@@ -250,6 +286,7 @@ def analyze_design(problem: Problem, full: Sequence[int]) -> Dict:
         "max_stress_mode_in_critical_ply": mode, "critical_ply_per_criterion": crit_ply,
         "buckling_mode_mn": (int(mm[0]), int(nn[0])) if np.isfinite(lam_cf[0]) else None,
         "buckling_closed_form": float(lam_cf[0]), "buckling_ritz_with_shear": lam_ritz,
+        "buckling_ritz_full": full_model,
         "mode_scan_capped": bool(capped),
         "D16_over_D11": float(abs(D[0, 2]) / D[0, 0]), "D26_over_D22": float(abs(D[1, 2]) / D[1, 1]),
         "ABD": res["ABD"], "max_failure_index": res["max_failure_index"], "critical_ply_matlab_style": res["critical_ply"],

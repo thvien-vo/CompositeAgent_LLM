@@ -96,6 +96,7 @@ def run_nsga2(problem: Problem, seed: int = 0, pop_size: int = 40, budget: int =
     t0 = time.perf_counter()
     cfg = ga_config or GAConfig()
     helper = GeneticAlgorithm(problem, cfg, seed)       # reuses operators, repairer, evaluator
+    helper.ev.lazy = False                              # exact margins for every design (Pareto front)
     repairer, ev = helper.repairer, helper.ev
     sf = problem.safety_factor
     pproblem = _LamProblem(ev, helper.n_genes, problem.enc.n_symbols)

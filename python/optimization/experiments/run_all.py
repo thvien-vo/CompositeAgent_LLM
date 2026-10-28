@@ -1,6 +1,6 @@
 """
 Run every Layer-1 experiment in order and write deliverables/optimization/results + figures.
-  python -m optimization.experiments.run_all            full run (about 1 hour on 20 cores)
+  python -m optimization.experiments.run_all            full run (about 1.5 hours, at most 4 processes)
   python -m optimization.experiments.run_all --quick    a few minutes: fewer seeds, smaller budgets
 """
 from __future__ import annotations
@@ -8,14 +8,18 @@ from __future__ import annotations
 import argparse
 
 from optimization import matlab_check
-from optimization.experiments import leriche_haftka_exp, make_figures, matlab_recheck, run_cases, verify_matlab
+from optimization.experiments import (leriche_haftka_exp, make_figures, matlab_recheck, run_cases, verify_buckling,
+                                      verify_matlab)
 from optimization.experiments.common import Timer, setup
 
 
 def main(quick: bool = False):
     setup()
     T = Timer()
-    print("=== 1/5 Python CLT vs MATLAB clt_engine.m ===", flush=True)
+    print("=== 0/5 checks of the buckling model (Ritz with D16, D26, Nxy) ===", flush=True)
+    if not verify_buckling.main()["all_pass"]:
+        raise SystemExit("buckling model checks FAILED - the model is not used in the optimisation")
+    print("\n=== 1/5 Python CLT vs MATLAB clt_engine.m ===", flush=True)
     if matlab_check.available():
         verify_matlab.main(n_cases=60)
     else:

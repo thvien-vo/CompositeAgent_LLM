@@ -104,7 +104,8 @@ def problem(case: LHCase, modes=(5, 5)) -> Problem:
     return Problem(loads=(-1.0 * LB_PER_IN, -case.ny_over_nx * LB_PER_IN, 0.0), material=LH_MATERIAL, rules=rules,
                    safety_factor=0.0, plate=Plate(case.a_in * INCH, case.b_in * INCH), ply_thickness=LH_PLY,
                    encoding="stack", criteria=crit, strain_allowables=LH_STRAINS,
-                   criterion_factors={"max_strain": 1.5}, buckling_modes=modes, name=case.id)
+                   criterion_factors={"max_strain": 1.5}, buckling_modes=modes, name=case.id,
+                   buckling_model="closed_form")   # as in the source: closed form, D16 = D26 = 0
 
 
 def min_thickness_problem(Nx_lbin: float, Ny_lbin: float, n_max: int = 64) -> Problem:
@@ -113,7 +114,8 @@ def min_thickness_problem(Nx_lbin: float, Ny_lbin: float, n_max: int = 64) -> Pr
     return Problem(loads=(-Nx_lbin * LB_PER_IN, -Ny_lbin * LB_PER_IN, 0.0), material=LH_MATERIAL, rules=rules,
                    safety_factor=1.0, plate=Plate(20 * INCH, 5 * INCH), ply_thickness=LH_PLY, encoding="stack",
                    criteria=("max_strain", "buckling"), strain_allowables=LH_STRAINS,
-                   criterion_factors={"max_strain": 1.5}, buckling_modes=(5, 5))
+                   criterion_factors={"max_strain": 1.5}, buckling_modes=(5, 5),
+                   buckling_model="closed_form")   # as in the source: closed form, D16 = D26 = 0
 
 
 def stacks_to_genes(stacks: str, n_genes: int) -> np.ndarray:

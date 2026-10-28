@@ -43,7 +43,7 @@ def _num(x):
         return None
 
 
-def pareto(tkey="t0125", model="closed_form"):
+def pareto(tkey="t0125", model="ritz_full"):
     fronts = read_json("fronts.json")
     fig, axes = plt.subplots(2, 4, figsize=(13, 6.2), constrained_layout=True)
     for ax, c in zip(axes.flat, CASES):
@@ -84,7 +84,7 @@ def pareto(tkey="t0125", model="closed_form"):
     return out
 
 
-def convergence(tkey="t0125", model="closed_form"):
+def convergence(tkey="t0125", model="ritz_full"):
     """Share of runs that have found the exact optimum vs number of evaluations (ECDF of evals-to-hit)."""
     runs = read_json("runs_history.json")
     meta = read_json("run_cases_meta.json")
@@ -118,7 +118,7 @@ def convergence(tkey="t0125", model="closed_form"):
     return out
 
 
-def best_so_far(tkey="t0125", model="closed_form", case="C4"):
+def best_so_far(tkey="t0125", model="ritz_full", case="C4"):
     """Median best ply count / margin of the best design so far, GA vs NSGA-II, one case."""
     runs = read_json("runs_history.json")
     meta = read_json("run_cases_meta.json")
@@ -156,7 +156,7 @@ def best_so_far(tkey="t0125", model="closed_form", case="C4"):
 
 
 def quasi_iso():
-    rows = [r for r in _read_csv("cases_summary.csv") if r["model"] == "closed_form"]
+    rows = [r for r in _read_csv("cases_summary.csv") if r["model"] == "ritz_full"]
     import textwrap
     fig, axes = plt.subplots(1, 2, figsize=(15, 4.8), constrained_layout=True, sharey=True)
     for ax, tk in zip(axes, ("t0125", "t0183")):
@@ -178,7 +178,7 @@ def quasi_iso():
         ax.axhline(64, color=INK2, lw=1.0, ls="--")
         ax.text(-0.6, 65, "optimizer limit: 64 plies", ha="left", va="bottom", fontsize=8, color=INK2)
         ax.set_xticks(x, [r["case"] + "\n" + "\n".join(textwrap.wrap(r["name_en"], 11)) for r in rr], fontsize=7.5)
-        ax.set_ylim(0, 118)
+        ax.set_ylim(0, max(118, max(q or 0 for q in qi) + 14))
         ax.set_ylabel("plies needed for margin >= 1.5 (-)")
         ax.set_title(f"ply {THICKNESS_LABEL[tk]}  (label: mass saving vs quasi-isotropic)")
         ax.legend(loc="upper left", fontsize=8)
@@ -231,12 +231,51 @@ def leriche():
     return out
 
 
+def mass_saving_before_after():
+    """Mass saving vs quasi-isotropic, previous model (closed form, no shear buckling) vs Ritz with D16, D26, Nxy."""
+    new = [r for r in _read_csv("cases_summary.csv") if r["model"] == "ritz_full"]
+    old = [r for r in _read_csv(os.path.join("before_ritz", "cases_summary.csv")) if r["model"] == "closed_form"]
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4.4), constrained_layout=True, sharey=True)
+    for ax, tk in zip(axes, ("t0125", "t0183")):
+        rn = [r for r in new if r["thickness"] == tk]
+        ro = {r["case"]: r for r in old if r["thickness"] == tk}
+        x = np.arange(len(rn))
+        w = 0.38
+        for i, r in enumerate(rn):
+            o = ro.get(r["case"])
+            vals = [_num(q["mass_reduction_pct"]) if q else None for q in (o, r)]
+            if vals == [None, None]:
+                ax.text(x[i], 1, "no design\n<= 64 plies\n(both)", ha="center", va="bottom", fontsize=7, color=INK2)
+                continue
+            for dx, q, col, v in ((-w / 2 - 0.01, o, INK2, vals[0]), (w / 2 + 0.01, r, BLUE, vals[1])):
+                if v is not None:
+                    ax.bar(x[i] + dx, v, w, color=col, alpha=0.55 if col == INK2 else 1.0)
+                    ax.text(x[i] + dx, v + 1, f"{v:.0f}%" + ("*" if col == INK2 and float(q["Nxy"]) != 0 else ""),
+                            ha="center", va="bottom", fontsize=7.5, color=INK if col == BLUE else INK2)
+                else:
+                    ax.text(x[i] + dx, 1, "no design\n<= 64 plies", ha="center", va="bottom", fontsize=6.5, color=col)
+        from matplotlib.patches import Patch
+        ax.legend(handles=[Patch(color=INK2, alpha=0.55, label="before: closed form, shear buckling not checked"),
+                           Patch(color=BLUE, label="after: Rayleigh-Ritz with D16, D26, Nxy")],
+                  loc="upper right", fontsize=8)
+        ax.set_xticks(x, [r["case"] for r in rn])
+        ax.set_ylim(0, 62)
+        ax.set_ylabel("mass saving vs quasi-isotropic (%)")
+        ax.set_title(f"ply {THICKNESS_LABEL[tk]}")
+    fig.suptitle("Mass saving of the optimum vs the smallest quasi-isotropic laminate with the same margin "
+                 "(* = case with shear: the 'before' value did not check shear buckling)", fontsize=10)
+    out = os.path.join(FIGS, "mass_saving_before_after.png")
+    fig.savefig(out, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    return out
+
+
 def main():
     setup()
     made = []
     for fn, args in ((pareto, ("t0125",)), (pareto, ("t0183",)), (convergence, ("t0125",)),
-                     (convergence, ("t0183",)), (best_so_far, ("t0125", "closed_form", "C4")),
-                     (quasi_iso, ()), (leriche, ())):
+                     (convergence, ("t0183",)), (best_so_far, ("t0125", "ritz_full", "C4")),
+                     (quasi_iso, ()), (mass_saving_before_after, ()), (leriche, ())):
         try:
             made.append(fn(*args))
         except FileNotFoundError as e:

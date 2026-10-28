@@ -85,7 +85,7 @@ def main(quick: bool = False):
     designs, summary, histories = [], [], {}
     for v in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
         os.environ[v] = "1"
-    pool = ProcessPoolExecutor(max_workers=max(1, min(12, (os.cpu_count() or 2) - 4)))
+    pool = ProcessPoolExecutor(max_workers=max(1, min(4, (os.cpu_count() or 2) - 4)))   # at most 4 processes
     for case in LH.CASES:
         designs += LH.evaluate_paper_designs(case)
         p = LH.problem(case)
