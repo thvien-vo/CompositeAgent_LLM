@@ -14,8 +14,8 @@
 | GA, GA + tìm kiếm cục bộ, NSGA-II ↔ vét cạn: 8 ca tải × 2 độ dày lớp = 16 bài vét cạn được, 20 seed mỗi thuật toán, ngân sách 10 000 | **20/20 đáp án cuối đúng tối ưu toàn cục ở cả 16 bài, cho cả 3 thuật toán** (960 lần chạy) |
 | Le Riche & Haftka (1993; thông số từ luận án Le Riche 1994), chế độ số lớp cố định | Vét cạn toàn bộ không gian (531 441 và 43 046 721 phương án): **trùng giá trị tối ưu công bố** 3973.01, 9998.19, 13518.66 (chênh ≤ 10⁻⁶ do làm tròn); ca Ny/Nx = 0.25 tìm được 12678.78, **cao hơn 0.031 %** thiết kế GA in trong luận án; 12 thiết kế in trong luận án được tính lại khớp ≤ 1.5·10⁻⁶ (một giá trị độ bền không quyết định lệch 0.03 %) |
 | Le Riche & Haftka (1995), bài ít lớp nhất | n* = 48 lớp ở cả 3 ca như nguồn; λ tốt nhất ở 44/48 lớp = 0.879/1.040 trùng nguồn; thiết kế tối ưu ca 2 và ca 3 trùng nguyên văn Bảng 2 của nguồn |
-| pytest (CLT, từng tiêu chuẩn, mất ổn định, từng luật, repair, từng thuật toán, vật liệu, MATLAB) | **76 đạt, 1 bỏ qua** (tệp test MATLAB: engine không khởi động được, mục 4.7); trước sự cố WMI, 2 test MATLAB đã đạt (lượt 75/75, commit 198920e lúc 02:10) |
-| Kiểm tra lại các phương án tối ưu cuối bằng MATLAB | **CHƯA làm được**: từ khoảng 02:10–02:18 ngày 28/10 dịch vụ WMI của Windows bị treo, `import matlab.engine` treo theo (chi tiết mục 4.7). 83 phương án đã được ghi sẵn để kiểm tra bằng một lệnh khi MATLAB chạy lại |
+| pytest (CLT, từng tiêu chuẩn, mất ổn định, từng luật, repair, từng thuật toán, vật liệu, MATLAB) | **78/78 đạt** (chạy lại ngày 28/10 sau khi khởi động lại máy, gồm 2 test MATLAB; trong lúc WMI treo: 76 đạt, 1 tệp test MATLAB bỏ qua, mục 4.7) |
+| Kiểm tra lại các phương án tối ưu cuối bằng MATLAB | **83/83 đạt** (sau khi khởi động lại máy, mục 4.7): sai số tương đối lớn nhất ABD 1.7·10⁻¹⁵, ứng suất 3.1·10⁻¹⁵; biên an toàn MATLAB trùng Python |
 
 **Giảm khối lượng so với tấm tựa đẳng hướng `[0/45/−45/90]ns` nhỏ nhất đạt cùng biên an toàn** (mục 4.4):
 lớp 0.125 mm: kéo một phương **−50 %** (24 so với 48 lớp), kéo hai phương −37.5 %, cắt thuần −25 %, kéo + cắt −25 %,
@@ -403,17 +403,20 @@ chúng tôi không giải thích được chắc chắn.
 (chấm: GA, liền: GA + tìm kiếm cục bộ).*
 
 ### 4.7 Kiểm tra lại bằng MATLAB các phương án tối ưu cuối
-MATLAB engine could not start within 180 s -> 83 final designs NOT re-checked in MATLAB (run this script again when MATLAB works)
+| designs | pass | max e_ABD | max e_stress | max \|RF diff\| |
+|---|---|---|---|---|
+| 83 | 83 | 1.7e-15 | 3.1e-15 | 5.7e-15 |
 
-Lý do: khoảng 02:10–02:18 ngày 28/10, ngay sau một lần chạy song song 16 tiến trình bị lỗi cấp phát bộ nhớ của OpenBLAS (rất
-có thể chính lần chạy này gây ra), dịch vụ WMI của Windows ngừng phản hồi: `tasklist`, `taskkill`,
-`Get-CimInstance`, `platform.platform()` của Python đều treo; `import matlab.engine` treo ở
-`pythonengine.createProcess()`. Không có quyền quản trị để khởi động lại dịch vụ; đã theo dõi 45 phút không tự hồi phục.
-Bộ tính Python đã được kiểm chứng với MATLAB **trước** sự cố (60/60 tấm, mục 4.1, gồm cả tấm đối xứng [0/±45/90] như các
-phương án tối ưu) và test `test_optimised_design_rechecked_in_matlab` đã đạt lúc phát triển, nhưng **83 phương án cuối
-chưa được tính lại bằng MATLAB**. Sau khi khởi động lại máy: `..\venv\Scripts\python.exe -m
-optimization.experiments.matlab_recheck` (trong thư mục `python`) sẽ kiểm tra cả 83 phương án và điền cột
-`matlab_pass` của `results/cases_summary.csv`.
+Cả 83 phương án tối ưu cuối được tính lại bằng `clt_engine.m`: với mỗi bài (16 bài mô hình chính + 6 bài Ritz), phương án
+tham chiếu (vét cạn, hoặc tốt nhất trong mọi lần chạy khi vét cạn không xong) và phương án tốt nhất của từng thuật toán
+khi nó khác phương án tham chiếu (62 phương án mô hình chính, 21 phương án Ritz). Kết quả: **83/83 đạt**, thời gian 77.5 s. Chi tiết từng phương án:
+`results/matlab_final_designs.csv`; cột `matlab_pass`, `margin_matlab` của `results/cases_summary.csv` đã được điền.
+
+Ghi chú quá trình: lần chạy đầu (khoảng 02:10–02:18 ngày 28/10) không thực hiện được vì dịch vụ WMI của Windows ngừng
+phản hồi ngay sau một lần chạy song song 16 tiến trình bị lỗi cấp phát bộ nhớ của OpenBLAS (`tasklist`, `taskkill`,
+`Get-CimInstance`, `platform.platform()` của Python và `import matlab.engine` đều treo). Sau khi khởi động lại máy,
+`..\venv\Scripts\python.exe -m optimization.experiments.matlab_recheck` (trong thư mục `python`) chạy bình thường và cho
+kết quả trên; `results/tables.md` được sinh lại bằng `make_tables`.
 
 ## 5. Đánh giá chung
 * Bộ tính CLT Python có thể thay MATLAB trong vòng lặp tối ưu (khớp tới sai số máy, nhanh hơn nhiều bậc).
@@ -473,7 +476,7 @@ res.to_dict()               # kết quả có cấu trúc (JSON được)
 ```
 `material` có thể là đối tượng `Material` (Lớp 2 thay bằng mẫu ngẫu nhiên của tính chất vật liệu).
 
-Ghi chú vận hành: ngày 28/10 dịch vụ WMI của Windows trên máy này bị treo, làm `platform` của Python (và pandas,
+Ghi chú vận hành: ngày 28/10 dịch vụ WMI của Windows trên máy này từng bị treo (hết sau khi khởi động lại máy), làm `platform` của Python (và pandas,
 pytest, `tasklist`, `taskkill`, `import matlab.engine`) treo. Module tối ưu tự tắt truy vấn WMI của Python
 (`optimization/__init__.py`, `run_tests.py`); phần MATLAB tự dò bằng tiến trình con có giới hạn thời gian và báo rõ
 nếu không chạy được, không treo.
@@ -550,9 +553,9 @@ infeasible within 64 plies (best margin 1.04). With 0.18288 mm plies: −11 % to
 sine series, validated against k_s = 9.34 for an isotropic square plate) shows that the 12-ply pure-shear optimum would
 buckle at 2.3 % of the load; with shear buckling 46 plies are needed (proven lower bound 42). (2) D16/D26 neglected
 (ratios up to 0.15 reported). (3) Mean (not B-basis) strengths, first-ply failure, single load case, fixed angle set.
-(4) Exhaustive proofs only up to ~34 plies when buckling is active. (5) The final re-check of the 83 optimal designs in
-MATLAB could not be run because the Windows WMI service hung on this machine (the MATLAB engine import hangs); it is a
-one-command step after a reboot. The original agent demo files were not modified (git diff empty).
+(4) Exhaustive proofs only up to ~34 plies when buckling is active. (5) The "GA-deceptive" 1995 case 3 is solved
+exactly in only 3/20 runs. All 83 final designs were re-checked in MATLAB `clt_engine.m` (83/83 pass, max relative
+error 3.1·10⁻¹⁵) and the pytest suite passes 78/78. The original agent demo files were not modified (git diff empty).
 
 ## 10. Tài liệu tham khảo (chỉ những nguồn đã dùng)
 

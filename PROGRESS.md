@@ -13,7 +13,20 @@ Lần chạy gần nhất: 0.0023807 / 4 / 5.93995e7 → **PASS** (chạy lại 
 - Kiểm tra tất định (không gọi LLM): `python\test_checks.py` → ALL PASS
 - Số lần gọi Hugging Face: mỗi lần gọi ghi 1 dòng vào `logs\hf_calls.log`.
 
-## Lớp 1 - Tối ưu thứ tự xếp lớp (28/10, phiên 3): XONG (trừ kiểm tra MATLAB cuối, xem dưới)
+## Tài liệu thuyết trình cập nhật (28/10): XONG
+- Slide: 19 trang (thêm slide 13-16 về tối ưu Lớp 1: bài toán, phương pháp, kiểm chứng, kết quả). Slide 1 ghi người
+  trình bày Võ Nguyễn Thanh Viên, thầy hướng dẫn TS. Nguyễn Sỹ Ngọc (Khoa Cơ khí, HCMUT), đối tác GS. Masaaki Nishikawa
+  (ĐH Kyoto). Slide Hạn chế / Bước tiếp theo: thêm Lớp 2, Lớp 3, mất ổn định do cắt và hạn chế của chế độ offline.
+- Mức giảm khối lượng chỉ nêu cho ca không có lực cắt (-50 %, -37.5 %, nén -8.3 % đến -16.7 %); ca có lực cắt ghi rõ
+  chưa xét mất ổn định do cắt (Ritz: cắt thuần 12 lớp không đủ, cần khoảng 46 lớp). Hình so sánh tựa đẳng hướng được cắt
+  chỉ giữ 4 ca không có cắt.
+- Slide 13-16 và các thay đổi trên được sửa trực tiếp trong file .pptx; `make_slides.py` vẫn sinh bản 15 slide cũ
+  (chạy lại sẽ ghi đè các thay đổi này).
+- Kịch bản `KICH_BAN_THUYET_TRINH.md` + `.docx` (sinh lại bằng `md_to_docx.py`): phần nói slide 13-16, thuật ngữ tối ưu,
+  câu hỏi Q17-Q26, ghi chú: demo chạy chế độ có mạng; nếu buộc dùng `--offline` thì không đọc to lời giải thích của gemma3.
+- Kiểm tra bố cục: xuất PDF/PNG bằng PowerPoint, xem từng slide: không chồng chữ, không tràn khung.
+
+## Lớp 1 - Tối ưu thứ tự xếp lớp (28/10): XONG
 Mốc trước khi làm: tag `before-optimization` (`dec149b`). Chỉ THÊM file trong `python/optimization/` và
 `deliverables/optimization/` (+ mục này); `git diff before-optimization` trên các file cũ: trống.
 Báo cáo: `deliverables/optimization/BAO_CAO_LOP1.md` (tiếng Việt + 1 trang tiếng Anh cho GS. Nishikawa), bảng
@@ -27,23 +40,20 @@ Thư viện mới (venv): pymoo 0.6.2, pytest 9.1.1, matplotlib 3.11.2 (ghi tron
   vét cạn chứng minh tối ưu cả 16 bài; GA, GA+LS, NSGA-II **20/20 seed đúng tối ưu ở cả 16 bài** (ngân sách 10 000).
   Le Riche & Haftka: trùng tối ưu công bố 3973.01 / 9998.19 / 13518.66, Ny/Nx = 0.25 tìm được 12678.78 (+0.031 %
   so với thiết kế GA trong luận án); bài 1995: n* = 48 lớp và thiết kế ca 2, 3 trùng nguyên văn bài báo.
-  pytest: 76 đạt, 1 bỏ qua (test MATLAB, vì sự cố dưới).
-- Giảm khối lượng so với tựa đẳng hướng (lớp 0.125 mm): -50 % kéo một phương, -37.5 % kéo hai phương, -25 % cắt thuần
-  và kéo+cắt, -16.7 % nén một phương và nén+cắt, -8.3 % nén hai phương; tải rất lớn: không khả thi <= 64 lớp.
+  pytest: 78/78 đạt (gồm 2 test MATLAB). MATLAB tính lại 83 phương án tối ưu cuối: 83/83 đạt, sai số <= 3.1e-15.
+- Giảm khối lượng so với tựa đẳng hướng (lớp 0.125 mm, ca không có lực cắt): -50 % kéo một phương, -37.5 % kéo hai
+  phương, -16.7 % nén một phương, -8.3 % nén hai phương; tải rất lớn: không khả thi <= 64 lớp. Ca có lực cắt: mô hình
+  chính chưa có mất ổn định do cắt nên không dùng con số giảm khối lượng làm kết quả.
 - Hạn chế chính: công thức đóng không có mất ổn định do cắt (Ritz: phương án cắt thuần 12 lớp chỉ chịu 2.3 % tải,
   cần 46 lớp); bỏ qua D16/D26 (tỉ số <= 0.15); bài LC3 1995 "đánh lừa GA" chỉ 3/20.
 - Sửa trong lúc làm: NSGA-II của pymoo làm mất tối ưu khi nhiều thiết kế cùng (số lớp, biên) -> khoảng cách chen chúc
   tính trên vector mục tiêu khác nhau (test hồi quy); GA thêm tìm kiếm cục bộ + bước bớt lớp (LC2 1995: 6/20 -> 20/20).
-- **SỰ CỐ MÁY (28/10 ~02:10-02:18)**: sau một lần chạy song song 16 tiến trình bị lỗi cấp phát bộ nhớ OpenBLAS, dịch vụ
-  WMI của Windows treo: `tasklist`, `taskkill`, `Get-CimInstance`, `platform.platform()` của Python, `import pandas`
-  (qua platform) và `import matlab.engine` đều treo -> **demo cũ (demo.py, run_demo.bat) hiện cũng sẽ treo** dù không
-  file nào của demo bị sửa. Không có quyền admin để khởi động lại WMI; theo dõi 45 phút không tự hồi phục.
-  **CẦN LÀM trước 30/10: khởi động lại máy**, rồi chạy: `venv\Scripts\python.exe python\demo.py` (phải PASS 0.00238 / 4),
-  `run_demo.bat`, `run_demo.bat --offline`, và trong thư mục `python`:
-  `..\venv\Scripts\python.exe -m optimization.experiments.matlab_recheck` (kiểm tra 83 phương án tối ưu bằng MATLAB).
-  Module tối ưu tự tránh WMI (`optimization/__init__.py`, `run_tests.py`) nên vẫn chạy được trong lúc WMI treo.
+- Sự cố máy (28/10 ~02:10-02:18, ĐÃ XỬ LÝ): sau một lần chạy song song 16 tiến trình bị lỗi cấp phát bộ nhớ OpenBLAS,
+  dịch vụ WMI của Windows treo (`tasklist`, `platform.platform()` của Python, `import matlab.engine` đều treo). Sau khi
+  khởi động lại máy đã kiểm tra: `demo.py` PASS (0.00238 / 4); `run_demo.bat` có mạng và `--offline` chạy đúng;
+  `matlab_recheck` 83/83 đạt; pytest 78/78. Module tối ưu tự tránh WMI (`optimization/__init__.py`, `run_tests.py`).
 
-## Việc 1 + 2 (27/10 tối, phiên 2): XONG - chi tiết trong deliverables/benchmark/KET_QUA_VIEC_1_2.md
+## Việc 1 + 2 (27/10 tối): XONG - chi tiết trong deliverables/benchmark/KET_QUA_VIEC_1_2.md
 Mốc trước khi sửa: tag `before-task12` (`e0a9162`). Demo gốc: online 25 s, offline 39 s, demo.py PASS (log trong
 deliverables/benchmark/baseline_before_task12/).
 - **Việc 1** (`python\materials.py`, mới): schema LLM có thêm `material_name` (tên chép nguyên văn, phải có trong đề);
@@ -73,7 +83,7 @@ deliverables/benchmark/baseline_before_task12/).
 - run_demo có thêm đề 3 (IM7/8552 + tải bằng lời) và đề 4 (tải không rõ hướng → agent phải từ chối). Online 20-45 s (2 lần đo),
   offline 55-57 s (không tính thời gian dừng, gồm khởi động MATLAB). Chạy qua chính run_demo.bat cả 2 chế độ: OK.
   demo.py vẫn PASS. Log dự phòng mới: deliverables/demo_log_backup_online.txt, demo_log_backup_offline.txt.
-- Hugging Face trong phiên 2: **96 lần gọi** (giới hạn 150): 8 demo gốc, 16 benchmark đề mới trước khi sửa,
+- Hugging Face trong lượt làm Việc 1 + 2: **96 lần gọi** (giới hạn 150): 8 demo gốc, 16 benchmark đề mới trước khi sửa,
   44 benchmark sau khi sửa, 11 demo online thử, 6 RAG holdout, 11 demo online cuối (qua run_demo.bat).
   Đếm trong `logs\hf_calls.log` (8 lần đầu đếm từ log demo gốc vì bộ đếm được thêm sau).
 - Hạn chế còn lại của Việc 1+2: chỉ 25 vật liệu có số đo; hướng tải đọc bằng luật từ khóa (Anh/Việt) - câu lạ bị từ
@@ -116,7 +126,7 @@ model vào GPU). Benchmark Ollama chạy lại sau khi sửa: độ chính xác 
 
 ## Mục tiêu 2 - RAG: XONG (bản Python); pgvector: BỎ QUA
 - Docker chưa cài, WSL chưa cài ("Windows Subsystem for Linux is not installed") → Docker Desktop cần cài WSL
-  và khởi động lại máy → theo chỉ dẫn bỏ qua PostgreSQL + pgvector, giữ bản chạy ổn định.
+  và khởi động lại máy → tạm bỏ qua PostgreSQL + pgvector, giữ bản chạy ổn định.
 - rag.py: embedding nomic-embed-text (Ollama, 768 chiều) + cosine + cộng điểm khớp tên vật liệu; câu hỏi
   "cao nhất / thấp nhất" → Python xếp hạng; câu hỏi "tính chất X của vật liệu Y" → Python tra thẳng bảng
   (dòng [F]) và kiểm tra câu trả lời có khớp; guardrail dò số và số hiệu báo cáo NCP-RP không có trong ngữ cảnh;
@@ -132,7 +142,8 @@ quá tải FI=1.096 → FAILS) → Phần 3 RAG 4 câu. Đếm ngược 5-8 s gi
 Log trong logs\ (không commit); bản sao dự phòng: deliverables/demo_log_backup_online.txt, demo_log_backup_offline.txt.
 
 ## Mục tiêu 4 - Tài liệu: XONG
-- deliverables/CompositeAgent_slides.pptx (14 slide song ngữ, có ghi chú người nói; tạo lại bằng make_slides.py).
+- deliverables/CompositeAgent_slides.pptx (bản đầu 15 slide tạo bằng make_slides.py; bản hiện tại 19 slide, xem mục
+  "Tài liệu thuyết trình cập nhật" ở trên).
 - deliverables/KICH_BAN_THUYET_TRINH.md + .docx (chuẩn bị, kịch bản từng slide, demo từng bước, xử lý sự cố,
   số liệu cần nhớ, bảng thuật ngữ, câu hỏi dự kiến).
 ## Mục tiêu 5 - Fine-tune: KHÔNG CẦN (HF mặc định đúng 28/28). Ghi vào "bước tiếp theo" cho model offline.
@@ -151,3 +162,5 @@ Log trong logs\ (không commit); bản sao dự phòng: deliverables/demo_log_ba
 - 27/10 19:0x  slide + kịch bản. Soát lại: v1+HF tải = 0 ở 27/28 đề (đề T4: trả lời rỗng → crash), đã sửa chữ "28/28".
 - 27/10 19:18  Phát hiện Ollama qua "localhost" chậm ~2,1 s/lần gọi (Windows thử IPv6 trước) → đổi mặc định
   sang 127.0.0.1 (0,05 s). Demo online 23-81 s → 17 s; offline 61 s → 39 s. demo.py PASS.
+- 28/10 12:1x  Khởi động lại máy: demo.py PASS, run_demo.bat (có mạng, --offline) OK, MATLAB tính lại 83/83 phương án tối ưu.
+- 28/10 sau đó  Slide 19 trang + kịch bản (phần tối ưu); pytest module tối ưu 78/78.

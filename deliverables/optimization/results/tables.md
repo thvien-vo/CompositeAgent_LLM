@@ -82,7 +82,9 @@ Closed-form designs checked with Ritz (with Nxy):
 
 ## T5. MATLAB re-check of the final designs
 
-MATLAB engine could not start within 180 s -> 83 final designs NOT re-checked in MATLAB (run this script again when MATLAB works)
+| designs | pass | max e_ABD | max e_stress | max |RF diff| |
+|---|---|---|---|---|
+| 83 | 83 | 1.7e-15 | 3.1e-15 | 5.7e-15 |
 
 ## T6. Le Riche & Haftka benchmark (fixed thickness, max lambda_cr)
 
