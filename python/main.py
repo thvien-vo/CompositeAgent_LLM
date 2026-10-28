@@ -4,7 +4,8 @@ main.py - CLT agent, 4 steps:
   (2) 9 ply properties E1, E2, G12, nu12, Xt, Xc, Yt, Yc, S: measured values from the CSV when the text names
       one known material system (materials.py), else the ML prediction for the group (ml.predict_material)
   (3) MATLAB runs CLT              -> ABD, ply stresses, Max Stress failure index (clt_engine.m)
-  (4) LLM explains the numbers     -> short text (llm.explain_result), numbers checked by a guardrail
+  (4) LLM explains the numbers     -> short text (llm.explain_checked): every number must be in the data and be
+      named as what it is (ABD(1,1) = stiffness, not a load...); one retry, else a pre-built Python explanation
 
 Run:
   python main.py                                   built-in example
@@ -17,7 +18,7 @@ import sys
 import time
 
 import llm
-from llm import check_explanation, explain_result, parse_input, summarize
+from llm import check_explanation, explain_checked, parse_input, summarize
 from materials import ply_properties
 from matlab_clt import run_clt
 
@@ -78,30 +79,37 @@ def main(user_text, backend=None, lang="en", explain=True):
     print(f"  safety factor     = {s['safety_factor_1_over_FI']}   -> {'SAFE' if s['safe'] else 'FAILS'}")
 
     # 4 LLM: explanation (never blocks the numbers above)
-    answer, suspicious = None, []
+    answer, suspicious, info = None, [], {}
     if explain:
         print("\n[4/4] LLM explains the result ...")
         t = time.time()
         try:
-            answer = explain_result(problem, result, material, backend=backend, lang=lang)
+            answer, info = explain_checked(problem, result, material, backend=backend, lang=lang)
             print(f"  ({llm.LAST_BACKEND}, {time.time() - t:.1f} s)")
             suspicious = check_explanation(answer, problem, result, material)
         except Exception as e:
             print(f"  explanation not available: {type(e).__name__}: {str(e)[:200]}")
     print(f"\nTotal time: {time.time() - t_all:.1f} s")
     return {"problem": problem, "material": material, "result": result, "summary": s,
-            "answer": answer, "suspicious_numbers": suspicious}
+            "answer": answer, "suspicious_numbers": suspicious, "explanation": info}
 
 
 def print_explanation(out):
     if not out["answer"]:
+        return
+    info = out.get("explanation") or {}
+    if info.get("source") == "prebuilt":
+        print("\n===== EXPLANATION (pre-built by Python) =====")
+        print(out["answer"].strip())
+        print(f"  {info['note']}")
         return
     print("\n===== EXPLANATION (LLM) =====")
     print(out["answer"].strip())
     if out["suspicious_numbers"]:
         print(f"\n[guardrail] numbers not found in the CLT data: {out['suspicious_numbers']} - check them")
     else:
-        print("\n[guardrail] every number in the explanation matches the CLT data")
+        print("\n[guardrail] every number in the explanation matches the CLT data and is named as what it is"
+              + (" (after one retry)" if info.get("source") == "llm-retry" else ""))
 
 
 if __name__ == "__main__":

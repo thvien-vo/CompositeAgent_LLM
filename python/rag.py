@@ -213,7 +213,7 @@ def fact_line(question, hits):
     v = None if pd.isna(r[col]) else float(r[col])
     shown = "not reported in the database" if v is None else f"{v:g} {unit}".rstrip()
     return (f"Database value looked up by Python: {label} of {m} = {shown} "
-            f"(source: {r['source']}; status: {r['verify_status']})", v, unit)
+            f"(source: {r['source']}; status: {r['verify_status']})", v, unit, m, col)
 
 
 def ranking_block(question, n=5):
@@ -278,8 +278,97 @@ def check_numbers(answer_text, context):
     return bad
 
 
+REPORT_RE = re.compile(r"NCP-RP-\d{4}-\d{3}")
+
+
+def _material_patterns():
+    """(material, regex) for every material of the database, longest names first ('/', '-', spaces optional)."""
+    out = []
+    for m in sorted(load_table()["material"], key=len, reverse=True):
+        parts = [re.escape(p) for p in re.split(r"[\s/\-]+", m) if p]
+        out.append((m, re.compile(r"(?<![A-Za-z0-9])" + r"[\s/\-]*".join(parts) + r"(?![A-Za-z0-9])", re.IGNORECASE)))
+    return out
+
+
+def check_citations(answer_text, must_cite=()):
+    """Each NCAMP report id in the answer must be the source of the material it is attached to: the nearest material
+    named before it in the same sentence (else the first one after it in the sentence; a sentence without any
+    material name speaks of every material named in the answer). must_cite = materials whose report id the answer
+    must contain ([F] line, top of a ranking). Returns a list of problems (empty = OK)."""
+    t = _ascii(answer_text)
+    df = load_table().set_index("material")
+    reports = {m: REPORT_RE.findall(_ascii(df.loc[m, "source"])) for m in df.index}
+    mentions, taken = [], []
+    for m, rx in _material_patterns():
+        for mm in rx.finditer(t):
+            if not any(a < mm.end() and mm.start() < b for a, b in taken):
+                mentions.append((mm.start(), mm.end(), m))
+                taken.append((mm.start(), mm.end()))
+    mentions.sort()
+    issues = []
+    for sm in re.finditer(r"[^\n]+?(?:[.!?](?=\s|$)|$)", t, flags=re.MULTILINE):
+        inside = [x for x in mentions if sm.start() <= x[0] < sm.end()]
+        for rm in REPORT_RE.finditer(t, sm.start(), sm.end()):
+            before = [x for x in inside if x[1] <= rm.start()]
+            after = [x for x in inside if x[0] >= rm.end()]
+            mats = ([before[-1][2]] if before else [after[0][2]] if after
+                    else sorted({x[2] for x in mentions}))
+            for m in mats:
+                if rm.group() not in reports[m]:
+                    issues.append(f"{rm.group()} is given as the source of {m}, but the source of {m} is "
+                                  f"\"{df.loc[m, 'source']}\"")
+    for m in must_cite:
+        if reports.get(m) and not any(r in t for r in reports[m]):
+            issues.append(f"the answer does not cite the report of {m}: {reports[m][0]}")
+    return issues
+
+
+def _is_vietnamese(text):
+    return bool(re.search(r"[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]", text.lower()))
+
+
+def prebuilt_answer(question, hits, ranking, fact):
+    """Answer written by Python from the database rows only (used when the LLM answer fails the citation check)."""
+    vi = _is_vietnamese(question)
+    df = load_table().set_index("material")
+    if fact:
+        _, v, unit, m, col = fact
+        r = df.loc[m]
+        label = "Vf (fibre volume fraction)" if col == "Vf" else next(lab for c, lab, u in PROPS if c == col)
+        shown = ("không có trong cơ sở dữ liệu" if vi else "not reported in the database") \
+            if v is None else f"{v:g} {unit}".rstrip()
+        out = [f"{label} {'của' if vi else 'of'} {m} = {shown} ({'nguồn' if vi else 'source'}: {r['source']}; "
+               f"{'trạng thái' if vi else 'status'}: {r['verify_status']})."]
+        if col == "S_MPa" and isinstance(r.get("S_definition"), str):
+            out.append(f"{'Định nghĩa S' if vi else 'S definition'}: {r['S_definition']}.")
+        if r["verify_status"] in ("needs_check", "conflict"):
+            out.append("Giá trị này chưa được kiểm chứng." if vi else "This value is not yet verified.")
+        if isinstance(r.get("note"), str) and r["note"].strip():
+            out.append(f"{'Ghi chú' if vi else 'Note'}: {r['note'].strip()}")
+    elif ranking:
+        lines = ranking.split("\n")
+        out = [("Xếp hạng do Python tính trên toàn bộ cơ sở dữ liệu: " if vi else "") + lines[0]] \
+            + ["; ".join(x.strip() for x in lines[1:4]) + "."]
+    else:
+        out = [("Cơ sở dữ liệu không có giá trị trả lời trực tiếp câu hỏi này. Các dòng gần nhất: "
+                if vi else "The database does not contain a value that answers this question directly. Closest rows: ")
+               + "; ".join(f"{h['material']} ({'nguồn' if vi else 'source'}: {df.loc[h['material'], 'source']})"
+                           for h in hits) + "."]
+    return " ".join(out)
+
+
+def _fact_consistent(text, fact):
+    t = _ascii(text).lower()
+    if fact[1] is None:
+        return any(w in t for w in ["not reported", "not available", "does not", "not given", "not provide",
+                                    "no value", "không có", "chưa có", "không được báo cáo"])
+    return any(abs(float(x.replace(",", ".")) - fact[1]) <= 1e-9 + 0.005 * abs(fact[1])
+               for x in re.findall(r"\d+(?:[.,]\d+)?", t))
+
+
 def answer(question, k=TOP_K, backend=None, show_context=True):
-    """Returns dict: answer, hits, ranking, context, suspicious_numbers, backend."""
+    """Returns dict: answer, hits, ranking, context, suspicious_numbers, backend, source ("llm" | "llm-retry" |
+    "prebuilt"), citation_issues (problems of the first LLM answer)."""
     ranking, top = ranking_block(question)
     if ranking:  # "highest / lowest" question: the rows to show are the top of the ranking
         df = load_table().set_index("material")
@@ -303,22 +392,43 @@ def answer(question, k=TOP_K, backend=None, show_context=True):
             print("[R] " + ranking.replace("\n", "\n    "))
         if fact:
             print("[F] " + fact[0])
-    text = ask_llm(PROMPT.format(context=context, question=question), backend=backend)
-    consistent = None
-    if fact:  # does the answer state the value the table has?
-        t = _ascii(text).lower()
-        if fact[1] is None:
-            consistent = any(w in t for w in ["not reported", "not available", "does not", "not given", "not provide",
-                                              "no value", "không có", "chưa có", "không được báo cáo"])
-        else:
-            consistent = any(abs(float(x.replace(",", ".")) - fact[1]) <= 1e-9 + 0.005 * abs(fact[1])
-                             for x in re.findall(r"\d+(?:[.,]\d+)?", t))
-    return {"answer": text.strip(), "hits": hits, "ranking": ranking, "fact": fact, "fact_consistent": consistent,
-            "context": context, "suspicious_numbers": check_numbers(text, context), "backend": llm.LAST_BACKEND}
+    prompt = PROMPT.format(context=context, question=question)
+    must_cite = [fact[3]] if fact else top[:1]
+
+    def problems(txt):
+        out = check_citations(txt, must_cite)
+        out += [f"'{x}' is not in the context" for x in check_numbers(txt, context)]
+        if fact and not _fact_consistent(txt, fact):
+            out.append(f"the answer does not give the database value of line [F] ({fact[0]})")
+        return out
+
+    text = ask_llm(prompt, backend=backend)
+    first = problems(text)
+    source, backend_used = "llm", llm.LAST_BACKEND
+    if first:
+        if show_context:
+            print(f"[check] the answer has {len(first)} problem(s) -> asking the LLM again (once):")
+            for x in first:
+                print(f"        - {x}")
+        text = ask_llm(prompt + "\nYour previous answer was:\n" + text.strip() + "\n\nThe program found these "
+                       "problems in it:\n" + "\n".join(f"- {x}" for x in first)
+                       + "\nAnswer again without these problems: cite for each material the source of ITS OWN row.\n",
+                       backend=backend)
+        source, backend_used = "llm-retry", llm.LAST_BACKEND
+        if problems(text):
+            text, source = prebuilt_answer(question, hits, ranking, fact), "prebuilt"
+    return {"answer": text.strip(), "hits": hits, "ranking": ranking, "fact": fact,
+            "fact_consistent": _fact_consistent(text, fact) if fact else None,
+            "context": context, "suspicious_numbers": check_numbers(text, context), "backend": backend_used,
+            "source": source, "citation_issues": first}
 
 
 def print_answer(res):
-    print(f"\n=== ANSWER ({res['backend']}) ===\n{res['answer']}")
+    if res.get("source") == "prebuilt":
+        print(f"\n=== ANSWER (pre-built by Python from the database rows: the LLM answer failed the citation check "
+              f"twice) ===\n{res['answer']}")
+    else:
+        print(f"\n=== ANSWER ({res['backend']}) ===\n{res['answer']}")
     print("\nSources of the retrieved rows:")
     df = load_table().set_index("material")
     for i, h in enumerate(res["hits"], 1):
@@ -328,7 +438,9 @@ def print_answer(res):
         print(f"[guardrail] numbers / report ids not found in the retrieved rows: {res['suspicious_numbers']}"
               " - check them")
     else:
-        print("[guardrail] every number and report id in the answer appears in the retrieved database rows")
+        print("[guardrail] every number and report id in the answer appears in the retrieved database rows"
+              + (" and each report id is the source of its material" if res.get("source") != "prebuilt" else "")
+              + (" (after one retry)" if res.get("source") == "llm-retry" else ""))
     if res.get("fact_consistent") is not None:
         print(f"[fact-check] the answer {'AGREES' if res['fact_consistent'] else 'does NOT agree'} with the "
               f"database value looked up by Python")

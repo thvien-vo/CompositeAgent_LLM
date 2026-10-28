@@ -18,6 +18,7 @@ import json
 import os
 import re
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 
@@ -781,33 +782,87 @@ def summarize(problem, result, material):
     }
 
 
-def explain_result(problem, result, material=None, backend=None, lang="en"):
-    material = material or {}
+def _fmt(v):
+    return float(f"{float(v):.4g}")
+
+
+def explanation_data(problem, result, material):
+    """Every quantity given to the LLM, each with its name, value, unit and meaning."""
+    s = summarize(problem, result, material)
+    L = problem.loads.model_dump()
+    q = [
+        ("maximum failure index", s["max_failure_index"], "-",
+         "largest Max Stress failure index over all plies (= |stress| / strength of the governing component); "
+         ">= 1 means the ply fails. It is a ratio, not a load and not a stress"),
+        ("critical ply", s["critical_ply"], "(ply number)",
+         f"ply with the largest failure index, counted from the bottom; its fibre angle is "
+         f"{s['critical_ply_angle_deg']:g} deg"),
+        ("governing stress", s["governing_stress_MPa"], "MPa",
+         f"stress component that governs failure of the critical ply: {s['governing_mode']}"),
+        (f"strength it is compared with ({s['compared_with'].split()[0]})", s["strength_MPa"], "MPa",
+         f"{s['compared_with']} of the ply material; it is a strength of the material, not a stress"),
+        ("safety factor", s["safety_factor_1_over_FI"], "-",
+         "1 / maximum failure index: all loads could be multiplied by this factor before the first ply fails "
+         "(< 1 means the laminate already fails)"),
+        ("ABD(1,1)", s["ABD11_N_per_m"], "N/m",
+         "A11 term of the ABD matrix = in-plane extensional (membrane) STIFFNESS of the laminate in x "
+         "(a stiffness, not a load)"),
+    ]
+    loads = [(k, L[k], "N/m" if k.startswith("N") else "N*m/m",
+              ("applied in-plane force per unit width" if k.startswith("N") else "applied moment per unit width")
+              + f" ({k})") for k in LOAD_KEYS if L[k] != 0]
+    strengths = [(k, _fmt(material[k] / 1e6), "MPa", label) for k, label in (
+        ("Xt", "longitudinal tensile strength of the ply material"),
+        ("Xc", "longitudinal compressive strength of the ply material"),
+        ("Yt", "transverse tensile strength of the ply material"),
+        ("Yc", "transverse compressive strength of the ply material"),
+        ("S", "in-plane shear strength of the ply material")) if k in material]
     plies = []
-    for i, (p, s, f) in enumerate(zip(problem.plies, result["ply_stress"], result["failure_index"]), 1):
-        s = list(map(float, s))
-        plies.append({"ply": i, "angle_deg": p.angle, "sigma1_MPa": float(f"{s[0] / 1e6:.4g}"),
-                      "sigma2_MPa": float(f"{s[1] / 1e6:.4g}"), "tau12_MPa": float(f"{s[2] / 1e6:.4g}"),
-                      "failure_index": float(f"{float(f[0]):.4g}")})
-    strengths = {k: float(f"{material[k] / 1e6:.4g}") for k in ("Xt", "Xc", "Yt", "Yc", "S") if k in material}
-    summary = summarize(problem, result, material) if strengths else {}
-    language = "Vietnamese" if lang == "vi" else "English"
-    prompt = f"""
+    for i, (p, st, f) in enumerate(zip(problem.plies, result["ply_stress"], result["failure_index"]), 1):
+        st = list(map(float, st))
+        plies.append({"ply": i, "angle_deg": p.angle, "sigma1_MPa": _fmt(st[0] / 1e6),
+                      "sigma2_MPa": _fmt(st[1] / 1e6), "tau12_MPa": _fmt(st[2] / 1e6),
+                      "failure_index": _fmt(f[0])})
+    return {"summary": s, "quantities": [x for x in q if x[1] is not None], "loads": loads,
+            "strengths": strengths, "plies": plies}
+
+
+def _explain_prompt(problem, d, language):
+    line = lambda name, v, unit, meaning: f"- {name} = {v:g} {'' if unit == '-' else unit}".rstrip() + f": {meaning}"
+    return f"""
 Briefly explain the result of a Classical Laminate Theory (CLT) calculation for an engineer
 (5-8 sentences, plain text, no tables, no markdown, in {language}).
 
-Laminate: {problem.material}, {len(problem.plies)} plies, loads (N/m and N*m/m): {problem.loads.model_dump_json()}
-Ply strengths used, from the ML model (MPa): {json.dumps(strengths)}
-Per-ply stresses in fibre axes and Max Stress failure index (>= 1 means the ply fails):
-{json.dumps(plies)}
-Summary computed by the program: {json.dumps(summary)}
+Laminate: {problem.material}, {len(problem.plies)} plies, total thickness {d['summary']['total_thickness_mm']:g} mm.
+Applied loads (name = value unit: meaning):
+{chr(10).join(line(*x) for x in d['loads']) or '- none'}
+Ply strengths used (name = value unit: meaning):
+{chr(10).join(line(*x) for x in d['strengths'])}
+Results computed by the program (name = value unit: meaning):
+{chr(10).join(line(*x) for x in d['quantities'])}
+Per-ply stresses in fibre axes (sigma1, sigma2, tau12 in MPa) and Max Stress failure index of each ply:
+{json.dumps(d['plies'])}
 
 Say: the maximum failure index and which ply (number and angle) is critical, whether the laminate is safe
-(index < 1) and its safety factor, and why that ply is critical: use "governing_mode", "governing_stress_MPa",
-"compared_with" and "strength_MPa" from the summary (failure index = |stress| / strength).
-Use only numbers given above; do not invent any number.
+(index < 1) and its safety factor, and why that ply is critical (governing stress compared with the strength;
+failure index = |stress| / strength). Here the laminate is {'SAFE (maximum failure index < 1)' if d['summary']['safe']
+else 'NOT SAFE (maximum failure index >= 1): the critical ply fails'}. Write natural sentences.
+Rules: use only numbers given above; do not invent any number. Every number you write must be in the same sentence
+as its own name or symbol from the lists above, and must keep the meaning written there. ABD(1,1) is a stiffness, not a
+load: you may leave it out; if you mention it, use exactly this sentence:
+"{_abd_sentence(d['summary']['ABD11_N_per_m'], language)}"
 """
-    return ask_llm(prompt, backend=backend)
+
+
+def _abd_sentence(v, language):
+    return (f"ABD(1,1) = {v:g} N/m là độ cứng kéo trong mặt phẳng của tấm theo phương x." if language == "Vietnamese"
+            else f"ABD(1,1) = {v:g} N/m is the in-plane extensional stiffness of the laminate in x.")
+
+
+def explain_result(problem, result, material=None, backend=None, lang="en"):
+    """One LLM explanation, no checks (explain_checked adds the checks, one retry and the pre-built fallback)."""
+    d = explanation_data(problem, result, material or {})
+    return ask_llm(_explain_prompt(problem, d, "Vietnamese" if lang == "vi" else "English"), backend=backend)
 
 
 def check_explanation(text, problem, result, material):
@@ -843,12 +898,8 @@ def check_explanation(text, problem, result, material):
     for i in range(0, len(problem.plies) + 2):
         add(i)
     add(100)
-    sup = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺", "0123456789-+")
-    # "5.94 × 10⁷", "5.94 x 10^7", "5.94·10^7", "5.94e7" -> "5.94e7"
-    norm = re.sub(r"\s*[x×·*]\s*10\s*\^?\s*\(?([-+⁻⁺−]?[0-9⁰¹²³⁴⁵⁶⁷⁸⁹]+)\)?",
-                  lambda m: "e" + m.group(1).translate(sup).replace("−", "-"), text)
-    norm = norm.replace("−", "-").replace("‑", "-")
-    norm = re.sub(r"(\d)\s+[eE]\s*([-+]?\d+)\b", r"\1e\2", norm)  # "7.08 e7" -> "7.08e7"
+    # "5.94 × 10⁷", "5.94 x 10^7", "5.94·10^7", "7.08 e7" -> "5.94e7"; "ABD(1,1)" -> "ABD11" (see _normalize)
+    norm = _normalize(text)
     suspicious = []
     for m in re.finditer(r"(?<![\w.])[-+]?\d+(?:[.,]\d+)?(?:[eE][-+]?\d+)?", norm):
         tok = m.group()
@@ -865,3 +916,334 @@ def check_explanation(text, problem, result, material):
                    for a in allowed):
             suspicious.append(m.group())
     return suspicious
+
+
+# ------------------------------------------------------------------ step 4b: is each number called what it is?
+# Words (English and Vietnamese) that name each kind of quantity; symbols are matched case-sensitively.
+KIND_WORDS = {
+    "failure_index": ["failure index", "failure indices", "failure indexes", "max stress index", "index", "indices",
+                      "ratio", "ratios", "chỉ số phá hủy", "chỉ số phá huỷ", "chỉ số hư hỏng", "chỉ số", "tỉ số",
+                      "tỷ số"],
+    "poisson": ["poisson's ratio", "poisson ratio", "poisson", "hệ số poisson"],
+    "safety_factor": ["safety factor", "factor of safety", "safety margin", "reserve factor", "margin", "times",
+                      "factor", "multiplied by", "multiply by", "multiplied", "scaled by", "increased by",
+                      "hệ số an toàn", "hệ số dự trữ", "biên an toàn", "lần", "nhân lên", "nhân với", "gấp",
+                      "lên"],   # "nhân các tải trọng lên 170.6 lần"
+    "stress": ["stress", "stresses", "sigma", "tau", "ứng suất"],
+    "strength": ["strength", "strengths", "allowable", "độ bền", "giới hạn bền", "sức bền"],
+    "load": ["load", "loads", "loading", "loaded", "force", "forces", "moment", "moments",
+             "tải trọng", "tải", "lực", "mô-men", "mô men", "momen", "mômen"],
+    "stiffness": ["stiffness", "stiffnesses", "stiff", "extensional", "độ cứng"],
+    "modulus": ["modulus", "moduli", "mô đun", "mô-đun", "môđun", "modun"],
+    "angle": ["degree", "degrees", "deg", "angle", "angles", "oriented", "orientation", "góc"],
+    "ply": ["ply", "plies", "layer", "layers", "lamina", "laminae", "lớp"],
+    "thickness": ["thickness", "thick", "độ dày", "dày"],
+    "capacity": ["load capacity", "capacity", "capacities", "carry", "carries", "carrying", "withstand",
+                 "withstands", "sustain", "sustains", "load-bearing", "sức chịu tải", "sức chịu",
+                 "khả năng chịu tải", "khả năng chịu", "chịu được", "chịu tải", "chịu lực"],
+    "criterion": ["max stress", "max-stress", "maximum stress criterion", "tiêu chuẩn max stress"],  # a name only
+}
+KIND_SYMBOLS = {
+    "failure_index": ["FI"],
+    "stress": ["σ1", "σ2", "τ12", "sigma1", "sigma2", "tau12", "σ", "τ"],
+    "strength": ["Xt", "Xc", "Yt", "Yc", "X_t", "X_c", "Y_t", "Y_c"],
+    "load": ["Nx", "Ny", "Nxy", "Mx", "My", "Mxy", "N_x", "N_y", "N_xy", "M_x", "M_y", "M_xy"],
+    "stiffness": ["ABD11", "ABD", "A11", "A_11"],
+    "modulus": ["E1", "E2", "G12", "E_1", "E_2", "G_12"],
+    "angle": ["°"],
+}
+KIND_NAMES = {"failure_index": "a failure index", "safety_factor": "a safety factor", "stress": "a stress",
+              "strength": "a strength", "load": "a load", "stiffness": "a stiffness (ABD)", "modulus": "a modulus",
+              "angle": "an angle", "ply": "a ply number / ply count", "thickness": "a thickness",
+              "capacity": "a load capacity", "poisson": "a Poisson ratio"}
+_KW = sorted([(w, k, False) for k, ws in KIND_WORDS.items() for w in ws]
+             + [(w, k, True) for k, ws in KIND_SYMBOLS.items() for w in ws], key=lambda x: -len(x[0]))
+_KW_RE = re.compile("|".join(re.escape(w) if w == "°" else rf"(?<!\w){re.escape(w)}(?!\w)" for w, k, s in _KW),
+                    re.IGNORECASE)
+_KW_LOOKUP = {}
+for _w, _k, _sym in _KW:
+    _KW_LOOKUP.setdefault(_w.lower(), []).append((_w, _k, _sym))
+_UNIT_RE = re.compile(r"\s*(MPa|GPa|kPa|Pa|kN/m|N/mm|N\s*[·*.]?\s*m\s*/\s*m|N/m|mm|°|degrees?\b|deg\b"
+                      r"|độ(?!\s*(?:bền|cứng|dày))|%)", re.IGNORECASE)
+# negation before a word in the same sentence: "not a load, force or load capacity", "không phải tải"
+_NEG_RE = re.compile(r"(?:\bnot|\bnor|\bnever|\bkhông phải|\bchứ không|\bkhông)\b[^.;]{0,40}$", re.IGNORECASE)
+# verdict words: a SAFE laminate must not be called unsafe, and the other way round
+_UNSAFE_RE = re.compile(r"\bunsafe\b|\bnot\s+(?:currently\s+|considered\s+|be\s+)?safe\b|\bisn['’]t\s+safe\b"
+                        r"|\bwill\s+fail\b|\bexpected\s+to\s+fail\b|\bfails\s+under\b|\bkhông\s+an\s+toàn\b",
+                        re.IGNORECASE)
+_SAFE_RE = re.compile(r"(?<!not\s)\b(?:is|remains|considered|classified\s+as)\s+(?:currently\s+)?safe\b"
+                      r"|(?<!không\s)\btấm\s+(?:là\s+)?an\s+toàn\b", re.IGNORECASE)
+# comparisons with 1 ("the index is less than 1", "hệ số an toàn nhỏ hơn 1"): checked against the verdict
+_GREATER = r"lớn hơn|vượt quá|vượt|greater than|exceeds|exceed|exceeding|above|larger than|more than|higher than|≥|>=|>"
+_CMP_RE = re.compile(rf"(?P<op>{_GREATER}|nhỏ hơn|bé hơn|thấp hơn|dưới|less than|below|smaller than|lower than|"
+                     rf"under|≤|<=|<)(?:\s+(?:the|a|failure|critical|allowable|limit|value|threshold|of|giới|hạn|"
+                     rf"ngưỡng|là))*\s*1(?:[.,]0+)?(?![\d]|[.,]\d)", re.IGNORECASE)
+_NUM_RE = re.compile(r"(?<![\w.])[-+]?\d+(?:[.,]\d+)?(?:[eE][-+]?\d+)?")
+_CLAUSE_RE = re.compile(r",\s|[;:()]|\s[–—-]\s")
+_COMPATIBLE = {"capacity": {"safety_factor", "strength"},  # "can carry 420 times the load", "withstand 64 MPa"
+               "ply": {"angle", "thickness"}}                 # "the 90° ply", "lớp 90°", "each ply 0.125 mm"
+
+
+def _unit_kinds(u):
+    u = re.sub(r"\s", "", u.lower())
+    if u.endswith("pa"):
+        return {"stress", "strength", "modulus"}
+    if u in ("kn/m", "n/mm", "n/m"):
+        return {"load", "stiffness"}
+    if u.startswith("n") and u.endswith("m/m"):
+        return {"load"}
+    if u == "mm":
+        return {"thickness"}
+    if u in ("°", "degree", "degrees", "deg", "độ"):
+        return {"angle"}
+    return None  # "%"
+
+
+def _normalize(text):
+    """Same number spelling rules as check_explanation, plus masks for notation that contains digits."""
+    t = unicodedata.normalize("NFC", text)
+    sup = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺", "0123456789-+")
+    t = re.sub(r"\s*[x×·*]\s*10\s*\^?\s*\(?([-+⁻⁺−]?[0-9⁰¹²³⁴⁵⁶⁷⁸⁹]+)\)?",
+               lambda m: "e" + m.group(1).translate(sup).replace("−", "-"), t)
+    t = t.replace("−", "-").replace("‑", "-")
+    t = re.sub(r"(\d)\s+[eE]\s*([-+]?\d+)\b", r"\1e\2", t)
+    t = re.sub(r"\b(ABD|A|B|D|Q)\s*\(\s*(\d)\s*,\s*(\d)\s*\)", r"\1\2\3", t, flags=re.IGNORECASE)  # ABD(1,1)
+    t = re.sub(r"\[[^\]]*\]\s*[a-zA-Z0-9]*", "layup", t)                                          # [0/45/90]s
+    t = re.sub(r"(?<![\w.])1\s*/\s*(?:the\s+)?(?:max(?:imum)?\s+)?(?:FI|failure index|chỉ số phá hủy)\b", " ", t,
+               flags=re.IGNORECASE)                                                             # "1/FI"
+    t = re.sub(r"\b(sigma|tau|σ|τ)\s*_\s*\{?(\d+)\}?", r"\1\2", t, flags=re.IGNORECASE)
+    t = re.sub(r"(?<=[A-Za-z]{2})_(?=[A-Za-z]{2})", " ", t)                                    # max_failure_index
+    return t
+
+
+def _value_table(problem, result, material):
+    """(value, kind, label) for every number the explanation may use."""
+    s = summarize(problem, result, material)
+    rows = [(s["max_failure_index"], "failure_index", "max_failure_index"),
+            (s["critical_ply"], "ply", "critical_ply"),
+            (s["critical_ply_angle_deg"], "angle", "angle of the critical ply"),
+            (s["governing_stress_MPa"] * 1e6, "stress", "the governing stress"),
+            (s["strength_MPa"] * 1e6, "strength", s["compared_with"]),
+            (s["ABD11_N_per_m"], "stiffness", "ABD(1,1), the in-plane extensional stiffness"),
+            (s["n_plies"], "ply", "the number of plies"),
+            (s["total_thickness_mm"] * 1e-3, "thickness", "the total thickness"),
+            (s["safety_factor_1_over_FI"], "safety_factor", "the safety factor 1/FI")]
+    rows += [(i, "ply", "a ply number") for i in range(1, s["n_plies"] + 1)]
+    for r in result["ply_stress"]:
+        rows += [(float(v), "stress", "a ply stress") for v in r]
+    rows += [(float(r[0]), "failure_index", "a ply failure index") for r in result["failure_index"]]
+    for k, v in material.items():
+        kind = "strength" if k in ("Xt", "Xc", "Yt", "Yc", "S") else "modulus" if k in ("E1", "E2", "G12") else "poisson"
+        rows.append((float(v), kind, k))
+    for p in problem.plies:
+        rows += [(p.angle, "angle", "a ply angle"), (p.thickness, "thickness", "the ply thickness")]
+    rows += [(v, "load", k) for k, v in problem.loads.model_dump().items() if v]
+    return [(float(v), k, lab) for v, k, lab in rows if v is not None and float(v) != 0]
+
+
+def _candidates(v, tok, table):
+    """Kinds of quantity (-> label) whose value matches v, allowing unit scales and the rounding of the digits
+    written: half a unit of the last digit ("4" = 3.5..4.5, "5.94e7" = 5.935e7..5.945e7), at least 0.5 %."""
+    mant, _, exp = tok.lower().replace(",", ".").partition("e")
+    half = 0.5 * 10.0 ** ((int(exp) if exp else 0) - (len(mant.split(".")[1]) if "." in mant else 0))
+    out = {}
+    for a, kind, label in table:
+        if any(abs(abs(v) - abs(a * sc)) <= max(half, 0.005 * abs(a * sc))
+               for sc in (1, 1e-6, 1e-3, 1e3, 1e6, 1e-9, 100)):
+            out.setdefault(kind, label)
+    return out
+
+
+def _negated(text, pos):
+    return bool(_NEG_RE.search(text[max(0, pos - 25):pos]))
+
+
+def check_meaning(text, problem, result, material):
+    """For each number in the explanation: find what it is in the CLT data (failure index, stress, ABD(1,1)...)
+    and check that the words next to it (same clause, English or Vietnamese) name that kind of quantity.
+    ABD(1,1) must be called a stiffness and its sentence must not speak of a load or a load capacity.
+    Returns a list of problems (empty = every number is described correctly)."""
+    t = _normalize(text)
+    table = _value_table(problem, result, material)
+    issues = []
+    for sm in re.finditer(r"[^\n]+?(?:[.!?;](?=\s|$)|$)", t, flags=re.MULTILINE):
+        sent = sm.group()
+        words = []  # (start, end, kind, text)
+        for m in _KW_RE.finditer(sent):
+            kind = next((k for w, k, sym in _KW_LOOKUP.get(m.group().lower(), [])
+                         if not sym or w == m.group() or w == "°"), None)
+            if kind:
+                words.append((m.start(), m.end(), kind, m.group()))
+        bounds = [m.start() for m in _CLAUSE_RE.finditer(sent)]
+        nums = []  # (start, end incl. unit, value, token, unit, token without thousands separators)
+        for m in _NUM_RE.finditer(sent):
+            tok = m.group()
+            if re.fullmatch(r"[-+]?\d{1,3}(,\d{3})+", tok):
+                tok = tok.replace(",", "")
+            try:
+                v = float(tok.replace(",", "."))
+            except ValueError:
+                continue
+            u = _UNIT_RE.match(sent, m.end())
+            nums.append((m.start(), u.end() if u else m.end(), v, m.group(), u.group(1) if u else None, tok))
+        cands = [_candidates(n[2], n[5], table) for n in nums]
+        for i, (s0, e0, v, tok, unit, _) in enumerate(nums):
+            if any(abs(v - c) < 1e-12 for c in (0, 1, 100)):
+                continue  # thresholds ("index < 1") and percentages
+            cand = cands[i]
+            if not cand:
+                continue  # not in the data at all: reported by check_explanation
+            kinds = set(cand)
+            what = " or ".join(f"{cand[k]} ({KIND_NAMES.get(k, k)})" for k in sorted(kinds))
+            ok = lambda kind: kind in kinds or bool(_COMPATIBLE.get(kind, set()) & kinds)
+            uk = _unit_kinds(unit) if unit else None
+            if uk is not None and not (uk & kinds):
+                issues.append(f"'{tok} {unit.strip()}': {tok} is {what}, but it is given the unit {unit.strip()}")
+                continue
+            if uk in ({"angle"}, {"thickness"}):
+                continue  # "90°", "0.125 mm": the unit alone says what it is
+            if unit and unit.strip() == "%":
+                continue  # "reduced to 91 % of the loads": a percentage names what it is a fraction of
+            cs = max([b + 1 for b in bounds if b < s0], default=0)
+            ce = min([b for b in bounds if b >= e0], default=len(sent))
+            # words before an earlier number belong to it, except a ply number: "the stress of ply 4 is 64 MPa"
+            left0 = max([n[1] for j, n in enumerate(nums[:i]) if n[1] <= s0 and set(cands[j]) != {"ply"}] + [cs])
+            right1 = min([n[0] for n in nums[i + 1:] if n[0] >= e0] + [ce, e0 + 7])
+            if re.search(r"/\s*\|?\s*$", sent[max(0, s0 - 4):s0]) or re.match(r"\s*\|?\s*/", sent[e0:]):
+                continue  # operand of a ratio ("|27.21 MPa| / 45.17 MPa = 0.6024", "1 / 0.4372"): the result is named
+            if unit and any(e0 <= x[0] <= e0 + 2 and ok(x[2]) for x in words):
+                continue  # "its 0.2524 MPa stress": the noun right after the unit says what it is
+            verdict, word = None, None
+            for ws, we, kind, w in reversed([x for x in words if left0 <= x[0] and x[1] <= s0]):
+                if _negated(sent, ws):
+                    continue
+                if kind == "criterion" or (kind == "ply" and not ({"ply", "angle", "thickness"} & kinds)):
+                    continue  # "the failure index of the critical ply is ...": a place / a name, not a quantity
+                verdict, word = ok(kind), (w, kind)
+                break
+            if verdict is None:
+                for ws, we, kind, w in [x for x in words if e0 <= x[0] and x[1] <= right1 and x[2] != "criterion"]:
+                    verdict, word = ok(kind), (w, kind)  # "8 plies", "90 degrees", "420 times"
+                    break
+            if verdict is None and uk is None:
+                verdict = any(ok(k) and (k != "ply" or "ply" in kinds) for _, _, k, _ in words if k != "criterion")
+            if verdict is False:
+                issues.append(f"'{tok}' is {what}, but the sentence calls it '{word[0]}' ({KIND_NAMES[word[1]]})"
+                              if word else f"'{tok}' is {what}, but its sentence does not say what it is")
+                continue
+            if kinds == {"stiffness"}:
+                bad = [w for ws, we, k, w in words if k in ("load", "capacity") and not _negated(sent, ws)]
+                if bad:
+                    issues.append(f"'{tok}' is {what}, but its sentence also speaks of '{bad[0]}': ABD(1,1) is a "
+                                  "stiffness, not a load or a load capacity")
+                elif not any(k == "stiffness" for _, _, k, _ in words):
+                    issues.append(f"'{tok}' is {what}, but its sentence does not call it a stiffness")
+    return issues
+
+
+def explanation_issues(text, problem, result, material):
+    """Meaning check + safe / not safe verdict + numbers that are not in the data (check_explanation)."""
+    issues = check_meaning(text, problem, result, material)
+    t = _normalize(text)
+    safe = summarize(problem, result, material)["safe"]
+    verdict = 'SAFE (max failure index < 1)' if safe else 'NOT SAFE (max failure index >= 1)'
+    bad = (_UNSAFE_RE if safe else _SAFE_RE).search(t)
+    if bad:
+        issues.append(f"the laminate is {verdict}, but the text says '{bad.group()}'")
+    for sm in re.finditer(r"[^\n]+?(?:[.!?;](?=\s|$)|$)", t, flags=re.MULTILINE):
+        sent = sm.group()
+        for cm in _CMP_RE.finditer(sent):
+            if _negated(sent, cm.start()):
+                continue
+            # the comparison is about the nearest failure index / safety factor named before it
+            kind = None
+            for m in _KW_RE.finditer(sent[:cm.start()]):
+                k = next((k for w, k, sym in _KW_LOOKUP.get(m.group().lower(), [])
+                          if not sym or w == m.group()), None)
+                if k in ("failure_index", "safety_factor"):
+                    kind = k
+            if kind is None:
+                continue
+            greater = re.fullmatch(_GREATER, cm.group("op"), flags=re.IGNORECASE) is not None
+            wrong = (greater == safe) if kind == "failure_index" else (greater != safe)
+            if wrong:
+                issues.append(f"the laminate is {verdict}, but the text says that the "
+                              f"{'failure index' if kind == 'failure_index' else 'safety factor'} is "
+                              f"'{cm.group().strip()}'")
+    issues += [f"'{x}' is not one of the numbers given" for x in check_explanation(text, problem, result, material)]
+    return issues
+
+
+MODE_VI = [("fibre direction", "phương sợi"), ("transverse", "phương ngang"), ("in-plane shear", "cắt trong mặt phẳng"),
+           ("tension", "kéo"), ("compression", "nén")]
+STRENGTH_VI = {"Xt": "độ bền kéo dọc Xt", "Xc": "độ bền nén dọc Xc", "Yt": "độ bền kéo ngang Yt",
+               "Yc": "độ bền nén ngang Yc", "S": "độ bền cắt S"}
+
+
+def prebuilt_explanation(problem, result, material, lang="en"):
+    """Explanation written by Python from the summary (always correct): used when the LLM text fails the checks.
+    Returns (text, note)."""
+    s = summarize(problem, result, material)
+    sym = s["compared_with"].split()[0]
+    comp = re.search(r"\((sigma1|sigma2|tau12)", s["governing_mode"])
+    comp = comp.group(1) if comp else "tau12"
+    tied = [p for p in s["plies_with_same_max_index"] if p != s["critical_ply"]]
+    sf = s["safety_factor_1_over_FI"]
+    if lang == "vi":
+        mode = s["governing_mode"]
+        for en, vi in MODE_VI:
+            mode = mode.replace(en, vi)
+        out = [f"Chỉ số phá hủy lớn nhất (tiêu chuẩn Max Stress) là {s['max_failure_index']:g}, tại lớp {s['critical_ply']} "
+               f"(lớp {s['critical_ply_angle_deg']:g}°)"
+               + (f"; lớp {', '.join(map(str, tied))} có cùng chỉ số." if tied else "."),
+               f"Thành phần quyết định là {mode}: ứng suất {comp} = {s['governing_stress_MPa']:g} MPa so với "
+               f"{STRENGTH_VI.get(sym, sym)} = {s['strength_MPa']:g} MPa (chỉ số phá hủy = |ứng suất| / độ bền).",
+               (f"Tấm an toàn (chỉ số < 1); hệ số an toàn 1/FI = {sf:g}, nghĩa là mọi tải có thể nhân lên {sf:g} lần "
+                "trước khi lớp đầu tiên bị phá hủy." if s["safe"] else
+                f"Tấm không an toàn: lớp tới hạn bị phá hủy (chỉ số ≥ 1); hệ số an toàn 1/FI = {sf:g} < 1."),
+               f"ABD(1,1) = {s['ABD11_N_per_m']:g} N/m là độ cứng kéo trong mặt phẳng của tấm theo phương x."]
+        note = "(bản dựng sẵn bằng Python từ kết quả tính, vì lời giải thích của LLM không qua được bước kiểm tra)"
+    else:
+        out = [f"The largest Max Stress failure index is {s['max_failure_index']:g}, in ply {s['critical_ply']} "
+               f"(the {s['critical_ply_angle_deg']:g}° ply)"
+               + ((f"; ply {tied[0]} has" if len(tied) == 1 else f"; plies {', '.join(map(str, tied))} have")
+                  + " the same index." if tied else "."),
+               f"The governing failure mode is {s['governing_mode']}: stress {comp} = {s['governing_stress_MPa']:g} MPa "
+               f"compared with {s['compared_with']} = {s['strength_MPa']:g} MPa (failure index = |stress| / strength).",
+               (f"The laminate is safe (index < 1); the safety factor 1/FI is {sf:g}, so all loads could be "
+                f"multiplied by {sf:g} before the first ply fails." if s["safe"] else
+                f"The laminate is not safe: the critical ply fails (index >= 1); the safety factor 1/FI is {sf:g} < 1."),
+               f"ABD(1,1) = {s['ABD11_N_per_m']:g} N/m is the in-plane extensional stiffness of the laminate in x."]
+        note = "(pre-built explanation written by Python from the results, because the LLM text did not pass the checks)"
+    return " ".join(out), note
+
+
+def explain_checked(problem, result, material, backend=None, lang="en"):
+    """LLM explanation + checks (every number is in the data and is named as what it is). One retry with the list of
+    problems; if the retry is still wrong, the pre-built Python explanation.
+    Returns (text, info), info = {"source": "llm" | "llm-retry" | "prebuilt", "issues", "first_issues", "note",
+    "rejected" (the LLM texts that failed)}."""
+    prompt = _explain_prompt(problem, explanation_data(problem, result, material),
+                             "Vietnamese" if lang == "vi" else "English")
+    text = ask_llm(prompt, backend=backend)
+    issues = explanation_issues(text, problem, result, material)
+    if not issues:
+        return text, {"source": "llm", "issues": [], "first_issues": [], "note": "", "rejected": []}
+    print(f"  [check] the explanation has {len(issues)} problem(s) -> asking the LLM again (once):")
+    for x in issues:
+        print(f"          - {x}")
+    hint = ""
+    if any("ABD(1,1)" in x for x in issues):
+        hint = ("For ABD11 use exactly this sentence, or leave ABD11 out: \""
+                + _abd_sentence(summarize(problem, result, material)["ABD11_N_per_m"],
+                                "Vietnamese" if lang == "vi" else "English") + "\"\n")
+    retry = (prompt + "\nYour previous answer was:\n" + text.strip() + "\n\nThe program found these problems in it:\n"
+             + "\n".join(f"- {x}" for x in issues) + "\n" + hint + "Write the explanation again without these "
+             "problems.\n")
+    text2 = ask_llm(retry, backend=backend)
+    issues2 = explanation_issues(text2, problem, result, material)
+    if not issues2:
+        return text2, {"source": "llm-retry", "issues": [], "first_issues": issues, "note": "", "rejected": [text]}
+    pre, note = prebuilt_explanation(problem, result, material, lang)
+    return pre, {"source": "prebuilt", "issues": issues2, "first_issues": issues, "note": note,
+                 "rejected": [text, text2]}
