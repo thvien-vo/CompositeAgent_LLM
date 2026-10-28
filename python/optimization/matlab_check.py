@@ -164,7 +164,11 @@ def verify_design(problem, full_codes: Sequence[int], python_detail: Optional[Di
     if "buckling" in problem.criteria:
         Dm = ml["ABD"][3:, 3:]
         a, b = problem.plate.a, problem.plate.b
-        if problem.buckling_model == "ritz":
+        if problem.buckling_model == "ritz_full":   # same rule as analyze_design: min(optimisation terms, converged)
+            conv = buckling.converge(Dm, Nx, Ny, Nxy, a, b, start=6, step=2, tol=0.005)
+            lam_opt = float(buckling.ritz_full(Dm, Nx, Ny, Nxy, a, b, *buckling.terms_for(problem.ritz_terms, a, b))[0])
+            lam = min(conv["lambda"], lam_opt)
+        elif problem.buckling_model == "ritz":
             lam = float(buckling.ritz([Dm[0, 0]], [Dm[0, 1]], [Dm[1, 1]], [Dm[2, 2]], Nx, Ny, Nxy, a, b, 20, 20)[0])
         else:
             lam = float(buckling.closed_form([Dm[0, 0]], [Dm[0, 1]], [Dm[1, 1]], [Dm[2, 2]], Nx, Ny, a, b,

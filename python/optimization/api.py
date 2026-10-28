@@ -20,7 +20,7 @@ from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 import numpy as np
 
 from .evaluate import Plate, Problem, analyze_design
-from .exhaustive import exhaustive, strength_only_exact
+from .exhaustive import exact_full, exhaustive, strength_only_exact
 from .ga import GAConfig, GeneticAlgorithm
 from .material import DEFAULT_PLY_THICKNESS, Material, get_material
 from .rules import Rules, check_rules, full_laminate, notation
@@ -71,7 +71,8 @@ class OptimizationResult:
                  + (f", mode (m,n)={self.buckling_mode}" if self.governing_criterion == "buckling" else ""),
                  "  RF       : " + ", ".join(f"{k}={v:.4g}" for k, v in self.rf.items()),
                  f"  |D16|/D11={self.D16_over_D11:.3f}  |D26|/D22={self.D26_over_D22:.3f}  "
-                 f"(closed-form buckling ignores D16, D26)",
+                 + ("(buckling: Ritz with D16, D26)" if self.problem.get("buckling_model") == "ritz_full"
+                    else "(closed-form buckling ignores D16, D26)"),
                  f"  evaluations: {self.n_evaluations}  time: {self.runtime_s:.2f} s"]
         if self.matlab is not None:
             lines.append(f"  MATLAB check: {'PASS' if self.matlab['pass'] else 'FAIL'}  margin MATLAB = "
@@ -97,7 +98,7 @@ def make_problem(loads, material: Union[str, Material, None] = "IM7/8552", rules
                  safety_factor: float = 1.5, plate: Optional[Plate] = None,
                  ply_thickness: float = DEFAULT_PLY_THICKNESS, encoding: str = "ply",
                  criteria: Sequence[str] = ("max_stress", "tsai_wu", "buckling"), f12_star: float = -0.5,
-                 buckling_model: str = "closed_form", **kw) -> Problem:
+                 buckling_model: str = "ritz_full", **kw) -> Problem:
     mat = get_material(material or "IM7/8552") if not isinstance(material, Material) else material
     return Problem(loads=_loads_tuple(loads), material=mat, rules=rules or Rules(), safety_factor=safety_factor,
                    plate=plate or Plate(), ply_thickness=ply_thickness, encoding=encoding,
@@ -107,6 +108,11 @@ def make_problem(loads, material: Union[str, Material, None] = "IM7/8552", rules
 def warnings_for(problem: Problem) -> List[str]:
     Nx, Ny, Nxy = problem.loads
     w = list(problem.material.warnings)
+    if "buckling" in problem.criteria and problem.buckling_model == "ritz_full":
+        if not problem.has_compression:
+            w.append("no compression and no shear -> buckling not checked")
+        w.append("buckling: Rayleigh-Ritz double sine series with D16, D26 (upper bound; the series does not satisfy "
+                 "the zero-moment edge condition when D16, D26 != 0, so it converges slowly)")
     if "buckling" in problem.criteria and problem.buckling_model == "closed_form":
         if Nx >= 0 and Ny >= 0:
             w.append("no compressive load -> buckling not checked (closed form needs Nx < 0 or Ny < 0)")
@@ -151,7 +157,7 @@ def optimize(loads, material: Union[str, Material, None] = "IM7/8552", rules: Op
              safety_factor: float = 1.5, plate: Optional[Plate] = None, method: str = "ga", seed: int = 0,
              ply_thickness: float = DEFAULT_PLY_THICKNESS, encoding: str = "ply",
              criteria: Sequence[str] = ("max_stress", "tsai_wu", "buckling"), f12_star: float = -0.5,
-             buckling_model: str = "closed_form", budget: int = 10000, pop_size: Optional[int] = None,
+             buckling_model: str = "ritz_full", budget: int = 10000, pop_size: Optional[int] = None,
              ga_config: Optional[GAConfig] = None, time_limit: float = 600.0, verify_matlab: bool = False,
              target: Optional[Tuple[int, float]] = None, problem: Optional[Problem] = None,
              verbose: bool = False) -> OptimizationResult:
@@ -161,14 +167,21 @@ def optimize(loads, material: Union[str, Material, None] = "IM7/8552", rules: Op
     Material. rules: Rules(...) (symmetric, balanced, 10 % rule, max 4 contiguous, 8-64 plies by default).
     plate: Plate(a, b) simply supported (default 0.5 x 0.5 m). seed: random seed (ga / nsga2).
     budget: distinct designs analysed (ga / nsga2). target: known optimum (n, margin) to record hit_evals.
+    buckling_model: "ritz_full" (default: Rayleigh-Ritz with D16, D26 and Nxy, checked whenever there is
+    compression or shear), "closed_form" (Nx, Ny only, D16 = D26 = 0; used for the Le Riche & Haftka benchmark)
+    or "ritz" (Nxy, D16 = D26 = 0).
     """
     t0 = time.perf_counter()
     p = problem or make_problem(loads, material, rules, safety_factor, plate, ply_thickness, encoding, criteria,
                                 f12_star, buckling_model)
     if method == "exhaustive":
         no_buckling = not ("buckling" in p.criteria and p.has_compression)
-        r = strength_only_exact(p) if (no_buckling and p.rules.symmetric) else exhaustive(p, time_limit=time_limit,
-                                                                                          verbose=verbose)
+        if no_buckling and p.rules.symmetric:
+            r = strength_only_exact(p)
+        elif p.buckling_model == "ritz_full":
+            r = exact_full(p, time_limit=time_limit, verbose=verbose)
+        else:
+            r = exhaustive(p, time_limit=time_limit, verbose=verbose)
         best = r["best"]
         if best is None:
             raise RuntimeError("exhaustive search could not complete any ply count within the time limit")

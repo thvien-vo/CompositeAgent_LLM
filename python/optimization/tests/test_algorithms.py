@@ -110,7 +110,8 @@ def test_infeasible_is_reported(im7):
 
 
 def test_api_result_structure(im7):
-    r = optimize({"Nx": -1e4, "Ny": 0, "Nxy": 5e3}, material=im7, method="ga", seed=0, budget=1500)
+    r = optimize({"Nx": -1e4, "Ny": 0, "Nxy": 5e3}, material=im7, method="ga", seed=0, budget=1500,
+                 buckling_model="closed_form")
     assert all(r.rules_check.values())
     assert set(r.rf) == {"max_stress", "tsai_wu", "buckling"}
     assert r.margin == pytest.approx(min(r.rf.values()))
