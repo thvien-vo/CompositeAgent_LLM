@@ -15,7 +15,7 @@ Ngày 27/10/2026, 21:30-22:05. Mốc trước khi sửa: git tag `before-task12`
 | - trong đó 2 đề phải từ chối (L7, L8) | 0/2 | 2/2 | 0/2 | 2/2 |
 | LLM một mình, 28 đề cũ (trước bước kiểm tra Python) | 10/28 | 9/28 | 28/28 (*) | 28/28 |
 
-(*) HF trên 28 đề cũ trước khi sửa: đo ở phiên 27/10 chiều (files `llm_benchmark_*_20261027_184x`), code trích xuất
+(*) HF trên 28 đề cũ trước khi sửa: đo chiều 27/10 (files `llm_benchmark_*_20261027_184x`), code trích xuất
 không đổi đến mốc `before-task12`; không gọi lại để tiết kiệm credit.
 
 Lỗi "sai im lặng" (agent tính tiếp với đầu vào sai, không báo):

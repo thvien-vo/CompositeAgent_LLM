@@ -1,0 +1,175 @@
+COMPOSITE AGENT DEMO  -  2026-10-27 21:32  -  log: D:\CompositeAgent\logs\demo_20261027_213216.log
+
+==============================================================================
+  PART 0 - Environment check
+==============================================================================
+  [OK]   Hugging Face reachable, token valid -> main LLM: openai/gpt-oss-120b
+  [OK]   Ollama running at http://127.0.0.1:11434
+  [OK]   model gemma3:4b
+  [OK]   model nomic-embed-text
+
+==============================================================================
+  PART 1 - Reference check (ML + MATLAB, no LLM)
+==============================================================================
+  CFRP [0/45/-45/90]s, 8 x 0.125 mm, Nx=1000, Ny=500, Nxy=100 N/m
+Starting MATLAB engine (this takes 10-30 seconds)...
+MATLAB engine is ready.
+  max_failure_index = 0.002381   (reference 0.00238)
+  critical_ply      = 4          (reference 4)
+  ABD(1,1)          = 5.94e+07 N/m (reference 5.94e7)
+  -> PASS
+
+==============================================================================
+  PART 2 - Agent: text -> LLM -> ML -> MATLAB -> LLM
+==============================================================================
+
+----- Problem 1/2: English, symmetric 8-ply carbon laminate (same case as the reference check)
+  "Carbon/epoxy laminate [0/45/-45/90]s, each ply 0.125 mm thick. In-plane loads: Nx = 1000 N/m, Ny = 500 N/m, Nxy = 100 N/m."
+
+[1/4] LLM reads the problem ...
+  (Hugging Face (openai/gpt-oss-120b), 7.9 s)
+  material : CFRP
+  plies    : 8  angles = [0.0, 45.0, -45.0, 90.0, 90.0, -45.0, 45.0, 0.0]
+  thickness: [0.125] mm per ply, total 1 mm
+  loads    : Nx=1000  Ny=500  Nxy=100 N/m   Mx=0  My=0  Mxy=0 N*m/m
+
+[2/4] ML predicts ply properties (Random Forest, 25-material dataset) ...
+  E1=140.5 GPa  E2=8.948 GPa  G12=4.515 GPa  nu12=0.32
+  Xt=2194  Xc=1446  Yt=63.76  Yc=218  S=81.34 MPa
+
+[3/4] MATLAB computes CLT ...
+  (0.0 s)
+  ABD(1,1)          = 5.94e+07 N/m
+  max failure index = 0.002381   (Max Stress; >= 1 means failure)
+  critical ply      = 4 (angle 90 deg), same index in plies [4, 5]
+  governing mode    = transverse (sigma2, tension): 0.1518 MPa vs Yt = 63.76 MPa
+  safety factor     = 420.0   -> SAFE
+
+[4/4] LLM explains the result ...
+  (Hugging Face (openai/gpt-oss-120b), 0.8 s)
+
+Total time: 9.1 s
+
+===== EXPLANATION (LLM) =====
+The CLT analysis of the 8‑ply CFRP laminate (total thickness 1 mm) under the given in‑plane loads yields a maximum failure index of 0.002381. The critical plies are the 4th and 5th plies, both at 90°, with ply 4 identified as the representative critical ply. The governing failure mode is transverse tension (σ2) because the transverse stress σ2 = 0.1518 MPa produces the highest stress‑to‑strength ratio. This stress is compared with the transverse tensile strength Yt = 63.76 MPa, giving the failure index 0.1518 / 63.76 ≈ 0.002381. Since the index is far below 1, the laminate is safe, and the calculated safety factor 1/FI is 420.0. The high safety factor shows that the transverse stress in the 90° plies is very small relative to the material’s transverse strength, so those plies are not at risk of failure.
+
+[guardrail] every number in the explanation matches the CLT data
+
+----- Problem 2/2: Vietnamese, glass fibre, kN/m, decimal comma, bending moment - high load, failure expected
+  "Tấm composite sợi thủy tinh/epoxy, xếp lớp [0/±45]s, mỗi lớp dày 0,15 mm. Tải trọng: Nx = 150 kN/m, Nxy = 40 kN/m, mô-men uốn My = 10 N.m/m."
+
+[1/4] LLM reads the problem ...
+  (Hugging Face (openai/gpt-oss-120b), 1.4 s)
+  material : GFRP
+  plies    : 6  angles = [0.0, 45.0, -45.0, -45.0, 45.0, 0.0]
+  thickness: [0.15] mm per ply, total 0.9 mm
+  loads    : Nx=150000  Ny=0  Nxy=40000 N/m   Mx=0  My=10  Mxy=0 N*m/m
+
+[2/4] ML predicts ply properties (Random Forest, 25-material dataset) ...
+  E1=49.88 GPa  E2=13.08 GPa  G12=4.035 GPa  nu12=0.305
+  Xt=1400  Xc=958.5  Yt=45.17  Yc=156.1  S=70.7 MPa
+
+[3/4] MATLAB computes CLT ...
+  (0.0 s)
+  ABD(1,1)          = 2.866e+07 N/m
+  max failure index = 1.096   (Max Stress; >= 1 means failure)
+  critical ply      = 4 (angle -45 deg)
+  governing mode    = transverse (sigma2, tension): 49.49 MPa vs Yt = 45.17 MPa
+  safety factor     = 0.9127   -> FAILS
+
+[4/4] LLM explains the result ...
+  (Hugging Face (openai/gpt-oss-120b), 0.8 s)
+
+Total time: 2.7 s
+
+===== EXPLANATION (LLM) =====
+The CLT analysis of the 6‑ply GFRP laminate (total thickness 0.9 mm) under the given in‑plane and bending loads yields a maximum failure index of 1.096. This value occurs in ply 4, which is oriented at –45° relative to the global axes. Because the failure index exceeds 1, the laminate is not safe for the applied loading. The safety factor, expressed as 1/FI, is 0.9127, confirming the lack of margin. The governing failure mode is transverse tension (sigma2) in that ply, where the computed transverse stress is 49.49 MPa. This stress is compared with the material’s transverse tensile strength Yt of 45.17 MPa, and the ratio 49.49/45.17 gives the failure index of 1.096, which drives the failure prediction.
+
+[guardrail] every number in the explanation matches the CLT data
+
+==============================================================================
+  PART 3 - RAG: questions about the material database (with sources)
+==============================================================================
+
+----- Question 1/4: What is the longitudinal tensile strength Xt of IM7/8552?
+
+--- Retrieved from database (embedding search, top 3) ---
+[1] IM7/8552           score 1.753 (similarity 0.753 + name match 1.00)
+[2] IM7/8551-7         score 0.984 (similarity 0.734 + name match 0.25)
+[3] IM7/BT250E-6       score 0.976 (similarity 0.726 + name match 0.25)
+[F] Database value looked up by Python: Xt (longitudinal tensile strength) of IM7/8552 = 2212 MPa (source: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37, RTD mean as-measured; status: verified_pdf)
+
+=== ANSWER (Hugging Face (openai/gpt-oss-120b)) ===
+The longitudinal tensile strength Xt of IM7/8552 is 2212 MPa (source [F]: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37, RTD mean as-measured; status: verified_pdf).
+
+Sources of the retrieved rows:
+  [1] IM7/8552: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37, RTD mean as-measured (status: verified_pdf)
+  [2] IM7/8551-7: Soden, Hinton & Kaddour (1998) Compos Sci Technol 58:1011-1022 (WWFE-I) (status: needs_check)
+  [3] IM7/BT250E-6: NCAMP NCP-RP-2015-019 N/C, lamina summary table p.31, RTD mean as-measured (status: verified_pdf)
+[guardrail] every number and report id in the answer appears in the retrieved database rows
+[fact-check] the answer AGREES with the database value looked up by Python
+
+----- Question 2/4: Độ bền cắt S của AS4/8552 là bao nhiêu?
+
+--- Retrieved from database (embedding search, top 3) ---
+[1] AS4/8552           score 1.515 (similarity 0.515 + name match 1.00)
+[2] AS4/3501-6         score 0.764 (similarity 0.514 + name match 0.25)
+[3] AS4/MTM45-1        score 0.762 (similarity 0.512 + name match 0.25)
+[F] Database value looked up by Python: S (in-plane shear strength) of AS4/8552 = 91.6 MPa (source: NCAMP NCP-RP-2010-008 Rev D, lamina summary table p.37, RTD mean as-measured; status: verified_pdf)
+
+=== ANSWER (Hugging Face (openai/gpt-oss-120b)) ===
+Độ bền cắt S của AS4/8552 là 91.6 MPa (source [1]: Source: NCAMP NCP‑RP‑2010‑008 Rev D, lamina summary table p.37, RTD mean as-measured).
+
+Sources of the retrieved rows:
+  [1] AS4/8552: NCAMP NCP-RP-2010-008 Rev D, lamina summary table p.37, RTD mean as-measured (status: verified_pdf)
+  [2] AS4/3501-6: Soden, Hinton & Kaddour (1998) Compos Sci Technol 58:1011-1022 (WWFE-I) (status: needs_check)
+  [3] AS4/MTM45-1: NCAMP NCP-RP-2008-004 Rev B, Table 3-3 p.35, RTD (75F) mean as-measured (status: verified_pdf)
+[guardrail] every number and report id in the answer appears in the retrieved database rows
+[fact-check] the answer AGREES with the database value looked up by Python
+
+----- Question 3/4: Which NCAMP material has the highest Xt?
+
+--- Retrieved from database (ranking search, top 3) ---
+[1] T1100G/3960        (top of the ranking below)
+[2] T1100GC/TC380      (top of the ranking below)
+[3] IM7G/EP2202        (top of the ranking below)
+[R] Ranking computed by Python from the whole database (NCAMP materials only, 15 materials with data), property Xt (longitudinal tensile strength), highest first:
+    1. T1100G/3960: 3645 MPa (source: NCAMP NCP-RP-2023-002 Rev B, lamina summary table p.34, RTD mean as-measured; status: verified_pdf)
+    2. T1100GC/TC380: 3277 MPa (source: NCAMP NCP-RP-2025-010 Rev -, lamina summary table p.38, RTD mean as-measured; status: verified_pdf)
+    3. IM7G/EP2202: 2967 MPa (source: NCAMP NCP-RP-2014-006 N/C, lamina summary table p.35, RTD mean as-measured; status: verified_pdf)
+    4. T40-800/5215: 2473 MPa (source: NCAMP NCP-RP (Cycom 5215 T40-800 Unitape), lamina summary table p.36, RTD mean as-measured; status: verified_pdf)
+    5. MR60H/NB4708: 2458 MPa (source: NCAMP NCP-RP-2010-074 N/C, lamina summary table p.35, RTD mean as-measured; status: verified_pdf)
+
+=== ANSWER (Hugging Face (openai/gpt-oss-120b)) ===
+The NCAMP material with the highest longitudinal tensile strength (Xt) is T1100G/3960, with Xt = 3645 MPa (source [R]: NCAMP NCP‑RP‑2023‑002 Rev B, lamina summary table p.34, RTD mean as‑measured; status: verified_pdf).
+
+Sources of the retrieved rows:
+  [1] T1100G/3960: NCAMP NCP-RP-2023-002 Rev B, lamina summary table p.34, RTD mean as-measured (status: verified_pdf)
+  [2] T1100GC/TC380: NCAMP NCP-RP-2025-010 Rev -, lamina summary table p.38, RTD mean as-measured (status: verified_pdf)
+  [3] IM7G/EP2202: NCAMP NCP-RP-2014-006 N/C, lamina summary table p.35, RTD mean as-measured (status: verified_pdf)
+[guardrail] every number and report id in the answer appears in the retrieved database rows
+
+----- Question 4/4: What is the tensile strength of titanium Ti-6Al-4V?
+
+--- Retrieved from database (embedding search, top 3) ---
+[1] AS4/3501-6         score 0.696 (similarity 0.696 + name match 0.00)
+[2] HTS40/MTM45-1      score 0.687 (similarity 0.687 + name match 0.00)
+[3] T1100G/3960        score 0.686 (similarity 0.686 + name match 0.00)
+
+=== ANSWER (Hugging Face (openai/gpt-oss-120b)) ===
+The database does not contain the tensile strength of titanium Ti‑6Al‑4V.
+
+Sources of the retrieved rows:
+  [1] AS4/3501-6: Soden, Hinton & Kaddour (1998) Compos Sci Technol 58:1011-1022 (WWFE-I) (status: needs_check)
+  [2] HTS40/MTM45-1: NCAMP NCP-RP-2009-008 N/C, lamina summary table p.35, RTD mean as-measured (status: verified_pdf)
+  [3] T1100G/3960: NCAMP NCP-RP-2023-002 Rev B, lamina summary table p.34, RTD mean as-measured (status: verified_pdf)
+[guardrail] every number and report id in the answer appears in the retrieved database rows
+
+==============================================================================
+  SUMMARY
+==============================================================================
+  Part 1 reference check       OK        8.0 s
+  Part 2 agent                 OK       11.9 s
+  Part 3 RAG                   OK        4.9 s
+  LLM used last: Hugging Face (openai/gpt-oss-120b)
+  total time: 25 s   log: D:\CompositeAgent\logs\demo_20261027_213216.log
