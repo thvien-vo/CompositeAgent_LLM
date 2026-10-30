@@ -68,7 +68,11 @@ main sau khi mọi kiểm tra đạt.
   cập nhật: `deliverables/demo_log_backup_online.txt`, `demo_log_backup_offline.txt`.
 - **Hugging Face trong đợt này: 72 lần gọi** (giới hạn 100; dòng 147-218 của `logs\hf_calls.log`): 40 bộ đề thiết kế,
   16 demo có mạng trên nhánh, 16 demo có mạng trên main.
-- Slide và kịch bản (ngoài repo): bản sao lưu trước khi sửa ở `D:\CompositeAgent_slide_backups\before_design_20261030\`.
+- Slide và kịch bản (ngoài repo, 30/10): slide 21 trang - thêm slide 17 (thiết kế bằng lời: 4 bước) và 18 (kiểm
+  chứng + bảng lực cắt một / hai chiều), slide 10 có ô "Part 4", cập nhật hạn chế / bước tiếp theo / lệnh; kịch bản .md và
+  .docx: lời nói slide 17-18, demo phần 4 từng bước, câu hỏi dự kiến (lực cắt đổi chiều, vật liệu ML, LLM tự chọn xếp
+  lớp, yêu cầu không rõ), thuật ngữ. Bố cục kiểm tra bằng ảnh xuất từ PowerPoint. Bản sao lưu trước khi sửa:
+  `D:\CompositeAgent_slide_backups\before_design_20261030\`.
 
 ## Đợt "mất ổn định do cắt + sửa demo" (28/10 chiều - 30/10): XONG
 Mốc trước khi làm: tag `before-shear-buckling`. Việc 1 làm trên nhánh `shear-buckling` (worktree `D:\CompositeAgent_sb`),
