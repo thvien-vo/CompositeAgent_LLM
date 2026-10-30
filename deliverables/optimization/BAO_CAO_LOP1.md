@@ -22,7 +22,7 @@
 | GA, GA + tìm kiếm cục bộ, NSGA-II ↔ tối ưu chính xác: 15 bài đã chứng minh, 20 seed, ngân sách 10 000 | **GA + tìm kiếm cục bộ 300/300**; GA 294/300 (C4 lớp 0.125 mm 19/20, C5 lớp 0.18288 mm 15/20); **NSGA-II 213/300** (kém ở các ca mất ổn định có D16, D26: 0–18/20; vẫn dừng đúng số lớp tối ưu ở 298/300 lần, biên thấp hơn tối ưu ≤ 2.5 %) |
 | Le Riche & Haftka (1993; thông số từ luận án Le Riche 1994), chế độ số lớp cố định | Chạy lại với mã mới: **vẫn trùng giá trị tối ưu công bố** 3973.01, 9998.19, 13518.66; ca Ny/Nx = 0.25 tìm được 12678.78 (+0.031 % so với thiết kế GA in trong luận án) (mục 4.6) |
 | Le Riche & Haftka (1995), bài ít lớp nhất | n* = 48 lớp ở cả 3 ca như nguồn; thiết kế tối ưu ca 2 và ca 3 trùng nguyên văn Bảng 2 của nguồn (mục 4.6) |
-| pytest (CLT, tiêu chuẩn, mất ổn định cũ và mới, luật, repair, thuật toán, vật liệu, MATLAB) | **91/91 đạt** (78 cũ + 13 mới cho mất ổn định có D16, D26, gồm 2 test MATLAB) |
+| pytest (CLT, tiêu chuẩn, mất ổn định cũ và mới, luật, repair, thuật toán, vật liệu, MATLAB) | **102/102 đạt** (78 cũ + 13 cho mất ổn định có D16, D26 + 11 cho tùy chọn hai chiều lực cắt, gồm 3 test MATLAB; 30/10) |
 | Kiểm tra lại các phương án tối ưu cuối bằng MATLAB | **51/51 đạt** (mục 4.7): sai số tương đối lớn nhất ABD 1.7·10⁻¹⁵, ứng suất 3.1·10⁻¹⁵ |
 
 **Giảm khối lượng so với tấm tựa đẳng hướng `[0/45/−45/90]ns` nhỏ nhất đạt cùng biên an toàn — nay cho MỌI ca, kể cả
@@ -611,6 +611,58 @@ mất ổn định được tính lại từ ma trận D của MATLAB bằng cù
 `results/matlab_final_designs.csv`; cột `matlab_pass`, `margin_matlab` của `results/cases_summary.csv` đã được điền.
 (Bản trước: 83/83 phương án đạt, `results/before_ritz/matlab_final_designs.csv`.)
 
+### 4.8 Lực cắt có thể đổi chiều: tối ưu cho cả +Nxy và −Nxy (bổ sung 30/10/2026)
+Mục 4.5 cho thấy phương án tối ưu cho một chiều cắt có thể mất ổn định khi lực cắt đổi chiều. Module tối ưu nay có
+tùy chọn **`shear_both_signs`**: mỗi phương án được kiểm tra độ bền và mất ổn định cho **cả +Nxy và −Nxy**, hệ số dự
+trữ nhỏ hơn được dùng. Tùy chọn **mặc định tắt**, nên mọi kết quả đã công bố ở các mục trên **không đổi** — đã kiểm
+chứng bằng cách chạy lại toàn bộ thí nghiệm 8 ca × 2 độ dày (960 lần chạy GA / GA + tìm kiếm cục bộ / NSGA-II và
+tìm kiếm chính xác) và bài Le Riche & Haftka với mã mới: so với các tệp kết quả đã công bố (bỏ qua cột thời gian)
+không có khác biệt nào. Agent thiết kế bằng lời (Lớp 3) bật tùy chọn này mặc định khi có lực cắt.
+
+* *Cách tính:* với tấm đối xứng, cân bằng, độ bền khi đổi chiều cắt không đổi (+45 và −45 đổi vai, cùng số lớp), chỉ
+  mất ổn định khác (D16, D26). Trong tìm kiếm chính xác, λ hai chiều = min(λ₊, λ₋) nhỏ hơn mọi thương Rayleigh của cả
+  hai mô hình, nên các vector thương của hai mô hình được gộp chung: cận vẫn chứng minh được. Đối xứng gương
+  y → −y cho λ(D, −Nxy) = λ(D đổi dấu D16, D26, +Nxy) (đã có test).
+* *Kiểm chứng:* pytest thêm 11 test (`tests/test_shear_both.py`, 1 test MATLAB): không có lực cắt thì bật hay tắt
+  tùy chọn cho kết quả trùng tới từng bit; với tùy chọn bật, biên = min của hai bài một chiều (tấm đối xứng và không đối xứng);
+  tìm kiếm chính xác trùng liệt kê thô mọi phương án hợp lệ 8–16 lớp ở 3 tổ hợp tải; phương án tối ưu hai chiều đạt
+  hệ số an toàn cho cả +Nxy và −Nxy. pytest toàn bộ: **102/102**. MATLAB tính lại 8 phương án hai chiều dưới đây cho
+  cả hai chiều tải: **8/8 đạt**, sai số tương đối lớn nhất 1,1·10⁻¹⁴ (`results/shear_both_signs_matlab.json`).
+* *Thí nghiệm* (`python -m optimization.experiments.shear_both`, 71 s, 3 tiến trình): các ca có lực cắt C5–C8, hai
+  độ dày lớp; tìm kiếm chính xác (giới hạn 300 s), nếu không xong thì GA + tìm kiếm cục bộ 5 seed. Bảng chép nguyên
+  văn từ `results/shear_both_signs.md`:
+
+*One direction* = published results (shear of the given sign only; results/cases_summary.csv). *Both directions* = shear_both_signs: strength and buckling for +Nxy and -Nxy, the smaller RF counts. *margin if reversed* = margin of the one-direction optimum when Nxy changes sign. *n lower bound* = proven lower bound of the ply count (both directions). Mass saving vs the smallest quasi-isotropic [0/45/-45/90]ns laminate checked with the same option.
+
+**Ply 0.125 mm (demo)**
+
+| case | Nx, Ny, Nxy (N/m) | one direction: n* (margin) | margin if reversed | saving one dir. | both directions: n (margin) | status | n lower bound | design (half, outer->mid) | governing (sign) | |D16|/D11 | QI n | saving both dir. | GA+LS seeds at this answer |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| C5 Pure shear | 0, 0, 300000 | 42 (1.5915) | 0.5558 | 25.0 % | 46 (1.5975) | best found (GA + local search) | 46 | [45/-45_2/45/-45/45/-45_2/45_4/-45/45/-45/0/-45/90_3/0_2/90]s | buckling (+) | 0.000 | 56 | 17.9 % | 1/5 |
+| C6 Tension + shear | 800000, 0, 300000 | 24 (1.6565) | 1.6565 | 25.0 % | 24 (1.6565) | optimal | 24 | [90/-45/45/0/90/-45/45/0/-45/0/45/0]s | tsai_wu (+) | 0.050 | 32 | 25.0 % | 4/5 |
+| C7 Compression + shear | -10000, 0, 5000 | 20 (1.7513) | 1.4932 | 16.7 % | 20 (1.6876) | optimal | 20 | [45/-45/45/-45_3/45_2/0/90]s | buckling (+) | 0.000 | 24 | 16.7 % | 5/5 |
+| C8 Very large load | 4e+06, 2e+06, 1e+06 | 64 (1.0427) | 1.0427 | infeasible | 64 (1.0427) | infeasible |  | [90/-45/45/0/90/-45/45/0/90/-45/45/0/90/-45/45/0/-45/45/0/-45/45/0/-45/45/0/-45/45/0/-45/45/-45/45]s | max_stress (+) | 0.015 | 104 | infeasible | 5/5 |
+
+**Ply 0.18288 mm (NCAMP IM7/8552)**
+
+| case | Nx, Ny, Nxy (N/m) | one direction: n* (margin) | margin if reversed | saving one dir. | both directions: n (margin) | status | n lower bound | design (half, outer->mid) | governing (sign) | |D16|/D11 | QI n | saving both dir. | GA+LS seeds at this answer |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| C5 Pure shear | 0, 0, 300000 | 28 (1.5197) | 0.5136 | 30.0 % | 32 (1.6911) | best found (GA + local search) | 32 | [-45_2/45_4/-45/45/-45_3/45/0/90_2/0]s | buckling (+) | 0.002 | 40 | 20.0 % | 2/5 |
+| C6 Tension + shear | 800000, 0, 300000 | 16 (1.6979) | 1.6979 | 33.3 % | 16 (1.6979) | optimal | 16 | [90/-45/45/0/-45/0/45/0]s | tsai_wu (-) | 0.092 | 24 | 33.3 % | 5/5 |
+| C7 Compression + shear | -10000, 0, 5000 | 14 (1.8243) | 1.5569 | 12.5 % | 14 (1.7437) | optimal | 14 | [45/-45_2/45/0_2/90]s | buckling (+) | 0.023 | 16 | 12.5 % | 5/5 |
+| C8 Very large load | 4e+06, 2e+06, 1e+06 | 64 (1.5255) | 1.5255 | 11.1 % | 64 (1.5255) | optimal | 64 | [90/-45/45/0/90/-45/45/0/90/-45/45/0/90/-45/45/0/-45/45/0/-45/45/0/-45/45/0/-45/45/0/-45/45/-45/45]s | max_stress (-) | 0.015 | 72 | 11.1 % | 5/5 |
+
+Nhận xét:
+* **Cắt thuần (C5)**: cần thêm lớp — 42 → **46 lớp** (0,125 mm) và 28 → **32 lớp** (0,18288 mm). Ở cả hai, cận dưới
+  chứng minh được bằng đúng số lớp tìm được, nên **số lớp là tối ưu**; biên an toàn là tốt nhất đã biết (tìm kiếm
+  chính xác không liệt kê hết được). Phương án hai chiều có |D16|/D11 ≈ 0 (dấu và vị trí các lớp ±45 chọn sao cho D16 ≈ 0), trong
+  khi phương án một chiều có |D16|/D11 ≈ 0,4. Mức giảm so với tựa đẳng hướng (cũng kiểm tra hai chiều) còn 17,9 % / 20 %.
+* **Nén + cắt (C7)**: cùng số lớp; biên giảm 1,7513 → 1,6876 (0,125 mm) và 1,8243 → 1,7437 (0,18288 mm) — vẫn đạt.
+* **Kéo + cắt (C6)** và **tải rất lớn (C8)**: không đổi (độ bền quyết định; lực kéo lấn át nên không mất ổn định).
+* Kết luận: khi lực cắt có thể đổi chiều, cái giá chủ yếu ở ca cắt thuần (thêm 4 lớp: +9,5 % số lớp ở 0,125 mm, +14 % ở 0,18288 mm, so với
+  phương án một chiều), đổi lại phương án không còn mất ổn định khi lực cắt đổi chiều (biên một chiều khi đổi chiều chỉ
+  còn 0,56 / 0,51).
+
 ## 5. Đánh giá chung
 * Bộ tính CLT Python có thể thay MATLAB trong vòng lặp tối ưu (khớp tới sai số máy, nhanh hơn nhiều bậc).
 * Mất ổn định do cắt và ảnh hưởng của D16, D26 **thay đổi kết quả ở ca cắt thuần** (12 → 42 / 28 lớp) và cho thấy
@@ -625,8 +677,9 @@ mất ổn định được tính lại từ ma trận D của MATLAB bằng cù
 
 ## 6. Hạn chế còn lại
 
-1. **Chiều của lực cắt**: tối ưu dùng đúng dấu của Nxy đề cho; phương án tối ưu có thể không an toàn khi cắt đổi chiều
-   (mục 4.5). Chưa có tối ưu đồng thời nhiều trường hợp tải.
+1. **Chiều của lực cắt**: nghiên cứu chính dùng đúng dấu của Nxy đề cho; phương án tối ưu có thể không an toàn khi cắt
+   đổi chiều (mục 4.5). Tùy chọn `shear_both_signs` (mục 4.8, mặc định trong agent thiết kế) xử lý riêng trường hợp
+   ±Nxy; chưa có tối ưu đồng thời nhiều trường hợp tải bất kỳ.
 2. **Rayleigh-Ritz là cận trên**: chuỗi sin kép không thỏa điều kiện mô-men bằng 0 ở cạnh khi D16, D26 ≠ 0 nên hội tụ chậm;
    so với lời giải đa thức độc lập, chuỗi sin 8×8 cao hơn tới 0.62 % ở tấm rất bất đẳng hướng (mục 4.0). Biên an toàn của
    các ca mất ổn định quyết định vì vậy có thể cao hơn giá trị thật cỡ vài phần nghìn.
@@ -660,7 +713,8 @@ python\optimization\run_optimization.bat --quick   (pytest + bản rút gọn: 3
 Từng bước (trong thư mục `python`, dùng `..\venv\Scripts\python.exe`):
 `-m optimization.run_tests` · `-m optimization.experiments.verify_buckling` · `-m optimization.experiments.verify_matlab` · `-m optimization.experiments.run_cases`
 · `-m optimization.experiments.matlab_recheck` · `-m optimization.experiments.leriche_haftka_exp`
-· `-m optimization.experiments.make_figures` · `-m optimization.experiments.make_tables`.
+· `-m optimization.experiments.make_figures` · `-m optimization.experiments.make_tables`
+· `-m optimization.experiments.shear_both` (mục 4.8, lực cắt hai chiều; chạy sau `run_cases`).
 
 Dùng trong code (Lớp 2, Lớp 3):
 ```python
@@ -750,7 +804,7 @@ optimal ply count (42) is proven but the optimal margin is not. On the 15 proven
 the optimum in 300/300 runs, the basic GA in 294/300 and NSGA-II in only 213/300 (it ends at the optimal ply count in
 298/300 runs but often not at the optimal ±45 sign pattern; margin up to 2.5 % lower). All 51 final designs were
 re-checked with MATLAB `clt_engine.m` (51/51 pass, CLT/strength part, max relative error 3.1·10⁻¹⁵); the pytest suite
-passes 91/91. The Le Riche & Haftka results (published optima 3973.01, 9998.19, 13518.66 reproduced; 48-ply minimum
+passes 102/102. The Le Riche & Haftka results (published optima 3973.01, 9998.19, 13518.66 reproduced; 48-ply minimum
 designs of the 1995 paper) are unchanged.
 
 **Main results.** Mass saving versus the smallest quasi-isotropic [0/±45/90]ns laminate with the same margin and the
@@ -762,7 +816,10 @@ the ply count (12 → 42 and 12 → 28); the margin of compression + shear drops
 
 **Limitations.** (1) The optimum exploits the sign of the given shear (|D16|/D11 ≈ 0.4 for pure shear): with the shear
 reversed its margin is only 0.56 (0.51 for 0.18288 mm plies), and 1.49 for compression + shear; if the shear can
-reverse, both signs must be optimised together (single load case only for now). (2) Ritz values are upper bounds
+reverse, the new option shear_both_signs (section 4.8; default in the design agent) checks +Nxy and -Nxy:
+pure shear then needs 46 plies instead of 42 (32 instead of 28 with 0.18288 mm plies), the other cases keep their
+ply counts. The published one-direction results are unchanged (rerun of all 960 runs and of Le Riche & Haftka,
+identical apart from run times). (2) Ritz values are upper bounds
 (sine series up to 0.62 % above the polynomial solution). (3) The published comparison is with values quoted in the
 text of Nemeth (1992); no exact tabulated composite square-plate value was available. (4) Mean (not B-basis)
 strengths, first-ply failure, fixed angle set. The original agent demo files were not modified by this work.
