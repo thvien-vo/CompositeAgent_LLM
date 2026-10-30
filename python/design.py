@@ -793,6 +793,20 @@ def design_explanation_issues(text, r):
             continue      # the ply count IS proven minimal (only the margin is not)
         issues.append(f"the result is the best design found, not a proven optimum, but the text says '{m.group()}'")
         break
+    # a margin / reserve factor of the DESIGN written after "quasi-isotropic" in the same sentence is given to the
+    # quasi-isotropic laminate (its margin is not in the data): "a quasi-isotropic laminate ... would reach 0.296"
+    design_rf = [r["margin"]] + [v for v in r["rf"].values() if v != float("inf")]
+    for sm in re.finditer(r"(?:[^.!?;\n]|\.(?=\d))+", re.sub(r"\[[^\]]*\]\s*[a-z0-9]*", "layup", t)):
+        sent = sm.group()
+        q = re.search(r"quasi[- ]?isotropic|tựa\s+đẳng\s+hướng", sent)
+        if not q:
+            continue
+        for x in re.finditer(r"(?<![\w.])\d+(?:[.,]\d+)?", sent[q.end():]):
+            v = float(x.group().replace(",", "."))
+            if v not in (r["spec"]["safety_factor"],) and any(abs(v - f) <= 5e-4 * f for f in design_rf):
+                issues.append(f"'{x.group()}' is a reserve factor of the DESIGN, but the sentence gives it to the "
+                              "quasi-isotropic laminate")
+                break
     m = re.search(_WRONG_WAY_RE, t)
     if m:
         issues.append(f"the DESIGN has fewer plies than the quasi-isotropic laminate, but the text says "

@@ -156,7 +156,9 @@ The answer gives the stacking sequence (e.g. `[45/-45_2/0_2/90]s`) and the plies
 ply count), prints the reserve factor of Max Stress, Tsai-Wu and buckling with the governing criterion, the MATLAB
 re-check, the independent buckling check and the comparison with the smallest quasi-isotropic laminate (fewer plies
 in %; no mass in kg, the data have no density). Unsupported requests (another objective, other angles, moments,
-unsymmetric laminates) are refused with the reason.
+unsymmetric laminates) are refused with the reason. The exact search is limited to 30 s per request: whether it
+finishes, and the lower bound of the ply count it proves, can depend on the load of the computer; the design given by
+GA + local search (fixed seed) does not. One request takes about 5-60 s.
 
 ### Tests and benchmarks
 

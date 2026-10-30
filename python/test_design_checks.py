@@ -183,6 +183,13 @@ def explanations():
     text, _ = design.prebuilt_explanation(fixed, "en")
     check("largest safety margin for 24 plies" in text and not design.design_explanation_issues(text, fixed),
           f"fixed ply count: status and pre-built text\n    {text}")
+    # gemma3, 30/10/2026 (DS6): the design's margin given to the quasi-isotropic laminate
+    t = (f"A quasi-isotropic laminate with {fixed['quasi_isotropic']['n']} plies ([0/45/-45/90]ns) would have achieved "
+         f"a safety margin of {fixed['margin']:.4f}.")
+    check(bool(design.design_explanation_issues(t, fixed)), "design margin attributed to the quasi-isotropic laminate")
+    t = (f"The safety margin is {m:.4g}; this design has {red:.1f} % fewer plies than the smallest quasi-isotropic "
+         f"laminate ({qi} plies).")
+    check(not design.design_explanation_issues(t, best), "margin before the quasi-isotropic comparison is fine")
     print("explanations: wrong sentences caught, correct ones and pre-built texts pass")
 
 
