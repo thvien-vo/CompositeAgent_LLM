@@ -383,10 +383,14 @@ Mọi ca có nén hoặc cắt dùng 8×8 số hạng trong tối ưu (k = 8 đ�
 0.49 % ở ca kéo + cắt). Với phương án tối ưu cuối, chuỗi được tăng từ 6×6 đến khi đổi < 0.5 %; biên báo cáo dùng giá
 trị nhỏ hơn của hai cách tính.
 
-![Pareto 0.125 mm](figures/pareto_t0125.png)
+![Pareto C1, C4, C5, C7](../figures_v2/python/png/Fig3_pareto.png)
 
-*Hình 1. Biên an toàn tốt nhất theo số lớp (tìm kiếm chính xác, xanh; chỉ các số lớp đã chứng minh xong), mặt Pareto
-NSGA-II của từng seed (cam) và cận trên chứng minh được (chấm). Hình lớp 0.18288 mm: `figures/pareto_t0183.png`.*
+*Hình 1. Mặt Pareto giữa số lớp n và biên an toàn RF_min của bốn ca C1, C4, C5, C7, hai chiều dày lớp vẽ chung trong mỗi
+ô: mặt chính xác (chỉ các số lớp đã chứng minh xong; lớp 0.125 mm: đỏ cam, marker tròn; lớp 0.18288 mm, ghi 0.183 mm trên
+hình: tím, marker vuông), điểm NSGA-II của từng seed (marker rỗng nhỏ, magenta), tối ưu (hình thoi đen đặc) và đường
+ngang nét đứt RF_min = 1.5. Trục y dừng ở 8 nên phần mặt Pareto phía trên không hiện ra; hình này không vẽ cận trên chứng
+minh được. Đủ 8 ca: `../figures_v2/python/png/FigS1_pareto_all_C1_C4.png`,
+`../figures_v2/python/png/FigS1_pareto_all_C5_C8.png`.*
 
 ### 4.3 GA, GA + tìm kiếm cục bộ và NSGA-II so với tối ưu chính xác
 *Success* = **đáp án cuối** có đúng số lớp tối ưu và biên an toàn bằng tối ưu toàn cục (sai số 10⁻⁹) trong ngân sách
@@ -437,17 +441,24 @@ So sánh hiệu quả:
 * Thời gian một lần chạy 2–20 s; tìm kiếm chính xác ≤ 10 s mỗi bài; toàn bộ 960 lần chạy + tìm kiếm chính xác: 29.5 phút
   trên 3 tiến trình.
 
-![Hội tụ 0.125 mm](figures/convergence_t0125.png)
+![Hội tụ 0.125 mm, C1 đến C4](../figures_v2/python/png/FigS2_convergence_t0125_p1.png)
 
-*Hình 2. Tỉ lệ lần chạy kết thúc ở tối ưu toàn cục theo số phương án đã phân tích (mốc = lần đầu đạt). Lớp 0.18288 mm:
-`figures/convergence_t0183.png`; diễn biến phương án tốt nhất (trung vị, dải 25–75 %) ca C4:
-`figures/best_so_far_C4_t0125.png`.*
+![Hội tụ 0.125 mm, C5 đến C8](../figures_v2/python/png/FigS2_convergence_t0125_p2.png)
+
+*Hình 2. Tỉ lệ lần chạy kết thúc ở tối ưu toàn cục theo số phương án đã phân tích (trục log, mốc = lần đầu đạt), lớp
+0.125 mm: GA (xanh cobalt, nét đứt), NSGA-II (đỏ cam, gạch chấm), GA + tìm kiếm cục bộ (xanh lá, nét liền). Ô C5 chỉ ghi
+"no proven optimum", không có đường, vì ca này chưa có tối ưu đã chứng minh. Lớp 0.18288 mm:
+`../figures_v2/python/png/FigS3_convergence_t0183_p1.png`, `../figures_v2/python/png/FigS3_convergence_t0183_p2.png`;
+diễn biến phương án tốt nhất ca C4, lớp 0.125 mm (trung vị và hai đường mảnh phân vị 25, 75), mỗi thuật toán một ô:
+`../figures_v2/python/png/FigS4_best_so_far_C4.png`.*
 
 ### 4.4 So sánh với tấm tựa đẳng hướng
-![So sánh tựa đẳng hướng](figures/quasi_isotropic_comparison.png)
+![So sánh tựa đẳng hướng](../figures_v2/python/png/Fig4_qi_comparison.png)
 
-*Hình 3. Số lớp cần để biên ≥ 1.5: tựa đẳng hướng `[0/45/−45/90]ns` (xám, tìm tới 128 lớp, cùng mô hình mất ổn định có
-D16, D26, Nxy) và phương án tối ưu (xanh); nhãn = % khối lượng giảm. Số liệu: cột `qi_n`, `mass_reduction_pct` của
+*Hình 3. Số lớp cần để biên ≥ 1.5: tựa đẳng hướng `[0/45/−45/90]ns` (cột đen, marker vuông trắng; tìm tới 128 lớp, cùng
+mô hình mất ổn định có D16, D26, Nxy) và phương án tối ưu (cột xanh cobalt, marker tròn trắng), mỗi chiều dày lớp một ô.
+Dòng dưới tên ca = % khối lượng giảm, làm tròn tới số nguyên. Cột gạch chéo = không có phương án đạt trong giới hạn
+64 lớp (C8, lớp 0.125 mm); đường nét đứt là giới hạn 64 lớp của bộ tối ưu. Số liệu: cột `qi_n`, `mass_reduction_pct` của
 `results/cases_summary.csv`.*
 
 Mức giảm lớn nhất ở tải một phương (kéo: −50 %) vì tựa đẳng hướng phân bổ 3/4 số lớp vào các hướng không chịu tải.
@@ -455,10 +466,7 @@ Ca **cắt thuần** nay được so sánh hợp lệ: tựa đẳng hướng c�
 mức giảm là −25 % / −30 %. Mức giảm nhỏ nhất ở nén hai phương lớp 0.125 mm (−8.3 %) và ở tải rất lớn lớp 0.18288 mm (−11 %).
 
 ### 4.5 Trước / sau khi đưa mất ổn định do cắt (và D16, D26) vào tối ưu
-![Giảm khối lượng trước / sau](figures/mass_saving_before_after.png)
-
-*Hình 4. % giảm khối lượng so với tựa đẳng hướng: bản trước (xám; dấu * = ca có cắt, bản trước chưa xét mất ổn định do
-cắt nên con số không dùng được) và bản này (xanh).*
+(figure superseded, see deliverables/figures_v2)
 
 | case | ply | before: n* (margin) | after: n* (margin) | QI n before | QI n after | mass saving before | mass saving after | status after |
 |---|---|---|---|---|---|---|---|---|
@@ -594,10 +602,12 @@ chúng tôi không giải thích được chắc chắn.
   bỏ dần lớp 0° làm phương án tạm thời xấu đi). Các lần trượt dừng ở 48 lớp với λ 1.0199 (kém 0.03 %) hoặc 1.0003, hoặc
   ở 52 lớp. Đây là hạn chế còn lại của GA.
 
-![Le Riche & Haftka](figures/leriche_haftka.png)
+![Le Riche & Haftka](../figures_v2/python/png/Fig2_leriche_haftka.png)
 
-*Hình 4. Trái: tối ưu toàn cục (vét cạn) so với giá trị nguồn. Phải: tỉ lệ lần chạy GA đạt đúng tối ưu theo ngân sách
-(chấm: GA, liền: GA + tìm kiếm cục bộ).*
+*Hình 4. Tỉ lệ lần chạy đạt đúng tối ưu theo số phương án đã đánh giá (trục log), bốn ca LH-A đến LH-D phân biệt bằng màu
+và hình marker (xanh cobalt tròn, đỏ cam vuông, xanh lá tam giác, magenta thoi); nét đứt, marker rỗng: GA; nét liền,
+marker đặc: GA + tìm kiếm cục bộ. So sánh tối ưu vét cạn với giá trị nguồn nay ở bảng
+`../figures_v2/tables/Table_leriche_haftka.csv`.*
 
 ### 4.7 Kiểm tra lại bằng MATLAB các phương án tối ưu cuối
 | designs | pass | max e_ABD | max e_stress | max |RF diff| |
