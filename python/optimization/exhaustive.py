@@ -402,7 +402,9 @@ class _FullBounds:
     """Bounds of the Ritz buckling factor for one problem and one half-length L (see the comment above)."""
 
     def __init__(self, problem: Problem, ev: Evaluator, L: int):
-        self.p, self.ev, self.model = problem, ev, ev.ritz_model
+        # with shear_both_signs there is one Ritz model per shear direction; lambda = min over the models is
+        # <= every quotient of every model, so the quotient vectors of all models are pooled in one list
+        self.p, self.ev, self.models = problem, ev, ev.ritz_models
         self.q6 = _q6(ev)
         self.w = _half_weights(L, problem.ply_thickness)
         self.factor = problem.criterion_factors.get("buckling", 1.0)
@@ -412,13 +414,14 @@ class _FullBounds:
 
     def modes(self, arrs: np.ndarray) -> List[np.ndarray]:
         """Quotient coefficient vectors r (6,) of the critical modes of the given designs."""
-        lam, crit = self.model.lam(self.dvec(arrs), vectors=True)
         out = []
-        for c in crit:
-            if c is not None:
-                r = self.model.quotient_terms(*c)
-                if r is not None:
-                    out.append(r)
+        for model in self.models:
+            lam, crit = model.lam(self.dvec(arrs), vectors=True)
+            for c in crit:
+                if c is not None:
+                    r = model.quotient_terms(*c)
+                    if r is not None:
+                        out.append(r)
         return out
 
     def count_bound(self, cnt, R: List[np.ndarray]) -> Tuple[float, np.ndarray]:
@@ -527,7 +530,7 @@ def exact_full(problem: Problem, time_limit: float = 600.0, front_to_n: Optional
             # trial arrangements first: if one reaches the strength RF of the counts, nothing can do better
             trial = d["trials"][_valid_mask(problem, d["trials"])] if len(d["trials"]) else d["trials"]
             if len(trial):
-                lam = ev.ritz_model.lam_cached(fb.dvec(trial)) / fb.factor
+                lam = ev.lam_full(fb.dvec(trial)) / fb.factor
                 n_eig += len(trial)
                 mg = np.minimum(lam, d["rf_strength"])
                 k = int(np.argmax(mg))
@@ -554,7 +557,7 @@ def exact_full(problem: Problem, time_limit: float = 600.0, front_to_n: Optional
                     break
                 idx = order[pos:pos + 256]
                 idx = idx[qb[idx] > best_m * (1 + 1e-12)]
-                lam = ev.ritz_model.lam_cached(Dv[idx]) / fb.factor
+                lam = ev.lam_full(Dv[idx]) / fb.factor
                 n_eig += len(idx)
                 mg = np.minimum(lam, d["rf_strength"])
                 k = int(np.argmax(mg))

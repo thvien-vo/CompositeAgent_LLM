@@ -121,6 +121,8 @@ def warnings_for(problem: Problem) -> List[str]:
                      "see buckling_ritz_with_shear for a Ritz estimate that includes Nxy")
     if not problem.rules.symmetric and "buckling" in problem.criteria:
         w.append("non-symmetric laminates: closed-form buckling uses D only (B coupling ignored)")
+    if problem.both_signs:
+        w.append("shear checked in both directions: strength and buckling for +Nxy and -Nxy, the smaller RF counts")
     return w
 
 
@@ -160,7 +162,7 @@ def optimize(loads, material: Union[str, Material, None] = "IM7/8552", rules: Op
              buckling_model: str = "ritz_full", budget: int = 10000, pop_size: Optional[int] = None,
              ga_config: Optional[GAConfig] = None, time_limit: float = 600.0, verify_matlab: bool = False,
              target: Optional[Tuple[int, float]] = None, problem: Optional[Problem] = None,
-             verbose: bool = False) -> OptimizationResult:
+             verbose: bool = False, shear_both_signs: bool = False) -> OptimizationResult:
     """Optimise the stacking sequence (fewest plies with safety margin >= safety_factor).
 
     loads: {"Nx", "Ny", "Nxy"} (N/m, tension +) or a tuple. material: name (measured CSV row / ML group) or
@@ -170,10 +172,11 @@ def optimize(loads, material: Union[str, Material, None] = "IM7/8552", rules: Op
     buckling_model: "ritz_full" (default: Rayleigh-Ritz with D16, D26 and Nxy, checked whenever there is
     compression or shear), "closed_form" (Nx, Ny only, D16 = D26 = 0; used for the Le Riche & Haftka benchmark)
     or "ritz" (Nxy, D16 = D26 = 0).
+    shear_both_signs: also check every design for -Nxy (a shear load that may reverse); off by default.
     """
     t0 = time.perf_counter()
     p = problem or make_problem(loads, material, rules, safety_factor, plate, ply_thickness, encoding, criteria,
-                                f12_star, buckling_model)
+                                f12_star, buckling_model, shear_both_signs=shear_both_signs)
     if method == "exhaustive":
         no_buckling = not ("buckling" in p.criteria and p.has_compression)
         if no_buckling and p.rules.symmetric:

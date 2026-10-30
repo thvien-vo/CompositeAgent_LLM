@@ -144,16 +144,35 @@ def compare(angles: Sequence[float], thicknesses, mat, loads: Dict[str, float]) 
 
 
 def verify_design(problem, full_codes: Sequence[int], python_detail: Optional[Dict] = None) -> Dict:
-    """Re-check an optimised design with clt_engine.m: CLT errors + RFs recomputed from MATLAB output."""
+    """Re-check an optimised design with clt_engine.m: CLT errors + RFs recomputed from MATLAB output.
+    With shear_both_signs both load cases (+Nxy, -Nxy) are run in MATLAB and the smaller RF is compared."""
     from .evaluate import analyze_design
     from .rules import ANGLES
     ang = ANGLES[np.asarray(full_codes, int)]
-    Nx, Ny, Nxy = problem.loads
+    det = python_detail or analyze_design(problem, full_codes)
+    cases = [_rf_matlab(problem, ang, *lc) for lc in problem.load_cases()]
+    cmp_, rf_ml = cases[0]
+    if len(cases) > 1:
+        rf_ml = {c: min(r[c] for _, r in cases) for c in rf_ml}
+        cmp_ = dict(cmp_, **{k: max(c[k] for c, _ in cases) for k in ("e_ABD", "e_stress", "e_FI")})
+        cmp_["pass"] = all(c["pass"] for c, _ in cases)
+        cmp_["by_shear_sign"] = {"+": cases[0][0], "-": cases[1][0]}
+    e_rf = {}
+    for c, v in rf_ml.items():
+        pv = det["rf"][c]
+        e_rf[c] = 0.0 if (np.isinf(v) and np.isinf(pv)) else float(abs(pv - v) / abs(v))
+    margin_ml = min(rf_ml.values()) if rf_ml else float("nan")
+    ok = cmp_["pass"] and all(e <= TOL for e in e_rf.values())
+    return {"clt": cmp_, "rf_matlab": rf_ml, "rf_python": det["rf"], "e_rf": e_rf,
+            "margin_matlab": float(margin_ml), "margin_python": det["margin"], "pass": bool(ok)}
+
+
+def _rf_matlab(problem, ang, Nx: float, Ny: float, Nxy: float):
+    """One load case in MATLAB: (CLT comparison with Python, RFs from the MATLAB output)."""
     loads = {"Nx": Nx, "Ny": Ny, "Nxy": Nxy}
     mat = problem.material
     cmp_ = compare(ang, problem.ply_thickness, mat, loads)
     ml = run_matlab(ang, problem.ply_thickness, mat, loads)
-    det = python_detail or analyze_design(problem, full_codes)
     rf_ml = {}
     stress = ml["ply_stress"]
     if "max_stress" in problem.criteria:
@@ -174,11 +193,4 @@ def verify_design(problem, full_codes: Sequence[int], python_detail: Optional[Di
             lam = float(buckling.closed_form([Dm[0, 0]], [Dm[0, 1]], [Dm[1, 1]], [Dm[2, 2]], Nx, Ny, a, b,
                                              problem.buckling_modes)[0][0])
         rf_ml["buckling"] = lam / problem.criterion_factors.get("buckling", 1.0)
-    e_rf = {}
-    for c, v in rf_ml.items():
-        pv = det["rf"][c]
-        e_rf[c] = 0.0 if (np.isinf(v) and np.isinf(pv)) else float(abs(pv - v) / abs(v))
-    margin_ml = min(rf_ml.values()) if rf_ml else float("nan")
-    ok = cmp_["pass"] and all(e <= TOL for e in e_rf.values())
-    return {"clt": cmp_, "rf_matlab": rf_ml, "rf_python": det["rf"], "e_rf": e_rf,
-            "margin_matlab": float(margin_ml), "margin_python": det["margin"], "pass": bool(ok)}
+    return cmp_, rf_ml
