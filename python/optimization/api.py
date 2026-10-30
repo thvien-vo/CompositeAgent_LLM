@@ -23,7 +23,7 @@ from .evaluate import Plate, Problem, analyze_design
 from .exhaustive import exact_full, exhaustive, strength_only_exact
 from .ga import GAConfig, GeneticAlgorithm
 from .material import DEFAULT_PLY_THICKNESS, Material, get_material
-from .rules import Rules, check_rules, full_laminate, notation
+from .rules import ANGLES as ANGLES_, Rules, check_rules, full_laminate, notation
 
 
 @dataclass
@@ -229,3 +229,62 @@ def quasi_isotropic(problem: Problem, n_max: int = 128) -> Dict:
             return {"n": 8 * k, "margin": float(r["margin"][0]), "full": full.tolist(),
                     "notation": f"[0/45/-45/90]_{k}s", "found": True, "scan": rows}
     return {"n": None, "margin": rows[-1]["margin"], "found": False, "scan": rows}
+
+
+def _lower_bound(problem: Problem, r: Dict) -> Optional[int]:
+    """Proven lower bound of the ply count: the count-level bound, raised past every ply count that the search
+    proved infeasible (best margin < safety factor), as long as those counts follow each other."""
+    lb = (r.get("bounds") or {}).get("n_lower_bound")
+    if lb is None:
+        return None
+    done = {x["n"]: x.get("max_margin") for x in r["per_n"] if x.get("max_margin") is not None}
+    for n in problem.rules.allowed_ply_counts(problem.enc):
+        if n >= lb and not (n in done and done[n] < problem.safety_factor):
+            return n
+    return None
+
+
+def design_search(problem: Problem, objective: str = "min_plies", time_limit: float = 30.0, seed: int = 0,
+                  budget: int = 10000) -> Dict:
+    """Search used by the design agent: the exact search when it can finish within time_limit (proven optimum or
+    proven infeasible), and GA + local search (fixed seed) always, as a cross-check and as the answer when the exact
+    search cannot finish ("best found", with the proven lower bound of the ply count when there is one).
+    objective: "min_plies" (fewest plies with margin >= safety factor) or "max_margin" (largest margin for the ply
+    count rules.n_min == rules.n_max). Returns {"status", "proven", "full", "exact", "ga", "time_s"};
+    status: "optimal" | "infeasible" (both proven) | "best found" | "no feasible design found" (GA, not proven)."""
+    if objective not in ("min_plies", "max_margin"):
+        raise ValueError("objective must be 'min_plies' or 'max_margin'")
+    if objective == "max_margin" and problem.rules.n_min != problem.rules.n_max:
+        raise ValueError("objective 'max_margin' needs a fixed ply count (rules.n_min == rules.n_max)")
+    t0 = time.perf_counter()
+    sf = problem.safety_factor
+    buckling_active = "buckling" in problem.criteria and problem.has_compression
+    exact, ex = None, {"status": "not run", "complete": False, "n_lower_bound": None}
+    if problem.rules.symmetric and not buckling_active:
+        exact = strength_only_exact(problem)
+    elif (problem.rules.symmetric and problem.rules.balanced and problem.encoding == "ply"
+          and problem.buckling_model == "ritz_full"):
+        exact = exact_full(problem, time_limit=time_limit)
+    full, proven, status = None, False, None
+    if exact is not None:
+        ex = {"status": exact["status"], "complete": bool(exact.get("complete")), "time_s": exact["time_s"],
+              "method": exact.get("method", ""), "n_lower_bound": _lower_bound(problem, exact)}
+        if objective == "max_margin":
+            rec = exact["per_n"][0] if exact["per_n"] else None
+            if rec is not None and rec.get("max_margin") is not None and rec.get("complete", True):
+                full, proven = rec["full"], True
+                status = "optimal" if rec["max_margin"] >= sf else "infeasible"
+        elif exact["status"] in ("optimal", "infeasible") and exact["best"] is not None:
+            full, proven, status = exact["best"]["full"], True, exact["status"]
+    ga, n_proven = None, proven
+    if full is None:      # the exact search could not finish: GA + local search gives the answer
+        cfg = GAConfig(budget=budget, local_search=True, objective=objective)
+        g = optimize(None, problem=problem, method="ga", seed=seed, ga_config=cfg)
+        full = [int(np.argmin(np.abs(ANGLES_ - a))) for a in g.stacking_deg]
+        ga = {"n": g.n_plies, "margin": g.margin, "feasible": g.feasible, "time_s": g.runtime_s, "seed": seed,
+              "budget": budget}
+        status = "best found" if g.feasible else "no feasible design found"
+        # fewest plies: a feasible design with as many plies as the proven lower bound has the optimal ply count
+        n_proven = objective == "min_plies" and g.feasible and ex["n_lower_bound"] == g.n_plies
+    return {"status": status, "proven": proven, "n_proven": bool(n_proven), "full": [int(x) for x in full],
+            "exact": ex, "ga": ga, "objective": objective, "time_s": time.perf_counter() - t0}

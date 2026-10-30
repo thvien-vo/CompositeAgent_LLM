@@ -512,6 +512,56 @@ def _si(q, table, what):
     return float(q.get("value", 0) or 0) * table[unit]
 
 
+def read_loads(raw_loads, text, nums, units, warnings):
+    """Loads of the LLM answer (list of {name, value, unit}) checked against the text: symbol, unit kind, value
+    written in the text; loads written as 'Nx = 5 kN/m' and every 'number + force/moment unit' of the text are read
+    by Python too and the text wins. -> ({Nx..Mxy: SI value}, load quantities of the text).
+    Raises AmbiguousTextError (load without direction) or ValueError (loads in the text but all read as 0)."""
+    loads = {k: 0.0 for k in LOAD_KEYS}
+    symbols_in_text = None
+    if text:
+        symbols_in_text = {(a + b.replace("yx", "xy")) for a, b in re.findall(_LOAD_SYMBOL, text)}
+    for q in raw_loads or []:
+        k, v, unit = q.get("name"), float(q.get("value", 0) or 0), q.get("unit")
+        if k not in loads or v == 0:
+            continue
+        table = FORCE_UNITS if k.startswith("N") else MOMENT_UNITS
+        if unit not in table:
+            warnings.append(f"{k} = {v:g} has unit '{unit}', which is not a "
+                            f"{'force' if k.startswith('N') else 'moment'} per length -> ignored")
+            continue
+        if symbols_in_text and k not in symbols_in_text:
+            warnings.append(f"{k} = {v:g} {unit}: the text has no {k} -> ignored")
+            continue
+        if nums is not None and not _grounded_si(v * table[unit], nums, units, table):
+            warnings.append(f"{k} = {v:g} {unit} is not written in the text -> ignored")
+            continue
+        if loads[k] != 0 and loads[k] != v * table[unit]:
+            warnings.append(f"{k} given twice by the LLM -> keeping the first value")
+            continue
+        loads[k] = v * table[unit]
+    # loads written explicitly as "Nx = 5 kN/m" are read by Python too; the text wins over the LLM
+    qs, explicit = [], {}
+    if text:
+        explicit = _loads_from_text(text)
+        for k, si in explicit.items():
+            if abs(loads[k] - si) > 1e-9 * max(abs(si), 1e-12):
+                warnings.append(f"LLM read {k} = {loads[k]:g}, the text says {k} = {si:g} (SI) -> using the text")
+                loads[k] = si
+        # every load quantity of the text ("1000 N/m along x", "2 kN/m") must be in the right load
+        qs = _check_quantities(text, loads, warnings)
+    if all(v == 0 for v in loads.values()):
+        low = (text or "").lower()
+        if text and (re.search(LOAD_WORDS, low) or re.search(_LOAD_SYMBOL, text)):
+            if re.search(NO_LOAD, low) or (explicit and all(v == 0 for v in explicit.values())):
+                warnings.append("all loads are 0 (the text says so)")
+            else:
+                raise ValueError("the text speaks of a load, but every load read is 0")
+        else:
+            warnings.append("the text gives no load: all loads are 0")
+    return loads, qs
+
+
 def build_problem(raw, text=None):
     """Deterministic part of step 1: raw LLM JSON (values as written) -> CLTInput in SI units.
     If the original text is given, every LLM value is checked against it (grounding):
@@ -635,49 +685,7 @@ def build_problem(raw, text=None):
         thick = [t / 1000.0 if t > 0.005 else t for t in thick]
         warnings.append("ply thickness > 5 mm looked like millimetres -> divided by 1000")
 
-    # loads: list of {name, value, unit}; check symbol, unit kind and value against the text
-    loads = {k: 0.0 for k in LOAD_KEYS}
-    symbols_in_text = None
-    if text:
-        symbols_in_text = {(a + b.replace("yx", "xy")) for a, b in re.findall(_LOAD_SYMBOL, text)}
-    for q in raw.get("loads") or []:
-        k, v, unit = q.get("name"), float(q.get("value", 0) or 0), q.get("unit")
-        if k not in loads or v == 0:
-            continue
-        table = FORCE_UNITS if k.startswith("N") else MOMENT_UNITS
-        if unit not in table:
-            warnings.append(f"{k} = {v:g} has unit '{unit}', which is not a "
-                            f"{'force' if k.startswith('N') else 'moment'} per length -> ignored")
-            continue
-        if symbols_in_text and k not in symbols_in_text:
-            warnings.append(f"{k} = {v:g} {unit}: the text has no {k} -> ignored")
-            continue
-        if nums is not None and not _grounded_si(v * table[unit], nums, units, table):
-            warnings.append(f"{k} = {v:g} {unit} is not written in the text -> ignored")
-            continue
-        if loads[k] != 0 and loads[k] != v * table[unit]:
-            warnings.append(f"{k} given twice by the LLM -> keeping the first value")
-            continue
-        loads[k] = v * table[unit]
-    # loads written explicitly as "Nx = 5 kN/m" are read by Python too; the text wins over the LLM
-    qs, explicit = [], {}
-    if text:
-        explicit = _loads_from_text(text)
-        for k, si in explicit.items():
-            if abs(loads[k] - si) > 1e-9 * max(abs(si), 1e-12):
-                warnings.append(f"LLM read {k} = {loads[k]:g}, the text says {k} = {si:g} (SI) -> using the text")
-                loads[k] = si
-        # every load quantity of the text ("1000 N/m along x", "2 kN/m") must be in the right load
-        qs = _check_quantities(text, loads, warnings)
-    if all(v == 0 for v in loads.values()):
-        low = (text or "").lower()
-        if text and (re.search(LOAD_WORDS, low) or re.search(_LOAD_SYMBOL, text)):
-            if re.search(NO_LOAD, low) or (explicit and all(v == 0 for v in explicit.values())):
-                warnings.append("all loads are 0 (the text says so)")
-            else:
-                raise ValueError("the text speaks of a load, but every load read is 0")
-        else:
-            warnings.append("the text gives no load: all loads are 0")
+    loads, qs = read_loads(raw.get("loads"), text, nums, units, warnings)
 
     if text:
         unused = _unused_numbers(text, angles, thick, n, qs,
@@ -1063,19 +1071,35 @@ def _negated(text, pos):
     return bool(_NEG_RE.search(text[max(0, pos - 25):pos]))
 
 
-def check_meaning(text, problem, result, material):
+def keyword_vocabulary(kind_words, kind_symbols, compatible, kind_names):
+    """Regex, lookup, compatibility and names of a vocabulary of kinds of quantity (used by check_meaning)."""
+    kw = sorted([(w, k, False) for k, ws in kind_words.items() for w in ws]
+                + [(w, k, True) for k, ws in kind_symbols.items() for w in ws], key=lambda x: -len(x[0]))
+    rx = re.compile("|".join(re.escape(w) if w == "°" else rf"(?<!\w){re.escape(w)}(?!\w)" for w, k, s in kw),
+                    re.IGNORECASE)
+    lookup = {}
+    for w, k, sym in kw:
+        lookup.setdefault(w.lower(), []).append((w, k, sym))
+    return rx, lookup, compatible, kind_names
+
+
+def check_meaning(text, problem, result, material, table=None, vocab=None, report_unknown=False):
     """For each number in the explanation: find what it is in the CLT data (failure index, stress, ABD(1,1)...)
     and check that the words next to it (same clause, English or Vietnamese) name that kind of quantity.
     ABD(1,1) must be called a stiffness and its sentence must not speak of a load or a load capacity.
+    table / vocab: another value table (value, kind, label) and vocabulary (keyword_vocabulary) - used by the
+    design explanation; report_unknown: also report numbers that are not in the table.
     Returns a list of problems (empty = every number is described correctly)."""
     t = _normalize(text)
-    table = _value_table(problem, result, material)
+    kw_re, kw_lookup, compatible, kind_names = vocab or (_KW_RE, _KW_LOOKUP, _COMPATIBLE, KIND_NAMES)
+    if table is None:
+        table = _value_table(problem, result, material)
     issues = []
     for sm in re.finditer(r"[^\n]+?(?:[.!?;](?=\s|$)|$)", t, flags=re.MULTILINE):
         sent = sm.group()
         words = []  # (start, end, kind, text)
-        for m in _KW_RE.finditer(sent):
-            kind = next((k for w, k, sym in _KW_LOOKUP.get(m.group().lower(), [])
+        for m in kw_re.finditer(sent):
+            kind = next((k for w, k, sym in kw_lookup.get(m.group().lower(), [])
                          if not sym or w == m.group() or w == "°"), None)
             if kind:
                 words.append((m.start(), m.end(), kind, m.group()))
@@ -1097,10 +1121,12 @@ def check_meaning(text, problem, result, material):
                 continue  # thresholds ("index < 1") and percentages
             cand = cands[i]
             if not cand:
+                if report_unknown:
+                    issues.append(f"'{tok}' is not one of the numbers given")
                 continue  # not in the data at all: reported by check_explanation
             kinds = set(cand)
-            what = " or ".join(f"{cand[k]} ({KIND_NAMES.get(k, k)})" for k in sorted(kinds))
-            ok = lambda kind: kind in kinds or bool(_COMPATIBLE.get(kind, set()) & kinds)
+            what = " or ".join(f"{cand[k]} ({kind_names.get(k, k)})" for k in sorted(kinds))
+            ok = lambda kind: kind in kinds or bool(compatible.get(kind, set()) & kinds)
             uk = _unit_kinds(unit) if unit else None
             if uk is not None and not (uk & kinds):
                 issues.append(f"'{tok} {unit.strip()}': {tok} is {what}, but it is given the unit {unit.strip()}")
@@ -1133,7 +1159,7 @@ def check_meaning(text, problem, result, material):
             if verdict is None and uk is None:
                 verdict = any(ok(k) and (k != "ply" or "ply" in kinds) for _, _, k, _ in words if k != "criterion")
             if verdict is False:
-                issues.append(f"'{tok}' is {what}, but the sentence calls it '{word[0]}' ({KIND_NAMES[word[1]]})"
+                issues.append(f"'{tok}' is {what}, but the sentence calls it '{word[0]}' ({kind_names[word[1]]})"
                               if word else f"'{tok}' is {what}, but its sentence does not say what it is")
                 continue
             if kinds == {"stiffness"}:
