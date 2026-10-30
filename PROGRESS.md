@@ -15,6 +15,22 @@ Lần chạy gần nhất: 0.0023807 / 4 / 5.93995e7 → **PASS** (chạy lại 
 - Kiểm tra tất định (không gọi LLM): `python\test_checks.py` → ALL PASS
 - Số lần gọi Hugging Face: mỗi lần gọi ghi 1 dòng vào `logs\hf_calls.log`.
 
+## Đang làm / Bước tiếp theo (Việc 3 - thiết kế tấm bằng lời, bắt đầu 30/10 10:00)
+Mốc: tag `before-design-agent` (= c799a34). Làm trên nhánh `design-agent`, worktree `D:\CompositeAgent_da`
+(`venv` và `logs` là junction tới `D:\CompositeAgent\venv`, `D:\CompositeAgent\logs`; thư mục `D:\CompositeAgent`
+giữ nhánh main để luôn chạy được). Bộ đếm HF đầu đợt: 146 dòng trong `logs\hf_calls.log` (giới hạn đợt: 100 lần
+-> tối đa dòng 246).
+Kế hoạch (đánh dấu [x] khi xong):
+- [ ] 1. Bộ đề thử thiết kế (viết TRƯỚC khi code): `python/benchmark_design.py`.
+- [ ] 2. Tối ưu: tùy chọn `shear_both_signs` (độ bền + mất ổn định cho +Nxy và -Nxy), pytest; mặc định tắt.
+- [ ] 3. Bảng một chiều / hai chiều lực cắt cho các ca có cắt (báo cáo Lớp 1); kiểm tra kết quả cũ không đổi.
+- [ ] 4. Bộ phân loại yêu cầu (`router.py`): 44 đề + 18 câu RAG phải đúng 100 %.
+- [ ] 5. Đọc yêu cầu thiết kế + chạy tối ưu + kiểm tra lại (MATLAB, Ritz đa thức, tựa đẳng hướng) (`design.py`).
+- [ ] 6. Giải thích bằng LLM + kiểm tra số liệu / ý nghĩa + bản dựng sẵn.
+- [ ] 7. Chạy bộ đề thiết kế (gemma3 toàn bộ, HF trong giới hạn).
+- [ ] 8. run_demo: phần Design, --interactive; log dự phòng; README.
+- [ ] 9. Kiểm tra cuối, gộp vào main, push; slide + kịch bản (sao lưu vào `D:\CompositeAgent_slide_backups\`).
+
 ## Đợt "mất ổn định do cắt + sửa demo" (28/10 chiều - 30/10): XONG
 Mốc trước khi làm: tag `before-shear-buckling`. Việc 1 làm trên nhánh `shear-buckling` (worktree `D:\CompositeAgent_sb`),
 gộp vào main (commit 62885cb) sau khi mọi kiểm chứng đạt; Việc 2 làm trực tiếp trên main.
