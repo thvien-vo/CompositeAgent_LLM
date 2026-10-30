@@ -23,16 +23,19 @@ giữ nhánh main để luôn chạy được). Bộ đếm HF đầu đợt: 14
 Kế hoạch (đánh dấu [x] khi xong):
 - [x] 1. Bộ đề thử thiết kế (viết TRƯỚC khi code, commit 3a979fd): `python/design_cases.py` (21 yêu cầu).
 - [x] 2. Tối ưu: tùy chọn `shear_both_signs` (commit 3b5f889), pytest 102/102 (91 cũ + 11 mới); mặc định tắt.
-- [ ] 3. Bảng một chiều / hai chiều lực cắt: `experiments/shear_both.py` (chưa chạy). Đang chạy lại run_cases
-      (--recompute, 2 tiến trình) + Le Riche & Haftka với tùy chọn tắt -> log `logs\da_rerun_*.log`; pha tìm kiếm
-      chính xác đã trùng 16/16 bài; còn so CSV sau khi GA xong (git diff trong worktree).
+- [~] 3. Kết quả cũ KHÔNG đổi khi tùy chọn tắt (đã kiểm chứng 30/10): chạy lại run_cases --recompute (33,5 phút,
+      2 tiến trình) + Le Riche & Haftka (8,4 phút), so với file đã công bố bỏ qua cột thời gian: runs.csv,
+      runs_full.json (960 lần chạy), 3 file Le Riche & Haftka, ritz_terms.json: 0 khác biệt; cases_summary.csv: chỉ
+      2 cột MATLAB chưa điền (không chạy matlab_recheck); exact_cache: 16/16 mục ritz_full trùng (log
+      `logs\da_rerun_compare.txt`). File kết quả đã được khôi phục bản đã công bố. Bảng một chiều / hai chiều
+      (`experiments/shear_both.py`): đang chạy (`logs\da_shear_both.log`).
 - [x] 4. Bộ phân loại `router.py`: 44/44 đề phân tích, 18/18 câu RAG, 20/20 đề thiết kế (DS20 cần LLM xác nhận).
 - [x] 5. `design.py` (đọc + tối ưu `api.design_search` + kiểm tra MATLAB / Ritz đa thức / tựa đẳng hướng).
 - [x] 6. Giải thích + kiểm tra ý nghĩa + bản dựng sẵn; `test_design_checks.py` ALL PASS (commit b89e0b7).
-- [~] 7. Bộ đề thiết kế: gemma3 lần 1 20/21 (DS11: LLM ghi "at most 24 plies" thành số lớp cố định -> sửa: giới hạn
+- [x] 7. Bộ đề thiết kế: gemma3 lần 1 20/21 (DS11: LLM ghi "at most 24 plies" thành số lớp cố định -> sửa: giới hạn
       Python đọc được thắng; thêm 5 sửa lỗi ý nghĩa tìm được khi đọc lời giải thích), lần 2 **21/21** (giải thích 14
-      LLM / 1 hỏi lại / 0 dựng sẵn, đọc tay 15 lời giải thích: đúng). HF: đang chạy (`logs\da_bench_design_hf.txt`).
-      Chạy lại 44 đề + RAG với gemma3: đang chạy (`logs\da_bench_old28.txt`, `da_bench_new.txt`, `da_rag_*.txt`).
+      LLM / 1 hỏi lại / 0 dựng sẵn, đọc tay 15 lời giải thích: đúng). HF **21/21** (giải thích 11 / 0 / 4 dựng sẵn,
+      cả 4 là báo nhầm -> đã sửa, xem dưới). 44 đề + RAG chạy lại với gemma3: 28/28, 16/16, 12/12, 6/6.
 - [~] 8. run_demo phần 4 "Design" (2 yêu cầu, commit 0a2060d), --interactive (mục 3 và a = tự phân loại), README:
       xong; còn chạy thử run_demo có mạng / --offline và log dự phòng.
       Bản sao lưu slide + kịch bản: `D:\CompositeAgent_slide_backups\before_design_20261030\` (đã làm).
