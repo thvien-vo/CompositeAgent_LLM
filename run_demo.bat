@@ -1,9 +1,10 @@
 @echo off
 REM ==========================================================================
 REM  run_demo.bat - demo 1 buoc cho buoi thuyet trinh (double-click hoac chay trong terminal)
-REM    run_demo.bat                  demo day du: kiem tra -> agent (2 de) -> RAG (4 cau hoi)
+REM    run_demo.bat                  demo day du: kiem tra -> agent (4 de) -> RAG (4 cau hoi) -> thiet ke (2 yeu cau)
 REM    run_demo.bat --offline        khong co mang: chi dung Ollama gemma3:4b tren may
-REM    run_demo.bat --interactive    sau demo, cho nguoi xem tu go de bai / cau hoi
+REM    run_demo.bat --parts 4        chi chay phan thiet ke tam bang loi (toi uu xep lop)
+REM    run_demo.bat --interactive    sau demo, cho nguoi xem tu go de bai / yeu cau thiet ke / cau hoi
 REM    run_demo.bat --no-wait        khong dung giua cac phan
 REM    run_demo.bat --lang vi        LLM giai thich ket qua CLT bang tieng Viet
 REM  Ket qua duoc luu them vao logs\demo_*.log

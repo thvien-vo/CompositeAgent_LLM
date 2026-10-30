@@ -34,6 +34,7 @@ DEFAULTS = {"safety_factor": 1.5, "ply_thickness": 0.125e-3, "a": 0.5, "b": 0.5,
             "max_contiguous": 4, "min_fraction": 0.10}
 RITZ_TERMS = 8           # size of the sine series (8 x 8 on a square plate), as in the Layer 1 study
 EXACT_TIME_LIMIT = 30.0  # s for the exact search; the whole optimisation stays within about 60 s
+BUCKLING_CHECK_TOL_PCT = 2.0   # sine series vs polynomial Ritz: <= 0.62 % on the verification plates (Layer 1, 4.0)
 ML_WARNING = ("ply properties are ML predictions with an error: the result is for reference only / tính chất vật "
               "liệu là dự đoán, có sai số; kết quả chỉ mang tính tham khảo")
 LAST_DESIGN = {}
@@ -798,7 +799,7 @@ def prebuilt_explanation(r, lang="en"):
     qi = r["quasi_isotropic"]
     if lang == "vi":
         out = [f"Thứ tự xếp lớp {r['notation']} có {r['n_plies']} lớp: {c['0']} lớp 0°, {c['+45']} lớp +45°, "
-               f"{c['-45']} lớp -45° và {c['90']} lớp 90°; đây là {status_text(r, 'vi')}.",
+               f"{c['-45']} lớp -45° và {c['90']} lớp 90°; kết quả: {status_text(r, 'vi')}.",
                f"Biên an toàn là {r['margin']:.4g} (yêu cầu hệ số an toàn {sf:g}), "
                + ("đạt yêu cầu" if r["feasible"] else "KHÔNG đạt yêu cầu")
                + f"; tiêu chuẩn quyết định là {CRIT_VI[r['governing']]}."]
@@ -815,7 +816,7 @@ def prebuilt_explanation(r, lang="en"):
         note = "(bản dựng sẵn bằng Python từ kết quả tính, vì lời giải thích của LLM không qua được bước kiểm tra)"
     else:
         out = [f"The stacking sequence {r['notation']} has {r['n_plies']} plies: {c['0']} plies at 0°, "
-               f"{c['+45']} plies at +45°, {c['-45']} plies at -45° and {c['90']} plies at 90°; this is the "
+               f"{c['+45']} plies at +45°, {c['-45']} plies at -45° and {c['90']} plies at 90°; result: "
                f"{status_text(r)}.",
                f"The safety margin is {r['margin']:.4g} for a required safety factor of {sf:g}, so the design "
                + ("meets the safety factor" if r["feasible"] else "does NOT meet the safety factor")
@@ -909,6 +910,9 @@ def print_result(r):
     for b in r["buckling_check"]:
         print(f"  check buckling (Nxy={b['Nxy']:g}): sine-series Ritz {b['lambda_sine']:.4g} vs independent "
               f"polynomial Ritz {b['lambda_polynomial']:.4g} -> difference {b['difference_pct']:+.2f} %")
+        if b["difference_pct"] is not None and abs(b["difference_pct"]) > BUCKLING_CHECK_TOL_PCT:
+            print(f"  [warning] the two buckling solutions differ by more than {BUCKLING_CHECK_TOL_PCT:g} % "
+                  "(both are upper bounds): treat the buckling reserve factor with care")
     qi = r["quasi_isotropic"]
     if qi["found"]:
         red = (f" -> this design has {r['reduction_pct']:.1f} % fewer plies" if r["reduction_pct"] else
