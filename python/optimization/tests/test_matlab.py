@@ -25,3 +25,13 @@ def test_optimised_design_rechecked_in_matlab(im7):
     res = optimize({"Nx": -1e4, "Ny": -5e3, "Nxy": 0}, material=im7, method="exhaustive", verify_matlab=True)
     assert res.matlab["pass"]
     assert res.matlab["margin_matlab"] == pytest.approx(res.margin, rel=1e-9)
+
+
+@pytest.mark.matlab
+def test_both_shear_directions_rechecked_in_matlab(im7):
+    from optimization import optimize
+    from optimization.rules import Rules
+    res = optimize({"Nx": 0, "Ny": 0, "Nxy": 4e4}, material=im7, method="exhaustive", rules=Rules(n_max=32),
+                   shear_both_signs=True, verify_matlab=True)
+    assert res.matlab["pass"] and set(res.matlab["clt"]["by_shear_sign"]) == {"+", "-"}
+    assert res.matlab["margin_matlab"] == pytest.approx(res.margin, rel=1e-9)

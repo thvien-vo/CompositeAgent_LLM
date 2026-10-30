@@ -1,0 +1,98 @@
+[
+ {
+  "case": "C5",
+  "thickness": "t0125",
+  "pass": true,
+  "max_rel_error": 1.8818189196492445e-15,
+  "margin_matlab": 1.597467029990201,
+  "margin_python": 1.5974670299902025,
+  "signs": [
+   "+",
+   "-"
+  ]
+ },
+ {
+  "case": "C5",
+  "thickness": "t0183",
+  "pass": true,
+  "max_rel_error": 2.349113846228096e-15,
+  "margin_matlab": 1.6910840872776192,
+  "margin_python": 1.6910840872776167,
+  "signs": [
+   "+",
+   "-"
+  ]
+ },
+ {
+  "case": "C6",
+  "thickness": "t0125",
+  "pass": true,
+  "max_rel_error": 7.672794167765139e-15,
+  "margin_matlab": 1.6565224049042946,
+  "margin_python": 1.6565224049042937,
+  "signs": [
+   "+",
+   "-"
+  ]
+ },
+ {
+  "case": "C6",
+  "thickness": "t0183",
+  "pass": true,
+  "max_rel_error": 1.1402555228808791e-14,
+  "margin_matlab": 1.6978855611335304,
+  "margin_python": 1.6978855611335308,
+  "signs": [
+   "+",
+   "-"
+  ]
+ },
+ {
+  "case": "C7",
+  "thickness": "t0125",
+  "pass": true,
+  "max_rel_error": 2.4722856329503802e-15,
+  "margin_matlab": 1.6875753708039785,
+  "margin_python": 1.6875753708039798,
+  "signs": [
+   "+",
+   "-"
+  ]
+ },
+ {
+  "case": "C7",
+  "thickness": "t0183",
+  "pass": true,
+  "max_rel_error": 7.761136013198211e-16,
+  "margin_matlab": 1.7437361938074178,
+  "margin_python": 1.7437361938074172,
+  "signs": [
+   "+",
+   "-"
+  ]
+ },
+ {
+  "case": "C8",
+  "thickness": "t0125",
+  "pass": true,
+  "max_rel_error": 1.8460694634639385e-15,
+  "margin_matlab": 1.0427040194082486,
+  "margin_python": 1.042704019408248,
+  "signs": [
+   "+",
+   "-"
+  ]
+ },
+ {
+  "case": "C8",
+  "thickness": "t0183",
+  "pass": true,
+  "max_rel_error": 2.5320688760871386e-15,
+  "margin_matlab": 1.5255176885550439,
+  "margin_python": 1.5255176885550406,
+  "signs": [
+   "+",
+   "-"
+  ]
+ }
+]

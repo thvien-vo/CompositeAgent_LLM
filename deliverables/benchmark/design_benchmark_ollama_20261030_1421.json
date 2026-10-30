@@ -1,0 +1,2078 @@
+[
+ {
+  "id": "DS1",
+  "name": "DS1 EN named material, tension, all defaults",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: design, lightest",
+  "raw": {
+   "fibre_words": "IM7/8552",
+   "material_name": "IM7/8552",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 600,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "lightest",
+   "shear_direction": "",
+   "angles": []
+  },
+  "spec": {
+   "group": "CFRP",
+   "row": "IM7/8552",
+   "loads": {
+    "Nx": 600000.0,
+    "Ny": 0.0,
+    "Nxy": 0.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.000125,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 8,
+   "n_max": 64,
+   "objective": "min_plies",
+   "shear_both": false,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "ply count 8-64",
+    "safety factor 1.5",
+    "ply thickness 0.125 mm",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row"
+   ],
+   "notes": []
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[90/-45/0/45/0_2]s",
+   "n": 12,
+   "margin": 1.644077489651408,
+   "feasible": true,
+   "status": "optimal",
+   "proven": true,
+   "n_proven": true,
+   "governing": "tsai_wu",
+   "rf": {
+    "max_stress": 1.8687219584096801,
+    "tsai_wu": 1.644077489651408,
+    "buckling": Infinity
+   },
+   "matlab_pass": true,
+   "buckling_check": [],
+   "qi_n": 24,
+   "reduction_pct": 50.0,
+   "search_time_s": 0.09916670000529848
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[90/-45/0/45/0_2]s",
+   "n": 12,
+   "margin": 1.644077489651408,
+   "status": "optimal",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The composite laminate design, with a stacking sequence of [90/-45/0/45/0_2]s and 12 plies, has been proven as the optimum design through an exact search. The governing criterion for this design is the Tsai-Wu reserve factor, which currently stands at 1.6441. The safety margin is 1.6441, and the required safety factor is 1.5, indicating that the design meets the safety factor. The Max Stress reserve factor is 1.8687, while the buckling reserve factor is no buckling (infinite).  This design has 50.0 % fewer plies than the smallest quasi-isotropic laminate needed, which is 24 plies."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 13.4
+ },
+ {
+  "id": "DS2",
+  "name": "DS2 VI group, biaxial compression, plate size",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: thiết kế, nhẹ nhất",
+  "raw": {
+   "fibre_words": "carbon/epoxy",
+   "material_name": "carbon/epoxy",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": -50,
+     "unit": "kN/m"
+    },
+    {
+     "name": "Ny",
+     "value": -20,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_a": {
+    "value": 0.6,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0.4,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "nhẹ nhất",
+   "shear_direction": "",
+   "angles": []
+  },
+  "spec": {
+   "group": "CFRP",
+   "row": "",
+   "loads": {
+    "Nx": -50000.0,
+    "Ny": -20000.0,
+    "Nxy": 0.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.000125,
+   "a": 0.6,
+   "b": 0.4,
+   "n_min": 8,
+   "n_max": 64,
+   "objective": "min_plies",
+   "shear_both": false,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "'carbon/epoxy' is not in the database (25 materials)",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "ply count 8-64",
+    "safety factor 1.5",
+    "ply thickness 0.125 mm",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row"
+   ],
+   "notes": []
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[90/45/90_2/-45/90/-45/45/-45_2/45/90/45_2/-45/90/0_2]s",
+   "n": 36,
+   "margin": 1.6678082049781477,
+   "feasible": true,
+   "status": "best found",
+   "proven": false,
+   "n_proven": false,
+   "governing": "buckling",
+   "rf": {
+    "max_stress": 38.561342624054724,
+    "tsai_wu": 50.49981584029835,
+    "buckling": 1.6678082049781477
+   },
+   "matlab_pass": true,
+   "buckling_check": [
+    {
+     "Nxy": 0.0,
+     "lambda_sine": 1.6678082049781477,
+     "lambda_polynomial": 1.6678082049781522,
+     "difference_pct": -2.6627115067819207e-13,
+     "converged_terms": [
+      12,
+      8
+     ]
+    }
+   ],
+   "qi_n": 40,
+   "reduction_pct": 10.0,
+   "search_time_s": 40.9265061999904
+  },
+  "direct": {
+   "method": "ga",
+   "notation": "[90/45/90_2/-45/90/-45/45/-45_2/45/90/45_2/-45/90/0_2]s",
+   "n": 36,
+   "margin": 1.6678082049781477,
+   "status": "feasible",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The design, achieved through Genetic Algorithm and local search, is identified as the best design found, not proven optimal. The safety margin is 1.6678, which meets the required safety factor of 1.5, resulting in a verdict that the design meets the safety factor. Buckling is the governing criterion, and the buckling reserve factor is 1.6678. The Max Stress reserve factor is 38.5613 and the Tsai-Wu reserve factor is 50.4998. This design utilizes a stacking sequence of 36 plies, including 4 plies at 0 deg, 10 plies at +45 deg, 10 plies at -45 deg, and 12 plies at 90 deg. This design has 10.0 % fewer plies than the smallest quasi-isotropic laminate (40 plies)."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 53.4
+ },
+ {
+  "id": "DS3",
+  "name": "DS3 EN named material, pure shear, safety factor 2 (both shear directions by default)",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: find the optimum stacking",
+  "raw": {
+   "fibre_words": "AS4/8552",
+   "material_name": "AS4/8552",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nxy",
+     "value": 80,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 2,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "optimum stacking sequence",
+   "shear_direction": "both",
+   "angles": []
+  },
+  "spec": {
+   "group": "CFRP",
+   "row": "AS4/8552",
+   "loads": {
+    "Nx": 0.0,
+    "Ny": 0.0,
+    "Nxy": 80000.0
+   },
+   "safety_factor": 2.0,
+   "ply_thickness": 0.000125,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 8,
+   "n_max": 64,
+   "objective": "min_plies",
+   "shear_both": true,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "objective: lightest laminate (fewest plies)",
+    "ply count 8-64",
+    "ply thickness 0.125 mm",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row",
+    "shear checked in both directions (+Nxy and -Nxy): the text does not say that the shear acts in one direction only"
+   ],
+   "notes": []
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[45/-45_3/45_3/-45/45/-45/90/45_2/-45_2/0_2/90]s",
+   "n": 36,
+   "margin": 2.368854069529546,
+   "feasible": true,
+   "status": "best found",
+   "proven": false,
+   "n_proven": false,
+   "governing": "buckling",
+   "rf": {
+    "max_stress": 29.38227201856002,
+    "tsai_wu": 18.312927444758436,
+    "buckling": 2.368854069529546
+   },
+   "matlab_pass": true,
+   "buckling_check": [
+    {
+     "Nxy": 80000.0,
+     "lambda_sine": 2.368854069529546,
+     "lambda_polynomial": 2.367625765505166,
+     "difference_pct": 0.05187914586315742,
+     "converged_terms": [
+      8,
+      8
+     ]
+    },
+    {
+     "Nxy": -80000.0,
+     "lambda_sine": 2.3721101199942627,
+     "lambda_polynomial": 2.370910742672355,
+     "difference_pct": 0.05058719842636501,
+     "converged_terms": [
+      8,
+      8
+     ]
+    }
+   ],
+   "qi_n": 40,
+   "reduction_pct": 10.0,
+   "search_time_s": 12.734117300002254
+  },
+  "direct": {
+   "method": "ga",
+   "notation": "[45/-45_3/45_3/-45/45/-45/90/45_2/-45_2/0_2/90]s",
+   "n": 36,
+   "margin": 2.368854069529546,
+   "status": "feasible",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The design, achieved through Genetic Algorithm and local search, represents the best design found, but is not proven optimal. The governing criterion for this laminate is buckling, with a buckling reserve factor of 2.3689 at a load multiplier of 2.3689. The overall safety margin is 2.3689, which meets the required safety factor of 2.0.  The Tsai-Wu reserve factor is 18.3129, and the Max Stress reserve factor is 29.3823.  This design utilizes 36 plies, including 4 plies at 0 deg, 14 plies at +45 deg, 14 plies at -45 deg, and 4 plies at 90 deg.  This design has 10.0 % fewer plies than the smallest quasi-isotropic laminate (40 plies)."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 24.3
+ },
+ {
+  "id": "DS4",
+  "name": "DS4 EN shear in one direction only",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: optimis",
+  "raw": {
+   "fibre_words": "IM7/8552",
+   "material_name": "IM7/8552",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 60,
+     "unit": "kN/m"
+    },
+    {
+     "name": "Nxy",
+     "value": 60,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "optimise",
+   "shear_direction": "one",
+   "angles": []
+  },
+  "spec": {
+   "group": "CFRP",
+   "row": "IM7/8552",
+   "loads": {
+    "Nx": 0.0,
+    "Ny": 0.0,
+    "Nxy": 60000.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.000125,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 8,
+   "n_max": 64,
+   "objective": "min_plies",
+   "shear_both": false,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "objective: lightest laminate (fewest plies)",
+    "ply count 8-64",
+    "safety factor 1.5",
+    "ply thickness 0.125 mm",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row"
+   ],
+   "notes": [
+    "Nx = 60 kN/m: the text has no Nx -> ignored",
+    "the text says the shear acts in one direction only -> only the given sign of Nxy is checked"
+   ]
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[-45_4/90/0_2/45_2/90/45_2]s",
+   "n": 24,
+   "margin": 1.5176760829520257,
+   "feasible": true,
+   "status": "optimal",
+   "proven": true,
+   "n_proven": true,
+   "governing": "buckling",
+   "rf": {
+    "max_stress": 28.43965495103694,
+    "tsai_wu": 17.35196272910436,
+    "buckling": 1.5176760829520257
+   },
+   "matlab_pass": true,
+   "buckling_check": [
+    {
+     "Nxy": 60000.0,
+     "lambda_sine": 1.5176760829520257,
+     "lambda_polynomial": 1.5001137401549152,
+     "difference_pct": 1.1707340801569426,
+     "converged_terms": [
+      8,
+      8
+     ]
+    }
+   ],
+   "qi_n": 32,
+   "reduction_pct": 25.0,
+   "search_time_s": 0.9993817000067793
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[-45_4/90/0_2/45_2/90/45_2]s",
+   "n": 24,
+   "margin": 1.5176760829520257,
+   "status": "optimal",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The design, with a stacking sequence of [-45_4/90/0_2/45_2/90/45_2]s consisting of 24 plies, has been proven optimum through an exact search. The governing criterion for this design is buckling, with a safety margin of 1.5177 and a required safety factor of 1.5. The Max Stress reserve factor is 28.4397, and the Tsai-Wu reserve factor is 17.352, while the buckling reserve factor is also 1.5177.  This design has 25.0 % fewer plies than the smallest quasi-isotropic laminate needed, which is 32 plies."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 8.0
+ },
+ {
+  "id": "DS5",
+  "name": "DS5 VI glass group, tension + shear, ply thickness",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: tối ưu",
+  "raw": {
+   "fibre_words": "sợi thủy tinh/epoxy",
+   "material_name": "glass fibre",
+   "material": "GFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 200,
+     "unit": "kN/m"
+    },
+    {
+     "name": "Nxy",
+     "value": 50,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0.2,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0.6,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0.4,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "tối ưu",
+   "shear_direction": "both",
+   "angles": []
+  },
+  "spec": {
+   "group": "GFRP",
+   "row": "",
+   "loads": {
+    "Nx": 200000.0,
+    "Ny": 0.0,
+    "Nxy": 50000.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.0002,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 8,
+   "n_max": 64,
+   "objective": "min_plies",
+   "shear_both": true,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "material name 'glass fibre' from the LLM is not written in the text -> ignored",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "objective: lightest laminate (fewest plies)",
+    "ply count 8-64",
+    "safety factor 1.5",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row",
+    "shear checked in both directions (+Nxy and -Nxy): the text does not say that the shear acts in one direction only"
+   ],
+   "notes": [
+    "LLM gave plate length a 0.6 m, which is not written in the text -> ignored",
+    "LLM gave plate width b 0.4 m, which is not written in the text -> ignored"
+   ]
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[90/0/-45/0/45/0_2]s",
+   "n": 14,
+   "margin": 1.702179295126903,
+   "feasible": true,
+   "status": "optimal",
+   "proven": true,
+   "n_proven": true,
+   "governing": "tsai_wu",
+   "rf": {
+    "max_stress": 1.8440295651142846,
+    "tsai_wu": 1.702179295126903,
+    "buckling": 13.1487414627148
+   },
+   "matlab_pass": true,
+   "buckling_check": [
+    {
+     "Nxy": 50000.0,
+     "lambda_sine": 14.180879869736458,
+     "lambda_polynomial": 14.196214180238314,
+     "difference_pct": -0.10801690019020964,
+     "converged_terms": [
+      12,
+      12
+     ]
+    },
+    {
+     "Nxy": -50000.0,
+     "lambda_sine": 13.1487414627148,
+     "lambda_polynomial": 13.159904376261432,
+     "difference_pct": -0.08482518738334426,
+     "converged_terms": [
+      12,
+      12
+     ]
+    }
+   ],
+   "qi_n": 24,
+   "reduction_pct": 41.666666666666664,
+   "search_time_s": 0.07491320000553969
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[90/0/-45/0/45/0_2]s",
+   "n": 14,
+   "margin": 1.702179295126903,
+   "status": "optimal",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The design, with a stacking sequence of [90/0/-45/0/45/0_2]s consisting of 14 plies – 8 at 0 deg, 2 at +45 deg, 2 at -45 deg, and 2 at 90 deg – has been proven optimum through an exact search. The governing criterion for this design is Tsai-Wu, and the safety margin is 1.7022, which meets the required safety factor of 1.5. The Max Stress reserve factor is 1.844, while the buckling reserve factor is 13.1487. This design has 41.7 % fewer plies than the smallest quasi-isotropic laminate needed, which is 24 plies."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 6.6
+ },
+ {
+  "id": "DS6",
+  "name": "DS6 EN fixed ply count, largest margin",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: largest safety margin",
+  "raw": {
+   "fibre_words": "IM7/8552",
+   "material_name": "IM7/8552",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": -100,
+     "unit": "kN/m"
+    },
+    {
+     "name": "Nxy",
+     "value": 30,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 24,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "largest safety margin",
+   "shear_direction": "",
+   "angles": []
+  },
+  "spec": {
+   "group": "CFRP",
+   "row": "IM7/8552",
+   "loads": {
+    "Nx": -100000.0,
+    "Ny": 0.0,
+    "Nxy": 30000.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.000125,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 24,
+   "n_max": 24,
+   "objective": "max_margin",
+   "shear_both": true,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "safety factor 1.5",
+    "ply thickness 0.125 mm",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row",
+    "shear checked in both directions (+Nxy and -Nxy): the text does not say that the shear acts in one direction only"
+   ],
+   "notes": []
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[-45/45_2/-45/45/-45_2/45/0_2/90_2]s",
+   "n": 24,
+   "margin": 0.29590520054866243,
+   "feasible": false,
+   "status": "infeasible",
+   "proven": true,
+   "n_proven": true,
+   "governing": "buckling",
+   "rf": {
+    "max_stress": 15.782436653260477,
+    "tsai_wu": 13.403533301004328,
+    "buckling": 0.29590520054866243
+   },
+   "matlab_pass": true,
+   "buckling_check": [
+    {
+     "Nxy": 30000.0,
+     "lambda_sine": 0.29590520054866243,
+     "lambda_polynomial": 0.29590247995625796,
+     "difference_pct": 0.0009194219679647826,
+     "converged_terms": [
+      8,
+      8
+     ]
+    },
+    {
+     "Nxy": -30000.0,
+     "lambda_sine": 0.29590520054866254,
+     "lambda_polynomial": 0.29590247995625796,
+     "difference_pct": 0.0009194219680023025,
+     "converged_terms": [
+      8,
+      8
+     ]
+    }
+   ],
+   "qi_n": 48,
+   "reduction_pct": null,
+   "search_time_s": 0.40974430000642315
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[-45/45_2/-45/45/-45_2/45/0_2/90_2]s",
+   "n": 24,
+   "margin": 0.29590520054866243,
+   "status": "infeasible",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The composite laminate design, utilizing a stacking sequence of [-45/45_2/-45/45/-45_2/45/0_2/90_2]s with 24 plies, has achieved a proven largest safety margin for 24 plies. The governing criterion for this design is buckling, with a buckling reserve factor of 0.2959. The Max Stress reserve factor is 15.7824 and the Tsai-Wu reserve factor is 13.4035. However, the overall safety margin is only 0.2959, which is less than the required safety factor of 1.5, therefore the design does not meet the safety factor.  A quasi-isotropic laminate with 48 plies ([0/45/-45/90]ns) would have achieved a safety margin of 0.2959."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 7.4
+ },
+ {
+  "id": "DS7",
+  "name": "DS7 VI fixed ply count, strongest",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: tìm cách xếp, bền nhất",
+  "raw": {
+   "fibre_words": "carbon/epoxy",
+   "material_name": "carbon/epoxy",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": -30,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 16,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "bền nhất",
+   "shear_direction": "",
+   "angles": []
+  },
+  "spec": {
+   "group": "CFRP",
+   "row": "",
+   "loads": {
+    "Nx": -30000.0,
+    "Ny": 0.0,
+    "Nxy": 0.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.000125,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 16,
+   "n_max": 16,
+   "objective": "max_margin",
+   "shear_both": false,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "'carbon/epoxy' is not in the database (25 materials)",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "safety factor 1.5",
+    "ply thickness 0.125 mm",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row"
+   ],
+   "notes": []
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[-45/45_2/-45/45/-45/0/90]s",
+   "n": 16,
+   "margin": 0.2622425667156954,
+   "feasible": false,
+   "status": "infeasible",
+   "proven": true,
+   "n_proven": true,
+   "governing": "buckling",
+   "rf": {
+    "max_stress": 25.97516991702957,
+    "tsai_wu": 21.429399422655106,
+    "buckling": 0.2622425667156954
+   },
+   "matlab_pass": true,
+   "buckling_check": [
+    {
+     "Nxy": 0.0,
+     "lambda_sine": 0.2622425667156954,
+     "lambda_polynomial": 0.26224060247391145,
+     "difference_pct": 0.0007490227544541169,
+     "converged_terms": [
+      8,
+      8
+     ]
+    }
+   ],
+   "qi_n": 32,
+   "reduction_pct": null,
+   "search_time_s": 0.06771760000265203
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[-45/45_2/-45/45/-45/0/90]s",
+   "n": 16,
+   "margin": 0.2622425667156954,
+   "status": "infeasible",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The composite laminate design, with a stacking sequence of [-45/45_2/-45/45/-45/0/90]s consisting of 16 plies, has a proven largest safety margin for 16 plies (exact search). The governing criterion for this design is buckling, with a buckling reserve factor of 0.2622. The Max Stress reserve factor is 25.9752 and the Tsai-Wu reserve factor is 21.4294. However, the design does not meet the required safety factor of 1.5, as the safety margin is only 0.2622.  Notably, a quasi-isotropic laminate needed 32 plies to achieve the same safety factor."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 6.0
+ },
+ {
+  "id": "DS8",
+  "name": "DS8 EN loads in words, N/mm, number word",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: design",
+  "raw": {
+   "fibre_words": "carbon/epoxy",
+   "material_name": "carbon/epoxy",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 20,
+     "unit": "N/mm"
+    },
+    {
+     "name": "Nxy",
+     "value": 5,
+     "unit": "N/mm"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "",
+   "shear_direction": "",
+   "angles": []
+  },
+  "spec": {
+   "group": "CFRP",
+   "row": "",
+   "loads": {
+    "Nx": -20000.0,
+    "Ny": 0.0,
+    "Nxy": 5000.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.000125,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 8,
+   "n_max": 64,
+   "objective": "min_plies",
+   "shear_both": true,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "'carbon/epoxy' is not in the database (25 materials)",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "objective: lightest laminate (fewest plies)",
+    "ply count 8-64",
+    "safety factor 1.5",
+    "ply thickness 0.125 mm",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row",
+    "shear checked in both directions (+Nxy and -Nxy): the text does not say that the shear acts in one direction only"
+   ],
+   "notes": [
+    "number written in words 'five' read as 5",
+    "LLM read Nx = 20000, the text gives '20 N/mm' for Nx -> Nx = -20000 (SI)"
+   ]
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[-45/45_2/-45/45/-45_2/45/0_3/90_2]s",
+   "n": 26,
+   "margin": 1.6398831367996232,
+   "feasible": true,
+   "status": "optimal",
+   "proven": true,
+   "n_proven": true,
+   "governing": "buckling",
+   "rf": {
+    "max_stress": 85.42631808333262,
+    "tsai_wu": 72.53116713663724,
+    "buckling": 1.6398831367996232
+   },
+   "matlab_pass": true,
+   "buckling_check": [
+    {
+     "Nxy": 5000.0,
+     "lambda_sine": 1.6398831367996232,
+     "lambda_polynomial": 1.6398728546117034,
+     "difference_pct": 0.0006270112887622677,
+     "converged_terms": [
+      8,
+      8
+     ]
+    },
+    {
+     "Nxy": -5000.0,
+     "lambda_sine": 1.6398831367996232,
+     "lambda_polynomial": 1.6398728546117027,
+     "difference_pct": 0.0006270112888028891,
+     "converged_terms": [
+      8,
+      8
+     ]
+    }
+   ],
+   "qi_n": 32,
+   "reduction_pct": 18.75,
+   "search_time_s": 3.6908275000023423
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[-45/45_2/-45/45/-45_2/45/0_3/90_2]s",
+   "n": 26,
+   "margin": 1.6398831367996232,
+   "status": "optimal",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The design, with a stacking sequence of [-45/45_2/-45/45/-45_2/45/0_3/90_2]s consisting of 26 plies, has been proven optimum through an exact search. The governing criterion for this design is buckling, with a buckling reserve factor of 1.6399 and a safety margin of 1.6399, which meets the required safety factor of 1.5. The Max Stress reserve factor is 85.4263 and the Tsai-Wu reserve factor is 72.5312.  This design has 18.8 % fewer plies than the smallest quasi-isotropic laminate needed, which is 32 plies."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 14.0
+ },
+ {
+  "id": "DS9",
+  "name": "DS9 EN ply-count range",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: lightest",
+  "raw": {
+   "fibre_words": "T700GC/TC1225",
+   "material_name": "T700GC/TC1225",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 300,
+     "unit": "kN/m"
+    },
+    {
+     "name": "Ny",
+     "value": 150,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 16,
+   "ply_count_max": 40,
+   "objective_words": "lightest",
+   "shear_direction": "",
+   "angles": []
+  },
+  "spec": {
+   "group": "CFRP",
+   "row": "T700GC/TC1225",
+   "loads": {
+    "Nx": 300000.0,
+    "Ny": 150000.0,
+    "Nxy": 0.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.000125,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 16,
+   "n_max": 40,
+   "objective": "min_plies",
+   "shear_both": false,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "safety factor 1.5",
+    "ply thickness 0.125 mm",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row"
+   ],
+   "notes": []
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[90/-45/0/45/0/90/0_2]s",
+   "n": 16,
+   "margin": 4.770779894974283,
+   "feasible": true,
+   "status": "optimal",
+   "proven": true,
+   "n_proven": true,
+   "governing": "max_stress",
+   "rf": {
+    "max_stress": 4.770779894974283,
+    "tsai_wu": 6.535576505159455,
+    "buckling": Infinity
+   },
+   "matlab_pass": true,
+   "buckling_check": [],
+   "qi_n": 16,
+   "reduction_pct": 0.0,
+   "search_time_s": 0.034480600006645545
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[90/-45/0/45/0/90/0_2]s",
+   "n": 16,
+   "margin": 4.770779894974283,
+   "status": "optimal",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The composite laminate design, with a stacking sequence of [90/-45/0/45/0/90/0_2]s consisting of 16 plies, has been proven as the optimum design through an exact search. The governing criterion for this design is Max Stress, achieving a reserve factor of 4.7708. The Tsai-Wu reserve factor is 6.5356, and the buckling reserve factor is no buckling (infinite). The safety margin is 4.7708, which meets the required safety factor of 1.5, and the critical ply is number 1 (angle 90 deg). This design is the same as a quasi-isotropic laminate in terms of ply count."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 6.2
+ },
+ {
+  "id": "DS10",
+  "name": "DS10 EN Kevlar group, plate in mm, ply thickness",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: design",
+  "raw": {
+   "fibre_words": "Kevlar/epoxy",
+   "material_name": "Kevlar/epoxy",
+   "material": "KEVLAR",
+   "loads": [
+    {
+     "name": "Ny",
+     "value": -10,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0.15,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 400,
+    "unit": "mm"
+   },
+   "plate_b": {
+    "value": 300,
+    "unit": "mm"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "",
+   "shear_direction": "",
+   "angles": []
+  },
+  "spec": {
+   "group": "KEVLAR",
+   "row": "",
+   "loads": {
+    "Nx": 0.0,
+    "Ny": -10000.0,
+    "Nxy": 0.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.00015,
+   "a": 0.4,
+   "b": 0.3,
+   "n_min": 8,
+   "n_max": 64,
+   "objective": "min_plies",
+   "shear_both": false,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "'Kevlar/epoxy' is not in the database (25 materials)",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "objective: lightest laminate (fewest plies)",
+    "ply count 8-64",
+    "safety factor 1.5",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row"
+   ],
+   "notes": []
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[-45/45_2/-45/45/-45/90/0]s",
+   "n": 16,
+   "margin": 1.6178140006149222,
+   "feasible": true,
+   "status": "optimal",
+   "proven": true,
+   "n_proven": true,
+   "governing": "buckling",
+   "rf": {
+    "max_stress": 40.259340710592376,
+    "tsai_wu": 29.877949406316418,
+    "buckling": 1.6178140006149222
+   },
+   "matlab_pass": true,
+   "buckling_check": [
+    {
+     "Nxy": 0.0,
+     "lambda_sine": 1.6178140006149222,
+     "lambda_polynomial": 1.6178045270146757,
+     "difference_pct": 0.0005855837394634325,
+     "converged_terms": [
+      11,
+      8
+     ]
+    }
+   ],
+   "qi_n": 24,
+   "reduction_pct": 33.333333333333336,
+   "search_time_s": 0.20615379999799188
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[-45/45_2/-45/45/-45/90/0]s",
+   "n": 16,
+   "margin": 1.6178140006149222,
+   "status": "optimal",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The design, with a stacking sequence of [-45/45_2/-45/45/-45/90/0]s consisting of **16 plies**, has been proven optimum through an exact search. The governing criterion is buckling, with a buckling reserve factor of **1.6178** and a safety margin of **1.6178**, meeting the required safety factor of **1.5**. The Max Stress reserve factor is **40.2593** and the Tsai-Wu reserve factor is **29.8779**. This design has **33.3 %** fewer plies than the smallest quasi-isotropic laminate, which requires **24 plies**."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 6.3
+ },
+ {
+  "id": "DS11",
+  "name": "DS11 EN infeasible within the ply range",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: design, lightest",
+  "raw": {
+   "fibre_words": "IM7/8552",
+   "material_name": "IM7/8552",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 2000,
+     "unit": "kN/m"
+    },
+    {
+     "name": "Ny",
+     "value": 1000,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 24,
+   "ply_count_min": 0,
+   "ply_count_max": 24,
+   "objective_words": "lightest",
+   "shear_direction": "",
+   "angles": []
+  },
+  "spec": {
+   "group": "CFRP",
+   "row": "IM7/8552",
+   "loads": {
+    "Nx": 2000000.0,
+    "Ny": 1000000.0,
+    "Nxy": 0.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.000125,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 8,
+   "n_max": 24,
+   "objective": "min_plies",
+   "shear_both": false,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "safety factor 1.5",
+    "ply thickness 0.125 mm",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row"
+   ],
+   "notes": [
+    "LLM read a fixed ply count 24, but the text gives a limit of the ply count, not a fixed number -> using the text"
+   ]
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[90/-45/0/45/0/90/0_3/90/0_2]s",
+   "n": 24,
+   "margin": 0.9470750092324999,
+   "feasible": false,
+   "status": "infeasible",
+   "proven": true,
+   "n_proven": true,
+   "governing": "max_stress",
+   "rf": {
+    "max_stress": 0.9470750092324999,
+    "tsai_wu": 1.0559087836444367,
+    "buckling": Infinity
+   },
+   "matlab_pass": true,
+   "buckling_check": [],
+   "qi_n": 56,
+   "reduction_pct": null,
+   "search_time_s": 0.009295099996961653
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[90/-45/0/45/0/90/0_3/90/0_2]s",
+   "n": 24,
+   "margin": 0.9470750092324999,
+   "status": "infeasible",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The design, with a stacking sequence of [90/-45/0/45/0/90/0_3/90/0_2]s consisting of **24 plies**, represents the best design found within the specified ply range. The governing criterion is Max Stress, resulting in a safety margin of **0.9471**, which is less than the required safety factor of **1.5**. The Max Stress reserve factor is **0.9471**, while the Tsai-Wu reserve factor is **1.0559** and the buckling reserve factor is infinite, indicating no buckling. This design does not meet the safety factor requirement. To achieve a similar safety factor, a quasi-isotropic laminate with **56 plies** ([0/45/-45/90]ns) would be needed."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "note": "expected infeasible -> feasible = False",
+  "seconds": 6.5
+ },
+ {
+  "id": "DS12",
+  "name": "DS12 VI safety factor, NCAMP ply thickness, shear in one direction",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: thiết kế, ít lớp nhất",
+  "raw": {
+   "fibre_words": "IM7/8552",
+   "material_name": "IM7/8552",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": -60,
+     "unit": "kN/m"
+    },
+    {
+     "name": "Nxy",
+     "value": 20,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 2,
+   "ply_thickness": {
+    "value": 0.18288,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "",
+   "shear_direction": "one",
+   "angles": []
+  },
+  "spec": {
+   "group": "CFRP",
+   "row": "IM7/8552",
+   "loads": {
+    "Nx": -60000.0,
+    "Ny": 0.0,
+    "Nxy": 20000.0
+   },
+   "safety_factor": 2.0,
+   "ply_thickness": 0.00018287999999999998,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 8,
+   "n_max": 64,
+   "objective": "min_plies",
+   "shear_both": false,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "ply count 8-64",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row"
+   ],
+   "notes": [
+    "the text says the shear acts in one direction only -> only the given sign of Nxy is checked"
+   ]
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[-45/45/-45_2/45/-45_2/45_3/0_2/90_2]s",
+   "n": 28,
+   "margin": 2.500528809955112,
+   "feasible": true,
+   "status": "optimal",
+   "proven": true,
+   "n_proven": true,
+   "governing": "buckling",
+   "rf": {
+    "max_stress": 41.47126979047753,
+    "tsai_wu": 33.94656136363022,
+    "buckling": 2.500528809955112
+   },
+   "matlab_pass": true,
+   "buckling_check": [
+    {
+     "Nxy": 20000.0,
+     "lambda_sine": 2.500528809955112,
+     "lambda_polynomial": 2.493341946032125,
+     "difference_pct": 0.2882422097949273,
+     "converged_terms": [
+      8,
+      8
+     ]
+    }
+   ],
+   "qi_n": 32,
+   "reduction_pct": 12.5,
+   "search_time_s": 5.247584600001574
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[-45/45/-45_2/45/-45_2/45_3/0_2/90_2]s",
+   "n": 28,
+   "margin": 2.500528809955113,
+   "status": "optimal",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The composite laminate design, with a stacking sequence of [-45/45/-45_2/45/-45_2/45_3/0_2/90_2]s and **28 plies**, has been proven as the optimum design through an exact search. The governing criterion for this design is buckling, with a buckling reserve factor of **2.5005**. The Max Stress reserve factor is **41.4713** and the Tsai-Wu reserve factor is **33.9466**. The safety margin is **2.5005**, which meets the required safety factor of **2.0**. This design has **12.5 %** fewer plies than the smallest quasi-isotropic laminate, which requires **32 plies**."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 16.9
+ },
+ {
+  "id": "DS13",
+  "name": "DS13 EN design rule changed (at most 3 identical plies in a row)",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: design, lightest",
+  "raw": {
+   "fibre_words": "AS4/8552",
+   "material_name": "AS4/8552",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 150,
+     "unit": "kN/m"
+    },
+    {
+     "name": "Nxy",
+     "value": 40,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "lightest",
+   "shear_direction": "",
+   "angles": []
+  },
+  "spec": {
+   "group": "CFRP",
+   "row": "AS4/8552",
+   "loads": {
+    "Nx": 150000.0,
+    "Ny": 0.0,
+    "Nxy": 40000.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.000125,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 8,
+   "n_max": 64,
+   "objective": "min_plies",
+   "shear_both": true,
+   "max_contiguous": 3,
+   "min_fraction": 0.1,
+   "material_note": "",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "ply count 8-64",
+    "safety factor 1.5",
+    "ply thickness 0.125 mm",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "shear checked in both directions (+Nxy and -Nxy): the text does not say that the shear acts in one direction only"
+   ],
+   "notes": []
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[90/-45/45/0]s",
+   "n": 8,
+   "margin": 1.8873353480017376,
+   "feasible": true,
+   "status": "optimal",
+   "proven": true,
+   "n_proven": true,
+   "governing": "buckling",
+   "rf": {
+    "max_stress": 2.571272390987581,
+    "tsai_wu": 2.1930864477784278,
+    "buckling": 1.8873353480017376
+   },
+   "matlab_pass": true,
+   "buckling_check": [
+    {
+     "Nxy": 40000.0,
+     "lambda_sine": 2.1517531888204955,
+     "lambda_polynomial": 2.1501552890895956,
+     "difference_pct": 0.07431555009110186,
+     "converged_terms": [
+      12,
+      12
+     ]
+    },
+    {
+     "Nxy": -40000.0,
+     "lambda_sine": 1.8873353480017376,
+     "lambda_polynomial": 1.884923020773664,
+     "difference_pct": 0.12798014568698254,
+     "converged_terms": [
+      12,
+      12
+     ]
+    }
+   ],
+   "qi_n": 16,
+   "reduction_pct": 50.0,
+   "search_time_s": 0.006736199997249059
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[90/-45/45/0]s",
+   "n": 8,
+   "margin": 1.8873353480017376,
+   "status": "optimal",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The composite laminate design, with a stacking sequence of [90/-45/45/0]s and **8 plies** – consisting of **2 plies** at 0 deg, **2 plies** at +45 deg, **2 plies** at -45 deg, and **2 plies** at 90 deg – has been proven as the optimum design through an exact search. The governing criterion for this design is buckling, and the safety margin is **1.8873**, which is greater than the required safety factor of **1.5**. The reserve factors for the criteria are **2.5713** for Max Stress, **2.1931** for Tsai-Wu, and **1.8873** for buckling.  This design has **50.0 %** fewer plies than the smallest quasi-isotropic laminate needed, which is **16 plies**."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 6.8
+ },
+ {
+  "id": "DS20",
+  "name": "DS20 EN weak wording (no 'design' word): 'I need a laminate that can carry ...'",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "wording 'i need' + loads, design confirmed by the LLM (Ollama (gemma3:4b))",
+  "raw": {
+   "fibre_words": "glass/epoxy",
+   "material_name": "glass/epoxy",
+   "material": "GFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 50,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 1.5,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "",
+   "shear_direction": "",
+   "angles": []
+  },
+  "spec": {
+   "group": "GFRP",
+   "row": "",
+   "loads": {
+    "Nx": 50000.0,
+    "Ny": 0.0,
+    "Nxy": 0.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.000125,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 8,
+   "n_max": 64,
+   "objective": "min_plies",
+   "shear_both": false,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "'glass/epoxy' is not in the database (25 materials)",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "objective: lightest laminate (fewest plies)",
+    "ply count 8-64",
+    "ply thickness 0.125 mm",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row"
+   ],
+   "notes": []
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[90/-45/45/0]s",
+   "n": 8,
+   "margin": 1.760367356111781,
+   "feasible": true,
+   "status": "optimal",
+   "proven": true,
+   "n_proven": true,
+   "governing": "tsai_wu",
+   "rf": {
+    "max_stress": 1.8150775656055054,
+    "tsai_wu": 1.760367356111781,
+    "buckling": Infinity
+   },
+   "matlab_pass": true,
+   "buckling_check": [],
+   "qi_n": 8,
+   "reduction_pct": 0.0,
+   "search_time_s": 0.11246689999825321
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[90/-45/45/0]s",
+   "n": 8,
+   "margin": 1.760367356111781,
+   "status": "optimal",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The composite laminate design, with a stacking sequence of [90/-45/45/0]s and **8 plies** overall, has been proven as the optimum design through an exact search. The governing criterion for this design is Tsai-Wu, and the resulting safety margin is **1.7604**, which meets the required safety factor of **1.5**. The Max Stress reserve factor is **1.8151** and the Tsai-Wu reserve factor is also **1.7604**, while the buckling reserve factor is no buckling (infinite).  This design is the same as a quasi-isotropic laminate in terms of ply count, and requires **8 plies** for a [0/45/-45/90]n laminate. The critical ply is number **1** (angle 90 deg)."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 6.7
+ },
+ {
+  "id": "DS21",
+  "name": "DS21 VI named Kevlar row, shear + tension",
+  "expected": "design",
+  "class": "design",
+  "class_reason": "design words: thiết kế, nhẹ nhất",
+  "raw": {
+   "fibre_words": "Kevlar",
+   "material_name": "Kevlar/epoxy",
+   "material": "KEVLAR",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 40,
+     "unit": "kN/m"
+    },
+    {
+     "name": "Nxy",
+     "value": 15,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "nhẹ nhất",
+   "shear_direction": "",
+   "angles": []
+  },
+  "spec": {
+   "group": "KEVLAR",
+   "row": "Kevlar 49/epoxy",
+   "loads": {
+    "Nx": 40000.0,
+    "Ny": 0.0,
+    "Nxy": 15000.0
+   },
+   "safety_factor": 1.5,
+   "ply_thickness": 0.000125,
+   "a": 0.5,
+   "b": 0.5,
+   "n_min": 8,
+   "n_max": 64,
+   "objective": "min_plies",
+   "shear_both": true,
+   "max_contiguous": 4,
+   "min_fraction": 0.1,
+   "material_note": "'Kevlar/epoxy' did not identify one row; the text names Kevlar 49/epoxy",
+   "defaults": [
+    "ply angles 0, +45, -45, 90",
+    "ply count 8-64",
+    "safety factor 1.5",
+    "ply thickness 0.125 mm",
+    "plate length a 0.5 m",
+    "plate width b 0.5 m",
+    "design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row",
+    "shear checked in both directions (+Nxy and -Nxy): the text does not say that the shear acts in one direction only"
+   ],
+   "notes": []
+  },
+  "read_errors": [],
+  "result": {
+   "notation": "[90/-45/45/0_2]s",
+   "n": 10,
+   "margin": 2.080053818333785,
+   "feasible": true,
+   "status": "optimal",
+   "proven": true,
+   "n_proven": true,
+   "governing": "tsai_wu",
+   "rf": {
+    "max_stress": 2.6846461572715516,
+    "tsai_wu": 2.080053818333785,
+    "buckling": 2.263042289039454
+   },
+   "matlab_pass": true,
+   "buckling_check": [
+    {
+     "Nxy": 15000.0,
+     "lambda_sine": 2.60972598979775,
+     "lambda_polynomial": 2.6045010788942395,
+     "difference_pct": 0.20061081739804043,
+     "converged_terms": [
+      10,
+      10
+     ]
+    },
+    {
+     "Nxy": -15000.0,
+     "lambda_sine": 2.263042289039454,
+     "lambda_polynomial": 2.2565162053029173,
+     "difference_pct": 0.28921058582252807,
+     "converged_terms": [
+      10,
+      10
+     ]
+    }
+   ],
+   "qi_n": 16,
+   "reduction_pct": 37.5,
+   "search_time_s": 0.023937799996929243
+  },
+  "direct": {
+   "method": "exhaustive",
+   "notation": "[90/-45/45/0_2]s",
+   "n": 10,
+   "margin": 2.080053818333785,
+   "status": "optimal",
+   "same_as_agent": true
+  },
+  "explanation": {
+   "source": "llm",
+   "first_issues": [],
+   "issues": [],
+   "rejected": [],
+   "text": "The composite laminate design, with a stacking sequence of [90/-45/45/0_2]s and 10 plies, has been proven optimum through an exact search. The governing criterion for this design is Tsai-Wu, achieving a reserve factor of 2.0801. The safety margin is 2.0801, which meets the required safety factor of 1.5. The critical ply is number 9, which is the -45 degree ply.  This design has 37.5 % fewer plies than the smallest quasi-isotropic laminate needed, which is 16 plies."
+  },
+  "outcome": "designed",
+  "correct": true,
+  "seconds": 6.4
+ },
+ {
+  "id": "DS14",
+  "name": "DS14 moment in a design request",
+  "expected": "refuse",
+  "class": "design",
+  "class_reason": "design words: design, lightest",
+  "outcome": "refused",
+  "refusal": "the request has moment(s) Mx; the optimisation handles in-plane loads Nx, Ny, Nxy only (supported: in-plane loads Nx, Ny, Nxy; objective 'lightest' (fewest plies, default) or 'largest safety margin' for a given number of plies; plies 0, +45, -45, 90; symmetric, balanced laminates)",
+  "correct": true,
+  "seconds": 3.3,
+  "raw": {
+   "fibre_words": "carbon/epoxy",
+   "material_name": "carbon/epoxy",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Mx",
+     "value": 50,
+     "unit": "N*m/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "lightest",
+   "shear_direction": "",
+   "angles": []
+  }
+ },
+ {
+  "id": "DS15",
+  "name": "DS15 unsupported objective (stiffness)",
+  "expected": "refuse",
+  "class": "design",
+  "class_reason": "design words: design",
+  "outcome": "refused",
+  "refusal": "objective 'stiffest' is not supported; supported: in-plane loads Nx, Ny, Nxy; objective 'lightest' (fewest plies, default) or 'largest safety margin' for a given number of plies; plies 0, +45, -45, 90; symmetric, balanced laminates",
+  "correct": true,
+  "seconds": 3.4,
+  "raw": {
+   "fibre_words": "IM7/8552",
+   "material_name": "IM7/8552",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 100,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "stiffest",
+   "shear_direction": "",
+   "angles": []
+  }
+ },
+ {
+  "id": "DS16",
+  "name": "DS16 no material",
+  "expected": "refuse",
+  "class": "design",
+  "class_reason": "design words: design, lightest",
+  "outcome": "refused",
+  "refusal": "the text names no material or fibre type (e.g. 'IM7/8552', 'carbon/epoxy', 'glass/epoxy', 'Kevlar/epoxy'); the program does not guess it",
+  "correct": true,
+  "seconds": 3.6,
+  "raw": {
+   "fibre_words": "",
+   "material_name": "",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 100,
+     "unit": "kN/m"
+    },
+    {
+     "name": "Nxy",
+     "value": 20,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "lightest",
+   "shear_direction": "",
+   "angles": []
+  }
+ },
+ {
+  "id": "DS17",
+  "name": "DS17 load without direction",
+  "expected": "refuse",
+  "class": "design",
+  "class_reason": "design words: design",
+  "outcome": "refused",
+  "refusal": "the request is ambiguous: the text gives the load '100 kN/m' (in 'Design a carbon/epoxy laminate for a load of 100 kN/m') but not its direction (x, y, shear or twisting) - please write it e.g. as 'Nx = 100 kN/m'",
+  "correct": true,
+  "seconds": 3.3,
+  "raw": {
+   "fibre_words": "carbon/epoxy",
+   "material_name": "carbon/epoxy",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 100,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "",
+   "shear_direction": "",
+   "angles": []
+  }
+ },
+ {
+  "id": "DS18",
+  "name": "DS18 unsupported ply angles",
+  "expected": "refuse",
+  "class": "design",
+  "class_reason": "design words: design",
+  "outcome": "refused",
+  "refusal": "ply angle(s) [30.0] deg: only 0, +45, -45 and 90 degree plies are supported",
+  "correct": true,
+  "seconds": 3.6,
+  "raw": {
+   "fibre_words": "carbon/epoxy",
+   "material_name": "carbon/epoxy",
+   "material": "CFRP",
+   "loads": [
+    {
+     "name": "Nx",
+     "value": 100,
+     "unit": "kN/m"
+    }
+   ],
+   "safety_factor": 0,
+   "ply_thickness": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "plate_a": {
+    "value": 0,
+    "unit": "m"
+   },
+   "plate_b": {
+    "value": 0,
+    "unit": "m"
+   },
+   "ply_count": 0,
+   "ply_count_min": 0,
+   "ply_count_max": 0,
+   "objective_words": "",
+   "shear_direction": "",
+   "angles": [
+    0,
+    30,
+    30
+   ]
+  }
+ },
+ {
+  "id": "DS19",
+  "name": "DS19 stacking sequence given AND a design asked (conflict)",
+  "expected": "refuse",
+  "class": "refused",
+  "class_reason": "the text gives a stacking sequence ([0/90]2s) AND asks for a design ('optimis'): to check that laminate, remove the design words; to design a new one, remove the stacking sequence. Write it as one of: (1) an ANALYSIS of a given laminate, e.g. 'CFRP [0/90]s, 0.125 mm plies, Nx = 1 kN/m'; (2) a DESIGN request, e.g. 'Design the lightest IM7/8552 laminate for Nx = -50 kN/m'; (3) a QUESTION about material data, e.g. 'What is Xt of IM7/8552?'",
+  "outcome": "refused",
+  "correct": true,
+  "seconds": 0.0
+ }
+]

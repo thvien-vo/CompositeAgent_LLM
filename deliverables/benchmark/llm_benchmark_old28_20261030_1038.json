@@ -1,0 +1,4037 @@
+{
+ "args": {
+  "set": "old28",
+  "versions": "v5",
+  "backends": "ollama",
+  "repeat": 1,
+  "cases": ""
+ },
+ "rows": [
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "D1 en, 4 plies list, mm",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 4.07,
+   "raw": {
+    "fibre_words": "CFRP laminate",
+    "material_name": "CFRP",
+    "material": "CFRP",
+    "layup": "0/45/-45/90",
+    "ply_thickness": {
+     "value": 0.125,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     {
+      "value": 0.125,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 1000,
+      "unit": "N/m"
+     },
+     {
+      "name": "Ny",
+      "value": 500,
+      "unit": "N/m"
+     },
+     {
+      "name": "Nxy",
+      "value": 100,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "CFRP laminate",
+     "material_name": "CFRP",
+     "material": "CFRP",
+     "layup": "0/45/-45/90",
+     "ply_thickness": {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.125,
+       "unit": "mm"
+      },
+      {
+       "value": 0.125,
+       "unit": "mm"
+      },
+      {
+       "value": 0.125,
+       "unit": "mm"
+      },
+      {
+       "value": 0.125,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 1000,
+       "unit": "N/m"
+      },
+      {
+       "name": "Ny",
+       "value": 500,
+       "unit": "N/m"
+      },
+      {
+       "name": "Nxy",
+       "value": 100,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 1000.0,
+     "Ny": 500.0,
+     "Nxy": 100.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'CFRP' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "D2 en, [..]s 8 plies (= demo.py case)",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.85,
+   "raw": {
+    "fibre_words": "Carbon/epoxy",
+    "material_name": "carbon/epoxy",
+    "material": "CFRP",
+    "layup": "[0/45/-45/90]s",
+    "ply_thickness": {
+     "value": 0.125,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     {
+      "value": 0.125,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 1000,
+      "unit": "N/m"
+     },
+     {
+      "name": "Ny",
+      "value": 500,
+      "unit": "N/m"
+     },
+     {
+      "name": "Nxy",
+      "value": 100,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Carbon/epoxy",
+     "material_name": "carbon/epoxy",
+     "material": "CFRP",
+     "layup": "[0/45/-45/90]s",
+     "ply_thickness": {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.125,
+       "unit": "mm"
+      },
+      {
+       "value": 0.125,
+       "unit": "mm"
+      },
+      {
+       "value": 0.125,
+       "unit": "mm"
+      },
+      {
+       "value": 0.125,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 1000,
+       "unit": "N/m"
+      },
+      {
+       "name": "Ny",
+       "value": 500,
+       "unit": "N/m"
+      },
+      {
+       "name": "Nxy",
+       "value": 100,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 1000.0,
+     "Ny": 500.0,
+     "Nxy": 100.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'carbon/epoxy' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "D3 en, [..]2s, kN/m, negative load",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 2.95,
+   "raw": {
+    "fibre_words": "Glass fibre / epoxy",
+    "material_name": "Glass fibre / epoxy",
+    "material": "GFRP",
+    "layup": "[0/90]2s",
+    "ply_thickness": {
+     "value": 0.2,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 2,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Ny",
+      "value": -1.5,
+      "unit": "kN/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Glass fibre / epoxy",
+     "material_name": "Glass fibre / epoxy",
+     "material": "GFRP",
+     "layup": "[0/90]2s",
+     "ply_thickness": {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 2,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Ny",
+       "value": -1.5,
+       "unit": "kN/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 2000.0,
+     "Ny": -1500.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'Glass fibre / epoxy' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "D4 en, Kevlar, thickness in m, moment",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.37,
+   "raw": {
+    "fibre_words": "Kevlar 49/epoxy laminate",
+    "material_name": "Kevlar 49/epoxy",
+    "material": "KEVLAR",
+    "layup": "0/90/0",
+    "ply_thickness": {
+     "value": 0.00015,
+     "unit": "m"
+    },
+    "total_thickness": {
+     "value": 0.00045,
+     "unit": "m"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.00015,
+      "unit": "m"
+     },
+     {
+      "value": 0.00015,
+      "unit": "m"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 500,
+      "unit": "N/m"
+     },
+     {
+      "name": "Mx",
+      "value": 2,
+      "unit": "N*m/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Kevlar 49/epoxy laminate",
+     "material_name": "Kevlar 49/epoxy",
+     "material": "KEVLAR",
+     "layup": "0/90/0",
+     "ply_thickness": {
+      "value": 0.00015,
+      "unit": "m"
+     },
+     "total_thickness": {
+      "value": 0.00045,
+      "unit": "m"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.00015,
+       "unit": "m"
+      },
+      {
+       "value": 0.00015,
+       "unit": "m"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 500,
+       "unit": "N/m"
+      },
+      {
+       "name": "Mx",
+       "value": 2,
+       "unit": "N*m/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 500.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 2.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "Kevlar 49/epoxy",
+    "material_note": ""
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "D5 vi, [0/±45]s, decimal comma, moment",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.43,
+   "raw": {
+    "fibre_words": "sợi thủy tinh/epoxy",
+    "material_name": "glass fibre/epoxy",
+    "material": "GFRP",
+    "layup": "[0/±45]s",
+    "ply_thickness": {
+     "value": 0.15,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     {
+      "value": 0.15,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 1200,
+      "unit": "N/m"
+     },
+     {
+      "name": "Nxy",
+      "value": 300,
+      "unit": "N/m"
+     },
+     {
+      "name": "My",
+      "value": 5,
+      "unit": "N*m/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "sợi thủy tinh/epoxy",
+     "material_name": "glass fibre/epoxy",
+     "material": "GFRP",
+     "layup": "[0/±45]s",
+     "ply_thickness": {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.15,
+       "unit": "mm"
+      },
+      {
+       "value": 0.15,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 1200,
+       "unit": "N/m"
+      },
+      {
+       "name": "Nxy",
+       "value": 300,
+       "unit": "N/m"
+      },
+      {
+       "name": "My",
+       "value": 5,
+       "unit": "N*m/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 1200.0,
+     "Ny": 0.0,
+     "Nxy": 300.0,
+     "Mx": 0.0,
+     "My": 5.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "material name 'glass fibre/epoxy' from the LLM is not written in the text -> ignored"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "D6 en, total thickness, N/mm",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.77,
+   "raw": {
+    "fibre_words": "carbon fibre",
+    "material_name": "carbon/epoxy",
+    "material": "CFRP",
+    "layup": "[0/90/45/-45]s",
+    "ply_thickness": {
+     "value": 0.24,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 1.2,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.24,
+      "unit": "mm"
+     },
+     {
+      "value": 0.24,
+      "unit": "mm"
+     },
+     {
+      "value": 0.24,
+      "unit": "mm"
+     },
+     {
+      "value": 0.24,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 1.5,
+      "unit": "N/mm"
+     },
+     {
+      "name": "Ny",
+      "value": 0.5,
+      "unit": "N/mm"
+     },
+     {
+      "name": "Nxy",
+      "value": 0,
+      "unit": "N/mm"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "carbon fibre",
+     "material_name": "carbon/epoxy",
+     "material": "CFRP",
+     "layup": "[0/90/45/-45]s",
+     "ply_thickness": {
+      "value": 0.24,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 1.2,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.24,
+       "unit": "mm"
+      },
+      {
+       "value": 0.24,
+       "unit": "mm"
+      },
+      {
+       "value": 0.24,
+       "unit": "mm"
+      },
+      {
+       "value": 0.24,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 1.5,
+       "unit": "N/mm"
+      },
+      {
+       "name": "Ny",
+       "value": 0.5,
+       "unit": "N/mm"
+      },
+      {
+       "name": "Nxy",
+       "value": 0,
+       "unit": "N/mm"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 1500.0,
+     "Ny": 500.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "material name 'carbon/epoxy' from the LLM is not written in the text -> ignored"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "D7 en, different ply thickness, µm, pure bending",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 4.85,
+   "raw": {
+    "fibre_words": "CFRP",
+    "material_name": "CFRP",
+    "material": "CFRP",
+    "layup": "0/±90/90/0",
+    "ply_thickness": {
+     "value": 200,
+     "unit": "um"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "m"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 200,
+      "unit": "um"
+     },
+     {
+      "value": 100,
+      "unit": "um"
+     },
+     {
+      "value": 100,
+      "unit": "um"
+     },
+     {
+      "value": 200,
+      "unit": "um"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Mx",
+      "value": 10,
+      "unit": "N*m/m"
+     },
+     {
+      "name": "My",
+      "value": -4,
+      "unit": "N*m/m"
+     },
+     {
+      "name": "Mxy",
+      "value": 1,
+      "unit": "N*m/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "CFRP",
+     "material_name": "CFRP",
+     "material": "CFRP",
+     "layup": "0/±90/90/0",
+     "ply_thickness": {
+      "value": 200,
+      "unit": "um"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "m"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 200,
+       "unit": "um"
+      },
+      {
+       "value": 100,
+       "unit": "um"
+      },
+      {
+       "value": 100,
+       "unit": "um"
+      },
+      {
+       "value": 200,
+       "unit": "um"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Mx",
+       "value": 10,
+       "unit": "N*m/m"
+      },
+      {
+       "name": "My",
+       "value": -4,
+       "unit": "N*m/m"
+      },
+      {
+       "name": "Mxy",
+       "value": 1,
+       "unit": "N*m/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00019999999999999998
+     },
+     {
+      "angle": 90.0,
+      "thickness": 9.999999999999999e-05
+     },
+     {
+      "angle": 90.0,
+      "thickness": 9.999999999999999e-05
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00019999999999999998
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 10.0,
+     "My": -4.0,
+     "Mxy": 1.0
+    },
+    "material_name": "",
+    "material_note": "'CFRP' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "D8 en, T300/5208, [±30]2s, negative shear",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.0,
+   "raw": {
+    "fibre_words": "T300/5208 carbon-epoxy",
+    "material_name": "T300/5208",
+    "material": "CFRP",
+    "layup": "[±30]2s",
+    "ply_thickness": {
+     "value": 0.127,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.127,
+      "unit": "mm"
+     },
+     {
+      "value": 0.127,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nxy",
+      "value": -250,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "T300/5208 carbon-epoxy",
+     "material_name": "T300/5208",
+     "material": "CFRP",
+     "layup": "[±30]2s",
+     "ply_thickness": {
+      "value": 0.127,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.127,
+       "unit": "mm"
+      },
+      {
+       "value": 0.127,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nxy",
+       "value": -250,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.000127
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": -250.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "T300/5208",
+    "material_note": ""
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "D9 vi, 5 plies list, kN/m, N·mm/m",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.86,
+   "raw": {
+    "fibre_words": "sợi carbon",
+    "material_name": "sợi carbon",
+    "material": "CFRP",
+    "layup": "0/30/60/90/0",
+    "ply_thickness": {
+     "value": 0.25,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.25,
+      "unit": "mm"
+     },
+     {
+      "value": 0.25,
+      "unit": "mm"
+     },
+     {
+      "value": 0.25,
+      "unit": "mm"
+     },
+     {
+      "value": 0.25,
+      "unit": "mm"
+     },
+     {
+      "value": 0.25,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 3000,
+      "unit": "N/m"
+     },
+     {
+      "name": "Mxy",
+      "value": 1500,
+      "unit": "N*mm/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "sợi carbon",
+     "material_name": "sợi carbon",
+     "material": "CFRP",
+     "layup": "0/30/60/90/0",
+     "ply_thickness": {
+      "value": 0.25,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.25,
+       "unit": "mm"
+      },
+      {
+       "value": 0.25,
+       "unit": "mm"
+      },
+      {
+       "value": 0.25,
+       "unit": "mm"
+      },
+      {
+       "value": 0.25,
+       "unit": "mm"
+      },
+      {
+       "value": 0.25,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 3000,
+       "unit": "N/m"
+      },
+      {
+       "name": "Mxy",
+       "value": 1500,
+       "unit": "N*mm/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 60.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00025
+     }
+    ],
+    "loads": {
+     "Nx": 3000.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 1.5
+    },
+    "material_name": "",
+    "material_note": "'sợi carbon' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "D10 en, aramid 2 plies, all 6 loads",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 4.42,
+   "raw": {
+    "fibre_words": "Aramid fibre",
+    "material_name": "KEVLAR",
+    "material": "KEVLAR",
+    "layup": "[45/-45]",
+    "ply_thickness": {
+     "value": 0.3,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     {
+      "value": 0.3,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 800,
+      "unit": "N/m"
+     },
+     {
+      "name": "Ny",
+      "value": 200,
+      "unit": "N/m"
+     },
+     {
+      "name": "Nxy",
+      "value": 50,
+      "unit": "N/m"
+     },
+     {
+      "name": "Mx",
+      "value": 0.5,
+      "unit": "N*m/m"
+     },
+     {
+      "name": "My",
+      "value": 0.2,
+      "unit": "N*m/m"
+     },
+     {
+      "name": "Mxy",
+      "value": 0.1,
+      "unit": "N*mm/mm"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Aramid fibre",
+     "material_name": "KEVLAR",
+     "material": "KEVLAR",
+     "layup": "[45/-45]",
+     "ply_thickness": {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.3,
+       "unit": "mm"
+      },
+      {
+       "value": 0.3,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 800,
+       "unit": "N/m"
+      },
+      {
+       "name": "Ny",
+       "value": 200,
+       "unit": "N/m"
+      },
+      {
+       "name": "Nxy",
+       "value": 50,
+       "unit": "N/m"
+      },
+      {
+       "name": "Mx",
+       "value": 0.5,
+       "unit": "N*m/m"
+      },
+      {
+       "name": "My",
+       "value": 0.2,
+       "unit": "N*m/m"
+      },
+      {
+       "name": "Mxy",
+       "value": 0.1,
+       "unit": "N*mm/mm"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 45.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0003
+     }
+    ],
+    "loads": {
+     "Nx": 800.0,
+     "Ny": 200.0,
+     "Nxy": 50.0,
+     "Mx": 0.5,
+     "My": 0.2,
+     "Mxy": 0.1
+    },
+    "material_name": "",
+    "material_note": "material name 'KEVLAR' from the LLM is not written in the text -> ignored"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "H1 en, IM7/8552 [45/0/-45/90]2s 16 plies, kN/m, Mxy",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.84,
+   "raw": {
+    "fibre_words": "Glass fibre / epoxy",
+    "material_name": "IM7/8552",
+    "material": "CFRP",
+    "layup": "[45/0/-45/90]2s",
+    "ply_thickness": {
+     "value": 0.183,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.183,
+      "unit": "mm"
+     },
+     {
+      "value": 0.183,
+      "unit": "mm"
+     },
+     {
+      "value": 0.183,
+      "unit": "mm"
+     },
+     {
+      "value": 0.183,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 25000,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Mxy",
+      "value": -800,
+      "unit": "N*mm/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Glass fibre / epoxy",
+     "material_name": "IM7/8552",
+     "material": "CFRP",
+     "layup": "[45/0/-45/90]2s",
+     "ply_thickness": {
+      "value": 0.183,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.183,
+       "unit": "mm"
+      },
+      {
+       "value": 0.183,
+       "unit": "mm"
+      },
+      {
+       "value": 0.183,
+       "unit": "mm"
+      },
+      {
+       "value": 0.183,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 25000,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Mxy",
+       "value": -800,
+       "unit": "N*mm/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 45.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.000183
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.000183
+     }
+    ],
+    "loads": {
+     "Nx": 25000.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": -0.8
+    },
+    "material_name": "IM7/8552",
+    "material_note": ""
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "H2 vi, Kevlar, total thickness 0,8 mm",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.63,
+   "raw": {
+    "fibre_words": "Kevlar/epoxy",
+    "material_name": "KEVLAR",
+    "material": "KEVLAR",
+    "layup": "0/90/90/0",
+    "ply_thickness": {
+     "value": 0.2,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0.8,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nxy",
+      "value": -120,
+      "unit": "N/m"
+     },
+     {
+      "name": "Ny",
+      "value": 750,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Kevlar/epoxy",
+     "material_name": "KEVLAR",
+     "material": "KEVLAR",
+     "layup": "0/90/90/0",
+     "ply_thickness": {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0.8,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nxy",
+       "value": -120,
+       "unit": "N/m"
+      },
+      {
+       "name": "Ny",
+       "value": 750,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 750.0,
+     "Nxy": -120.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'KEVLAR' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "H3 en, imperial units (in, lbf/in)",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.08,
+   "raw": {
+    "fibre_words": "E-glass/epoxy [0/90/0]",
+    "material_name": "E-glass/epoxy",
+    "material": "GFRP",
+    "layup": "[0/90/0]",
+    "ply_thickness": {
+     "value": 0.005,
+     "unit": "in"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "in"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.005,
+      "unit": "in"
+     },
+     {
+      "value": 0.005,
+      "unit": "in"
+     },
+     {
+      "value": 0.005,
+      "unit": "in"
+     }
+    ],
+    "loads": []
+   },
+   "attempts": [
+    {
+     "fibre_words": "E-glass/epoxy [0/90/0]",
+     "material_name": "E-glass/epoxy",
+     "material": "GFRP",
+     "layup": "[0/90/0]",
+     "ply_thickness": {
+      "value": 0.005,
+      "unit": "in"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "in"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.005,
+       "unit": "in"
+      },
+      {
+       "value": 0.005,
+       "unit": "in"
+      },
+      {
+       "value": 0.005,
+       "unit": "in"
+      }
+     ],
+     "loads": []
+    }
+   ],
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000127
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.000127
+     }
+    ],
+    "loads": {
+     "Nx": 17512.683524647637,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'E-glass/epoxy' identifies only the fibre: 3 row(s) (Scotchply 1002, E-glass/LY556, E-glass/MY750) -> not unique"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "H4 en, compact style, compression + moment",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 5.02,
+   "raw": {
+    "fibre_words": "AS4/3501-6",
+    "material_name": "AS4/3501-6",
+    "material": "CFRP",
+    "layup": "0/60/-60/-60/60/0",
+    "ply_thickness": {
+     "value": 0.15,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0.6,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     {
+      "value": 0.15,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": -800,
+      "unit": "N/m"
+     },
+     {
+      "name": "Nxy",
+      "value": 200,
+      "unit": "N/m"
+     },
+     {
+      "name": "Mx",
+      "value": 0.3,
+      "unit": "N*m/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "AS4/3501-6",
+     "material_name": "AS4/3501-6",
+     "material": "CFRP",
+     "layup": "0/60/-60/-60/60/0",
+     "ply_thickness": {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0.6,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.15,
+       "unit": "mm"
+      },
+      {
+       "value": 0.15,
+       "unit": "mm"
+      },
+      {
+       "value": 0.15,
+       "unit": "mm"
+      },
+      {
+       "value": 0.15,
+       "unit": "mm"
+      },
+      {
+       "value": 0.15,
+       "unit": "mm"
+      },
+      {
+       "value": 0.15,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": -800,
+       "unit": "N/m"
+      },
+      {
+       "name": "Nxy",
+       "value": 200,
+       "unit": "N/m"
+      },
+      {
+       "name": "Mx",
+       "value": 0.3,
+       "unit": "N*m/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 60.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 60.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": -800.0,
+     "Ny": 0.0,
+     "Nxy": 200.0,
+     "Mx": 0.3,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "AS4/3501-6",
+    "material_note": ""
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "H5 vi, [0/90]s, only moment in N·mm/mm",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 2.92,
+   "raw": {
+    "fibre_words": "CFRP",
+    "material_name": "CFRP",
+    "material": "CFRP",
+    "layup": "[0/90]s",
+    "ply_thickness": {
+     "value": 0.125,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     {
+      "value": 0.125,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Mx",
+      "value": 2.5,
+      "unit": "N*mm/mm"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "CFRP",
+     "material_name": "CFRP",
+     "material": "CFRP",
+     "layup": "[0/90]s",
+     "ply_thickness": {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.125,
+       "unit": "mm"
+      },
+      {
+       "value": 0.125,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Mx",
+       "value": 2.5,
+       "unit": "N*mm/mm"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 2.5,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'CFRP' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "H6 en, fiberglass 5 plies different thickness",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 4.08,
+   "raw": {
+    "fibre_words": "Glass fibre / epoxy",
+    "material_name": "glass fibre",
+    "material": "GFRP",
+    "layup": "0/45/-45/0/45/-45/0",
+    "ply_thickness": {
+     "value": 0.3,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 1.5,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     {
+      "value": 0.3,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 4000,
+      "unit": "N/m"
+     },
+     {
+      "name": "Ny",
+      "value": 1000,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Glass fibre / epoxy",
+     "material_name": "glass fibre",
+     "material": "GFRP",
+     "layup": "0/45/-45/0/45/-45/0",
+     "ply_thickness": {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 1.5,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.3,
+       "unit": "mm"
+      },
+      {
+       "value": 0.3,
+       "unit": "mm"
+      },
+      {
+       "value": 0.3,
+       "unit": "mm"
+      },
+      {
+       "value": 0.3,
+       "unit": "mm"
+      },
+      {
+       "value": 0.3,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 4000,
+       "unit": "N/m"
+      },
+      {
+       "name": "Ny",
+       "value": 1000,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 45.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0005
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.0003
+     }
+    ],
+    "loads": {
+     "Nx": 4000.0,
+     "Ny": 1000.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "material name 'glass fibre' from the LLM is not written in the text -> ignored"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "N1 en, [..]T notation, kN/m",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.81,
+   "raw": {
+    "fibre_words": "E-glass",
+    "material_name": "IM7/8552",
+    "material": "GFRP",
+    "layup": "[0/90/0/90]",
+    "ply_thickness": {
+     "value": 0.25,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 1.5,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.25,
+      "unit": "mm"
+     },
+     {
+      "value": 0.25,
+      "unit": "mm"
+     },
+     {
+      "value": 0.25,
+      "unit": "mm"
+     },
+     {
+      "value": 0.25,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 5000,
+      "unit": "N/m"
+     },
+     {
+      "name": "Ny",
+      "value": 5000,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "E-glass",
+     "material_name": "IM7/8552",
+     "material": "GFRP",
+     "layup": "[0/90/0/90]",
+     "ply_thickness": {
+      "value": 0.25,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 1.5,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.25,
+       "unit": "mm"
+      },
+      {
+       "value": 0.25,
+       "unit": "mm"
+      },
+      {
+       "value": 0.25,
+       "unit": "mm"
+      },
+      {
+       "value": 0.25,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 5000,
+       "unit": "N/m"
+      },
+      {
+       "name": "Ny",
+       "value": 5000,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00025
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00025
+     }
+    ],
+    "loads": {
+     "Nx": 5000.0,
+     "Ny": 5000.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "material name 'IM7/8552' from the LLM is not written in the text -> ignored; the text identifies only the fibre: 3 row(s) (Scotchply 1002, E-glass/LY556, E-glass/MY750) -> not unique"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "N2 vi, 6 plies listed, total thickness, moment",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 4.51,
+   "raw": {
+    "fibre_words": "sợi carbon/epoxy",
+    "material_name": "sợi carbon/epoxy",
+    "material": "CFRP",
+    "layup": "0/60/-60/-60/60/0",
+    "ply_thickness": {
+     "value": 0.9,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0.9,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.9,
+      "unit": "mm"
+     },
+     {
+      "value": 0.9,
+      "unit": "mm"
+     },
+     {
+      "value": 0.9,
+      "unit": "mm"
+     },
+     {
+      "value": 0.9,
+      "unit": "mm"
+     },
+     {
+      "value": 0.9,
+      "unit": "mm"
+     },
+     {
+      "value": 0.9,
+      "unit": "mm"
+     },
+     {
+      "value": 0.9,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 600,
+      "unit": "N/m"
+     },
+     {
+      "name": "Mx",
+      "value": 1.2,
+      "unit": "N*m/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "sợi carbon/epoxy",
+     "material_name": "sợi carbon/epoxy",
+     "material": "CFRP",
+     "layup": "0/60/-60/-60/60/0",
+     "ply_thickness": {
+      "value": 0.9,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0.9,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.9,
+       "unit": "mm"
+      },
+      {
+       "value": 0.9,
+       "unit": "mm"
+      },
+      {
+       "value": 0.9,
+       "unit": "mm"
+      },
+      {
+       "value": 0.9,
+       "unit": "mm"
+      },
+      {
+       "value": 0.9,
+       "unit": "mm"
+      },
+      {
+       "value": 0.9,
+       "unit": "mm"
+      },
+      {
+       "value": 0.9,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 600,
+       "unit": "N/m"
+      },
+      {
+       "name": "Mx",
+       "value": 1.2,
+       "unit": "N*m/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00015000000000000001
+     },
+     {
+      "angle": 60.0,
+      "thickness": 0.00015000000000000001
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.00015000000000000001
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.00015000000000000001
+     },
+     {
+      "angle": 60.0,
+      "thickness": 0.00015000000000000001
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00015000000000000001
+     }
+    ],
+    "loads": {
+     "Nx": 600.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 1.2,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'sợi carbon/epoxy' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "N3 en, Kevlar [0/90]s, shear + twisting moment",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 2.82,
+   "raw": {
+    "fibre_words": "Kevlar/epoxy",
+    "material_name": "Kevlar/epoxy",
+    "material": "KEVLAR",
+    "layup": "[0/90]s",
+    "ply_thickness": {
+     "value": 0.1,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": [
+     {
+      "name": "Nxy",
+      "value": 150,
+      "unit": "N/m"
+     },
+     {
+      "name": "Mxy",
+      "value": 0.05,
+      "unit": "N*m/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Kevlar/epoxy",
+     "material_name": "Kevlar/epoxy",
+     "material": "KEVLAR",
+     "layup": "[0/90]s",
+     "ply_thickness": {
+      "value": 0.1,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [],
+     "loads": [
+      {
+       "name": "Nxy",
+       "value": 150,
+       "unit": "N/m"
+      },
+      {
+       "name": "Mxy",
+       "value": 0.05,
+       "unit": "N*m/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0001
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0001
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0001
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0001
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 150.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.05
+    },
+    "material_name": "",
+    "material_note": "'Kevlar/epoxy' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "N4 en, graphite, load in words (no symbol)",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.38,
+   "raw": {
+    "fibre_words": "graphite/epoxy",
+    "material_name": "graphite/epoxy",
+    "material": "CFRP",
+    "layup": "[45/-45/-45/45]",
+    "ply_thickness": {
+     "value": 0.15,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     {
+      "value": 0.15,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 2,
+      "unit": "N/mm"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "graphite/epoxy",
+     "material_name": "graphite/epoxy",
+     "material": "CFRP",
+     "layup": "[45/-45/-45/45]",
+     "ply_thickness": {
+      "value": 0.15,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.15,
+       "unit": "mm"
+      },
+      {
+       "value": 0.15,
+       "unit": "mm"
+      },
+      {
+       "value": 0.15,
+       "unit": "mm"
+      },
+      {
+       "value": 0.15,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 2,
+       "unit": "N/mm"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 2000.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'graphite/epoxy' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "N5 vi, 3 plies, thickness per ply",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.36,
+   "raw": {
+    "fibre_words": "GFRP",
+    "material_name": "GFRP",
+    "material": "GFRP",
+    "layup": "0/90/0",
+    "ply_thickness": {
+     "value": 0.4,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 1.2,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.4,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.4,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 2500,
+      "unit": "N/m"
+     },
+     {
+      "name": "Ny",
+      "value": 400,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "GFRP",
+     "material_name": "GFRP",
+     "material": "GFRP",
+     "layup": "0/90/0",
+     "ply_thickness": {
+      "value": 0.4,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 1.2,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.4,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.4,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 2500,
+       "unit": "N/m"
+      },
+      {
+       "name": "Ny",
+       "value": 400,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0004
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0004
+     }
+    ],
+    "loads": {
+     "Nx": 2500.0,
+     "Ny": 400.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'GFRP' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "N6 en, [0/±45/90]s, total thickness, 4 loads",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 4.0,
+   "raw": {
+    "fibre_words": "CFRP [0/±45/90]s",
+    "material_name": "CFRP",
+    "material": "CFRP",
+    "layup": "[0/±45/90]",
+    "ply_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 1.6,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0,
+      "unit": "mm"
+     },
+     {
+      "value": 0,
+      "unit": "mm"
+     },
+     {
+      "value": 0,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": -2,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Ny",
+      "value": 1,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Nxy",
+      "value": 0.5,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Mx",
+      "value": 0.4,
+      "unit": "N*m/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "CFRP [0/±45/90]s",
+     "material_name": "CFRP",
+     "material": "CFRP",
+     "layup": "[0/±45/90]",
+     "ply_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 1.6,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0,
+       "unit": "mm"
+      },
+      {
+       "value": 0,
+       "unit": "mm"
+      },
+      {
+       "value": 0,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": -2,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Ny",
+       "value": 1,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Nxy",
+       "value": 0.5,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Mx",
+       "value": 0.4,
+       "unit": "N*m/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": -2000.0,
+     "Ny": 1000.0,
+     "Nxy": 500.0,
+     "Mx": 0.4,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'CFRP' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T1 en, S2-glass [90/0/90], kN/m mixed, Mxy",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.86,
+   "raw": {
+    "fibre_words": "S2-glass/epoxy",
+    "material_name": "S2-glass / epoxy",
+    "material": "GFRP",
+    "layup": "[90/0/90]",
+    "ply_thickness": {
+     "value": 0.3,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     {
+      "value": 0.3,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 900,
+      "unit": "N/m"
+     },
+     {
+      "name": "Ny",
+      "value": 2400,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Mxy",
+      "value": 150,
+      "unit": "N*mm/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "S2-glass/epoxy",
+     "material_name": "S2-glass / epoxy",
+     "material": "GFRP",
+     "layup": "[90/0/90]",
+     "ply_thickness": {
+      "value": 0.3,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.3,
+       "unit": "mm"
+      },
+      {
+       "value": 0.3,
+       "unit": "mm"
+      },
+      {
+       "value": 0.3,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 900,
+       "unit": "N/m"
+      },
+      {
+       "name": "Ny",
+       "value": 2400,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Mxy",
+       "value": 150,
+       "unit": "N*mm/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 90.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0003
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0003
+     }
+    ],
+    "loads": {
+     "Nx": 900.0,
+     "Ny": 2400.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.15
+    },
+    "material_name": "",
+    "material_note": "'S2-glass / epoxy' identifies only the fibre: 1 row(s) (S2-glass/BT250E-6) -> not unique"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T2 vi, [0/90/±45]s, kN/m + moment",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.43,
+   "raw": {
+    "fibre_words": "CFRP",
+    "material_name": "CFRP",
+    "material": "CFRP",
+    "layup": "[0/90/±45]s",
+    "ply_thickness": {
+     "value": 0.2,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 4,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Mx",
+      "value": 3,
+      "unit": "N*m/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "CFRP",
+     "material_name": "CFRP",
+     "material": "CFRP",
+     "layup": "[0/90/±45]s",
+     "ply_thickness": {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 4,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Mx",
+       "value": 3,
+       "unit": "N*m/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 4000.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 3.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'CFRP' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T3 en, aramid [±60]s, negative shear",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.04,
+   "raw": {
+    "fibre_words": "Aramid/epoxy",
+    "material_name": "Aramid/epoxy",
+    "material": "KEVLAR",
+    "layup": "[±60]s",
+    "ply_thickness": {
+     "value": 0.125,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 300,
+      "unit": "N/m"
+     },
+     {
+      "name": "Nxy",
+      "value": -75,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Aramid/epoxy",
+     "material_name": "Aramid/epoxy",
+     "material": "KEVLAR",
+     "layup": "[±60]s",
+     "ply_thickness": {
+      "value": 0.125,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 300,
+       "unit": "N/m"
+      },
+      {
+       "name": "Nxy",
+       "value": -75,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "KEVLAR",
+    "plies": [
+     {
+      "angle": 60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": -60.0,
+      "thickness": 0.000125
+     },
+     {
+      "angle": 60.0,
+      "thickness": 0.000125
+     }
+    ],
+    "loads": {
+     "Nx": 300.0,
+     "Ny": 0.0,
+     "Nxy": -75.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'Aramid/epoxy' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T4 en, imperial thickness + lbf·in/in moment",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.81,
+   "raw": {
+    "fibre_words": "Glass fibre / epoxy",
+    "material_name": "IM7/8552",
+    "material": "CFRP",
+    "layup": "[0/45/90/-45]s",
+    "ply_thickness": {
+     "value": 0.0072,
+     "unit": "in"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "in"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.0072,
+      "unit": "in"
+     },
+     {
+      "value": 0.0072,
+      "unit": "in"
+     },
+     {
+      "value": 0.0072,
+      "unit": "in"
+     },
+     {
+      "value": 0.0072,
+      "unit": "in"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Mx",
+      "value": 5,
+      "unit": "lbf*in/in"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "Glass fibre / epoxy",
+     "material_name": "IM7/8552",
+     "material": "CFRP",
+     "layup": "[0/45/90/-45]s",
+     "ply_thickness": {
+      "value": 0.0072,
+      "unit": "in"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "in"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.0072,
+       "unit": "in"
+      },
+      {
+       "value": 0.0072,
+       "unit": "in"
+      },
+      {
+       "value": 0.0072,
+       "unit": "in"
+      },
+      {
+       "value": 0.0072,
+       "unit": "in"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Mx",
+       "value": 5,
+       "unit": "lbf*in/in"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": -45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 45.0,
+      "thickness": 0.00018287999999999998
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.00018287999999999998
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 0.0,
+     "Mx": 22.2411080763025,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "IM7/8552",
+    "material_note": ""
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T5 vi, angles listed, µm",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": false,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.5,
+   "raw": {
+    "fibre_words": "sợi thủy tinh",
+    "material_name": "sợi thủy tinh",
+    "material": "GFRP",
+    "layup": "0/+30/-30/+30",
+    "ply_thickness": {
+     "value": 150,
+     "unit": "um"
+    },
+    "total_thickness": {
+     "value": 600,
+     "unit": "um"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 150,
+      "unit": "um"
+     },
+     {
+      "value": 150,
+      "unit": "um"
+     },
+     {
+      "value": 150,
+      "unit": "um"
+     },
+     {
+      "value": 150,
+      "unit": "um"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nxy",
+      "value": 500,
+      "unit": "N/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "sợi thủy tinh",
+     "material_name": "sợi thủy tinh",
+     "material": "GFRP",
+     "layup": "0/+30/-30/+30",
+     "ply_thickness": {
+      "value": 150,
+      "unit": "um"
+     },
+     "total_thickness": {
+      "value": 600,
+      "unit": "um"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 150,
+       "unit": "um"
+      },
+      {
+       "value": 150,
+       "unit": "um"
+      },
+      {
+       "value": 150,
+       "unit": "um"
+      },
+      {
+       "value": 150,
+       "unit": "um"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nxy",
+       "value": 500,
+       "unit": "N/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "GFRP",
+    "plies": [
+     {
+      "angle": 30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": -30.0,
+      "thickness": 0.00015
+     },
+     {
+      "angle": 30.0,
+      "thickness": 0.00015
+     }
+    ],
+    "loads": {
+     "Nx": 0.0,
+     "Ny": 0.0,
+     "Nxy": 500.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "'sợi thủy tinh' is not in the database (25 materials)"
+   }
+  },
+  {
+   "version": "v5",
+   "backend": "ollama",
+   "repeat": 0,
+   "case": "T6 en, 'Nx = Ny = 1.2 kN/m'",
+   "correct": true,
+   "refuse_case": false,
+   "refusal_message": null,
+   "row_info": true,
+   "llm_only_correct": true,
+   "checks": {
+    "material": true,
+    "n_plies": true,
+    "angles": true,
+    "thickness": true,
+    "loads": true
+   },
+   "errors": [],
+   "seconds": 3.84,
+   "raw": {
+    "fibre_words": "0/90/90/0",
+    "material_name": "carbon/epoxy",
+    "material": "CFRP",
+    "layup": "0/90/90/0",
+    "ply_thickness": {
+     "value": 0.2,
+     "unit": "mm"
+    },
+    "total_thickness": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "ply_thickness_list": [
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     {
+      "value": 0.2,
+      "unit": "mm"
+     }
+    ],
+    "loads": [
+     {
+      "name": "Nx",
+      "value": 1.2,
+      "unit": "kN/m"
+     },
+     {
+      "name": "Ny",
+      "value": 1.2,
+      "unit": "kN/m"
+     }
+    ]
+   },
+   "attempts": [
+    {
+     "fibre_words": "0/90/90/0",
+     "material_name": "carbon/epoxy",
+     "material": "CFRP",
+     "layup": "0/90/90/0",
+     "ply_thickness": {
+      "value": 0.2,
+      "unit": "mm"
+     },
+     "total_thickness": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "ply_thickness_list": [
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      },
+      {
+       "value": 0.2,
+       "unit": "mm"
+      }
+     ],
+     "loads": [
+      {
+       "name": "Nx",
+       "value": 1.2,
+       "unit": "kN/m"
+      },
+      {
+       "name": "Ny",
+       "value": 1.2,
+       "unit": "kN/m"
+      }
+     ]
+    }
+   ],
+   "parsed": {
+    "material": "CFRP",
+    "plies": [
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 90.0,
+      "thickness": 0.0002
+     },
+     {
+      "angle": 0.0,
+      "thickness": 0.0002
+     }
+    ],
+    "loads": {
+     "Nx": 1200.0,
+     "Ny": 1200.0,
+     "Nxy": 0.0,
+     "Mx": 0.0,
+     "My": 0.0,
+     "Mxy": 0.0
+    },
+    "material_name": "",
+    "material_note": "material name 'carbon/epoxy' from the LLM is not written in the text -> ignored"
+   }
+  }
+ ]
+}

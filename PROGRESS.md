@@ -15,6 +15,55 @@ Lần chạy gần nhất: 0.0023807 / 4 / 5.93995e7 → **PASS** (chạy lại 
 - Kiểm tra tất định (không gọi LLM): `python\test_checks.py` → ALL PASS
 - Số lần gọi Hugging Face: mỗi lần gọi ghi 1 dòng vào `logs\hf_calls.log`.
 
+## Việc 3 - thiết kế tấm composite bằng lời (30/10): XONG
+Mốc: tag `before-design-agent` (= c799a34). Làm trên nhánh `design-agent` (worktree `D:\CompositeAgent_da`), gộp vào
+main sau khi mọi kiểm tra đạt.
+- **Bộ đề viết trước khi code** (commit 3a979fd): `python/design_cases.py`, 21 yêu cầu (Anh/Việt; vật liệu có tên và
+  theo nhóm; kéo, nén, cắt, tổ hợp; hai mục tiêu; đề thiếu thông tin dùng mặc định; 6 đề phải từ chối; 1 đề không
+  khả thi).
+- **Phân loại** (`router.py`): quy tắc Python; LLM chỉ xác nhận câu viết yếu ("I need a laminate that can carry ...");
+  mơ hồ thì từ chối kèm hướng dẫn. 44/44 đề phân tích cũ, 18/18 câu RAG cũ, 20/20 đề thiết kế (+ DS20 cần LLM: đúng).
+- **Đọc yêu cầu** (`design.py`): LLM chép số + đơn vị; Python đọc lại từ văn bản (tải dùng chung `llm.read_loads`:
+  kN/m, N/mm, số bằng chữ, tiếng Việt, "nén" -> âm), giá trị LLM chỉ được dùng khi có trong văn bản và hợp lý; mặc định
+  in rõ (hệ số an toàn 1,5; tấm 0,5 × 0,5 m; lớp 0,125 mm; góc 0/±45/90; 4 luật; 8-64 lớp). Từ chối: mô-men, mục
+  tiêu khác, góc khác, không có vật liệu, tải không rõ hướng, tấm không đối xứng / không cân bằng, vừa cho xếp lớp vừa
+  đòi thiết kế. Vật liệu ML: cảnh báo "kết quả chỉ mang tính tham khảo".
+- **Tối ưu** (`optimization.api.design_search`): tìm kiếm chính xác (giới hạn 30 s) -> "tối ưu đã chứng minh"; không
+  xong thì GA + tìm kiếm cục bộ seed 0 -> "tốt nhất tìm được" + cận dưới số lớp (nếu cận = số lớp tìm được thì số lớp
+  đã chứng minh). Lưu ý: việc tìm kiếm chính xác xong trong 30 s hay không (và cận dưới) có thể phụ thuộc tải máy; phương
+  án GA thì không.
+- **Kiểm tra lại**: MATLAB `clt_engine.m` (độ bền, cả hai chiều cắt), Ritz đa thức độc lập (chênh in ra, cảnh báo nếu
+  > 2 %), hệ số dự trữ từng tiêu chuẩn, so với tấm tựa đẳng hướng nhỏ nhất cùng ràng buộc (kể cả số lớp tối thiểu).
+- **Giải thích**: dữ kiện có tên/đơn vị/ý nghĩa; bộ kiểm tra ý nghĩa mở rộng (số lớp, hệ số dự trữ, hệ số tải mất ổn
+  định, %); kiểm tra thêm: khả thi hay không, "đã chứng minh" hay không, tiêu chuẩn quyết định, chiều lực cắt, chiều
+  so sánh với tựa đẳng hướng, biên của phương án bị gán cho tấm tựa đẳng hướng. `test_design_checks.py`: ALL PASS.
+- **Lực cắt đổi chiều**: tùy chọn `shear_both_signs` trong module tối ưu (mặc định tắt; agent bật khi có Nxy trừ khi đề
+  nói một chiều). pytest 102/102 (+11). Kết quả Lớp 1 và Le Riche & Haftka KHÔNG đổi khi tắt (chạy lại toàn bộ 960 lần
+  chạy + tìm kiếm chính xác + Le Riche & Haftka, so với file đã công bố bỏ qua cột thời gian: 0 khác biệt;
+  `logs\da_rerun_compare.txt`). Bảng một / hai chiều (BAO_CAO_LOP1 mục 4.8): cắt thuần 42 -> 46 lớp (0,125 mm), 28 -> 32
+  lớp (0,18288 mm), số lớp chứng minh được; nén + cắt cùng số lớp, biên 1,751 -> 1,688; kéo + cắt, tải rất lớn không
+  đổi; MATLAB 8/8.
+- **Bộ đề thiết kế** (`benchmark_design.py`, kết quả trong `deliverables/benchmark/design_benchmark_*`):
+
+  | | gemma3 (lần cuối) | HF gpt-oss-120b |
+  |---|---|---|
+  | phân loại đúng (đề thiết kế) | 15/15 | 15/15 |
+  | đọc đề đúng | 15/15 | 15/15 |
+  | kết quả = gọi trực tiếp optimize(...) | 15/15 | 15/15 |
+  | MATLAB kiểm tra lại | 15/15 | 15/15 |
+  | từ chối đúng | 6/6 | 6/6 |
+  | hoàn toàn đúng | **21/21** | **21/21** |
+  | giải thích LLM / hỏi lại / dựng sẵn | 13 / 1 / 1 (2 lỗi thật bị bắt) | 11 / 0 / 4 (báo nhầm -> đã sửa) |
+
+  gemma3 lần 1: 20/21 (DS11 đọc sai "at most 24 plies" -> sửa thuật toán). Các lỗi ý nghĩa tìm được khi đọc tay lời giải
+  thích đều đã thành luật kiểm tra + test (so sánh ngược chiều, "shear not checked", biên gán cho tựa đẳng hướng...).
+- **Không giảm**: 44 đề gemma3 28/28 + 16/16; RAG gemma3 12/12 + 6/6.
+- **Demo**: `run_demo.bat` phần 4 "Design" (2 yêu cầu, đều tối ưu đã chứng minh): (1) IM7/8552, Nxy = 40 kN/m, hai chiều
+  -> [-45/45_2/-45/45/-45_2/45/90/0_2/90]s, 24 lớp, biên 1,699 (mất ổn định), tựa đẳng hướng 32 lớp (-25 %);
+  (2) carbon/epoxy (ML), Nx = -20 kN/m -> 26 lớp, biên 1,658, tựa đẳng hướng 32 lớp (-18,8 %). Thời gian phần 4:
+  7,9 s có mạng, 17,7 s offline (giới hạn 2 / 4 phút). `--interactive`: mục 3 = yêu cầu thiết kế, a = tự phân loại.
+- HF trong đợt này: xem mục kết thúc dưới (đầu đợt 146 dòng).
+
 ## Đợt "mất ổn định do cắt + sửa demo" (28/10 chiều - 30/10): XONG
 Mốc trước khi làm: tag `before-shear-buckling`. Việc 1 làm trên nhánh `shear-buckling` (worktree `D:\CompositeAgent_sb`),
 gộp vào main (commit 62885cb) sau khi mọi kiểm chứng đạt; Việc 2 làm trực tiếp trên main.
