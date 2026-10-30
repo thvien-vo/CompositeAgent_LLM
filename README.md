@@ -8,7 +8,7 @@ source report and page. An optimisation module chooses the stacking sequence of 
 agent can use it to **design a laminate from a request in words** ("Design the lightest IM7/8552 laminate for
 Nx = -20 kN/m"): the optimum is checked again and explained.
 
-Author: **Võ Nguyễn Thanh Viên**, Ho Chi Minh City University of Technology (HCMUT).
+Author: **Vo Nguyen Thanh Vien**, Ho Chi Minh City University of Technology (HCMUT).
 Supervisor: **Dr. Sy-Ngoc Nguyen**, Faculty of Mechanical Engineering, HCMUT.
 Partner: **Prof. Masaaki Nishikawa**, Kyoto University.
 
