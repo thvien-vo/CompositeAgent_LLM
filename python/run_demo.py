@@ -38,7 +38,7 @@ DESIGNS = [  # (title, request): both feasible and proven optimal by the exact s
     ("English, IM7/8552 (measured NCAMP values), shear that may reverse: checked for +Nxy and -Nxy",
      "Design the lightest IM7/8552 laminate for a shear load Nxy = 40 kN/m."),
     ("Vietnamese, carbon/epoxy group (ML properties), compression: buckling governs",
-     "Thiết kế tấm carbon/epoxy nhẹ nhất chịu nén Nx = -20 kN/m, tấm 0,5 m × 0,5 m."),
+     "Thiết kế tấm carbon/epoxy nhẹ nhất chịu nén Nx = -20 kN/m, kích thước tấm 0,5 m × 0,5 m."),
 ]
 QUESTIONS = [
     "What is the longitudinal tensile strength Xt of IM7/8552?",
