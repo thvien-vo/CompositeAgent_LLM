@@ -2,7 +2,7 @@
 
 Repo: https://github.com/thvien-vo/CompositeAgent_LLM (chuyển sang repo này ngày 28/10/2026; slide và kịch bản
 thuyết trình lưu ngoài repo).
-Hạn: chạy ổn định trước 29/10/2026, thuyết trình 30/10/2026.
+Hạn: thuyết trình dời sang **01/11/2026**; hoàn tất trước hết ngày 31/10/2026; nhánh main luôn chạy được.
 Số kiểm chứng (demo.py, CFRP [0/45/-45/90]s, 0.125 mm, Nx=1000, Ny=500, Nxy=100 N/m):
 max_failure_index ≈ 0.00238, critical_ply = 4, ABD(1,1) ≈ 5.94e7 N/m. demo.py tự in `CHECK ... PASS/FAIL`.
 Lần chạy gần nhất: 0.0023807 / 4 / 5.93995e7 → **PASS** (chạy lại sau mỗi thay đổi).
@@ -15,12 +15,72 @@ Lần chạy gần nhất: 0.0023807 / 4 / 5.93995e7 → **PASS** (chạy lại 
 - Kiểm tra tất định (không gọi LLM): `python\test_checks.py` → ALL PASS
 - Số lần gọi Hugging Face: mỗi lần gọi ghi 1 dòng vào `logs\hf_calls.log`.
 
-## Tài liệu thuyết trình (28/10): XONG - lưu ngoài repo
-- Slide (19 trang, song ngữ, phần tối ưu Lớp 1 ở slide 13-16) và kịch bản thuyết trình được giữ trên máy người trình
-  bày, không đưa vào repo.
-- Mức giảm khối lượng chỉ nêu cho ca không có lực cắt (-50 %, -37.5 %, nén -8.3 % đến -16.7 %); ca có lực cắt ghi rõ
-  chưa xét mất ổn định do cắt (Ritz: cắt thuần 12 lớp không đủ, cần khoảng 46 lớp).
-- Demo chạy chế độ có mạng; nếu buộc dùng `--offline` thì không đọc to lời giải thích của gemma3.
+## Đợt "mất ổn định do cắt + sửa demo" (28/10 chiều - 30/10): XONG
+Mốc trước khi làm: tag `before-shear-buckling`. Việc 1 làm trên nhánh `shear-buckling` (worktree `D:\CompositeAgent_sb`),
+gộp vào main (commit 62885cb) sau khi mọi kiểm chứng đạt; Việc 2 làm trực tiếp trên main.
+
+**Việc 1 - mất ổn định do cắt trong tối ưu** (chỉ sửa / thêm trong `python/optimization/`, `deliverables/optimization/`):
+- Mô hình `buckling.RitzModel`: Rayleigh-Ritz chuỗi sin kép có D16, D26, Nx, Ny, Nxy; trị riêng tổng quát, hệ số tải tới
+  hạn = trị riêng dương nhỏ nhất, kéo làm tăng ổn định, không có trị riêng dương -> RF = inf; dùng đúng dấu Nxy đề cho.
+  Áp dụng khi có nén hoặc cắt; ràng buộc RF >= 1.5. Tích phân tính sẵn, trị riêng theo lô, cache theo D, chỉ tính cho
+  phương án đã đạt độ bền (GA, vét cạn). Báo cáo ghi rõ: chuỗi sin không thỏa điều kiện mô-men khi D16, D26 != 0 ->
+  cận trên, hội tụ chậm.
+- Kiểm chứng trước khi dùng (`verify_buckling.py`, `tests/test_buckling_full.py`): nén thuần trực hướng trùng công thức
+  đóng (<= 6.2e-16); k_s tấm vuông 9.328 so với 9.34 (0.13 %, Stein & Neff 1947; Timoshenko & Gere 1961); tấm dài
+  a/b = 10: 5.389 (0.73 %), a/b = 20: 5.351 (0.02 %) so với 5.35 (Southwell & Skan 1924); so với lời giải Ritz đa thức
+  độc lập <= 0.62 %; Nemeth 1992 (NASA TP-3195, chỉ có đồ thị + số "khoảng" trong lời văn): -50 % / +44 %, ±7.8 %, ±3.9 %
+  so với "khoảng 48 %, 7 %, 3.5 %", cùng chiều. Hội tụ: mọi ca 8 x 8 số hạng (tăng lên 10 x 10 đổi <= 0.49 %).
+- Tìm kiếm chính xác mới (nhánh-cận, cận Rayleigh chứng minh được), <= 10 s mỗi bài: chứng minh tối ưu 15/16 bài; cắt thuần
+  lớp 0.125 mm chỉ chứng minh n* = 42 (biên là tốt nhất đã biết) - phạm vi bị thu hẹp (bộ số lượng > 3 triệu cách xếp
+  không liệt kê), đã ghi rõ trong báo cáo.
+- Thuật toán so với tối ưu đã chứng minh (15 bài x 20 seed): **GA + tìm kiếm cục bộ 300/300**, GA 294/300, **NSGA-II
+  213/300** (kém ở các ca có D16, D26; vẫn đúng số lớp 298/300, biên thấp hơn <= 2.5 %). Cắt thuần 0.125 mm: GA+LS 9/20
+  tới phương án tốt nhất đã biết, 20/20 ở 42 lớp. Một lần chạy 2-20 s; cả 960 lần chạy + tìm kiếm chính xác 29.5 phút
+  (3 tiến trình).
+- % giảm khối lượng so với tựa đẳng hướng (cùng mô hình mất ổn định), trước -> sau (* = bản trước chưa xét cắt, không hợp lệ):
+
+  | ca | lớp 0.125 mm | lớp 0.18288 mm |
+  |---|---|---|
+  | C1 kéo một phương | -50 % -> -50 % (24/48) | -50 % -> -50 % (16/32) |
+  | C2 kéo hai phương | -37.5 % -> -37.5 % (20/32) | -41.7 % -> -41.7 % (14/24) |
+  | C3 nén một phương | -16.7 % -> -16.7 % (20/24) | -12.5 % -> -12.5 % (14/16) |
+  | C4 nén hai phương | -8.3 % -> -8.3 % (22/24) | -33.3 % -> -33.3 % (16/24) |
+  | C5 cắt thuần | -25 %* (12/16) -> **-25 % (42/56)** | -25 %* (12/16) -> **-30 % (28/40)** |
+  | C6 kéo + cắt | -25 %* -> -25 % (24/32) | -33.3 %* -> -33.3 % (16/24) |
+  | C7 nén + cắt | -16.7 %* -> -16.7 % (20/24) | -12.5 %* -> -12.5 % (14/16) |
+  | C8 tải rất lớn | không khả thi -> **không khả thi <= 64 lớp** (tựa đẳng hướng 104) | -11.1 %* -> -11.1 % (64/72) |
+
+  Phương án cắt thuần 12 lớp cũ chỉ chịu 2.6 % tải (0.125 mm). Cảnh báo: tối ưu dùng chiều Nxy đề cho; Nxy đổi chiều
+  -> biên cắt thuần 1.59 -> 0.56 (0.125 mm), 1.52 -> 0.51 (0.18288 mm); nén + cắt 1.75 -> 1.49.
+- Le Riche & Haftka giữ giả định gốc (công thức đóng, bỏ qua D16/D26): chạy lại, mọi giá trị trùng bản trước (3973.01,
+  9998.19, 13518.66; bài 1995 n* = 48). MATLAB tính lại 51/51 phương án tối ưu mới đạt (ABD <= 1.7e-15, ứng suất
+  <= 3.1e-15). pytest 91/91 (78 cũ + 13 mới). Bảng / hình cũ giữ trong `results/before_ritz/`, `figures/before_ritz/`.
+
+**Việc 2 - lỗi nhỏ của demo** (trên main):
+- `run_demo.py`: docstring raw, hết `SyntaxWarning: invalid escape sequence '\l'`.
+- Lời giải thích CLT: LLM nhận từng đại lượng kèm tên, đơn vị, ý nghĩa; `llm.check_meaning` kiểm tra mỗi con số được
+  gọi đúng loại đại lượng (Anh + Việt; ABD(1,1) là độ cứng, không đi với load/capacity/tải/sức chịu), kết luận an toàn
+  và so sánh với 1 khớp chỉ số phá hủy; sai -> hỏi lại 1 lần -> bản dựng sẵn bằng Python (có ghi chú).
+  30/10: sửa thêm 1 báo nhầm ("the reciprocal of the failure index ... is below 1" bị coi là nói về chỉ số phá hủy);
+  bản cũ còn bỏ sót 2 câu sai cùng kiểu. `test_explain_checks.py` 73/73.
+- RAG: `rag.check_citations` - mỗi số hiệu báo cáo phải là nguồn của vật liệu trong cùng câu / mệnh đề; sai -> hỏi lại
+  1 lần -> câu trả lời dựng sẵn từ dữ liệu.
+- Kết quả gemma3: 44 đề **28/28 + 16/16** (không đổi); RAG **12/12 + 6/6** (trước 11/12 + 5/6). Giải thích gemma3
+  (30/10): 42 đề tiếng Anh 39 đạt ngay + 3 dựng sẵn (cả 3 là lỗi thật: gọi hệ số an toàn là "a load of 480.6", ghi
+  "unsafe"); 8 đề tiếng Việt 4 + 2 hỏi lại + 2 dựng sẵn (lỗi thật: chỉ số 0.01273 "lớn hơn 1"; gọi chỉ số phá hủy là
+  "hệ số suy giảm"). Không còn câu gán sai ý nghĩa hay trích sai nguồn được in ra.
+- `run_demo.bat --offline`: 6 lần ngày 28/10 + 2 lần ngày 30/10, đều OK (lần đầu sau khi khởi động máy chậm: nạp gemma3
+  46 s); có mạng: 3 lần, OK.
+
+**Hugging Face trong đợt này: 39 lần gọi** (giới hạn 100; dòng 108-146 của `logs\hf_calls.log`): 24 lần ngày 28/10
+(2 lần run_demo có mạng, 12 lần mỗi lần), 3 lần ngày 30/10 thử lời giải thích đề 2, 12 lần demo có mạng cuối cùng.
+
+## Tài liệu thuyết trình (cập nhật 30/10): XONG - lưu ngoài repo
+- Slide (19 trang, song ngữ, phần tối ưu Lớp 1 ở slide 13-16) và kịch bản thuyết trình (.md và .docx khớp nhau) được
+  giữ trên máy người trình bày, không đưa vào repo (`.gitignore` chặn *.pptx, KICH_BAN_THUYET_TRINH.*, *.pdf).
+- 30/10: ngày 01/11/2026; slide 13-16 có mất ổn định do cắt (Ritz, D16, D26), kiểm chứng k_s, % giảm khối lượng cho cả
+  8 ca (hai độ dày lớp), cảnh báo chiều lực cắt; slide 17-18 cập nhật hạn chế / bước tiếp theo. Bố cục kiểm tra bằng
+  ảnh xuất từ PowerPoint.
 
 ## Lớp 1 - Tối ưu thứ tự xếp lớp (28/10): XONG
 Mốc trước khi làm: tag `before-optimization`. Chỉ THÊM file trong `python/optimization/` và
@@ -37,11 +97,11 @@ Thư viện mới (venv): pymoo 0.6.2, pytest 9.1.1, matplotlib 3.11.2 (ghi tron
   Le Riche & Haftka: trùng tối ưu công bố 3973.01 / 9998.19 / 13518.66, Ny/Nx = 0.25 tìm được 12678.78 (+0.031 %
   so với thiết kế GA trong luận án); bài 1995: n* = 48 lớp và thiết kế ca 2, 3 trùng nguyên văn bài báo.
   pytest: 78/78 đạt (gồm 2 test MATLAB). MATLAB tính lại 83 phương án tối ưu cuối: 83/83 đạt, sai số <= 3.1e-15.
-- Giảm khối lượng so với tựa đẳng hướng (lớp 0.125 mm, ca không có lực cắt): -50 % kéo một phương, -37.5 % kéo hai
-  phương, -16.7 % nén một phương, -8.3 % nén hai phương; tải rất lớn: không khả thi <= 64 lớp. Ca có lực cắt: mô hình
-  chính chưa có mất ổn định do cắt nên không dùng con số giảm khối lượng làm kết quả.
-- Hạn chế chính: công thức đóng không có mất ổn định do cắt (Ritz: phương án cắt thuần 12 lớp chỉ chịu 2.3 % tải,
-  cần 46 lớp); bỏ qua D16/D26 (tỉ số <= 0.15); bài LC3 1995 "đánh lừa GA" chỉ 3/20.
+- (Bản 28/10 sáng, công thức đóng - đã được thay bằng mục "Đợt mất ổn định do cắt" ở trên.) Giảm khối lượng so với
+  tựa đẳng hướng (lớp 0.125 mm, ca không có lực cắt): -50 % kéo một phương, -37.5 % kéo hai phương, -16.7 % nén một
+  phương, -8.3 % nén hai phương; tải rất lớn: không khả thi <= 64 lớp. Ca có lực cắt: bản này chưa có mất ổn định do cắt.
+- Hạn chế của bản 28/10 sáng (nay đã xử lý): công thức đóng không có mất ổn định do cắt, bỏ qua D16/D26. Còn lại: bài
+  LC3 1995 "đánh lừa GA" chỉ 3/20.
 - Sửa trong lúc làm: NSGA-II của pymoo làm mất tối ưu khi nhiều thiết kế cùng (số lớp, biên) -> khoảng cách chen chúc
   tính trên vector mục tiêu khác nhau (test hồi quy); GA thêm tìm kiếm cục bộ + bước bớt lớp (LC2 1995: 6/20 -> 20/20).
 - Sự cố máy (28/10 ~02:10-02:18, ĐÃ XỬ LÝ): sau một lần chạy song song 16 tiến trình bị lỗi cấp phát bộ nhớ OpenBLAS,
@@ -160,3 +220,17 @@ Log trong logs\ (không commit); bản sao dự phòng: deliverables/demo_log_ba
 - 28/10 sau đó  Slide 19 trang + kịch bản (phần tối ưu); pytest module tối ưu 78/78.
 - 28/10 13:3x  Chuyển sang repo CompositeAgent_LLM: lịch sử không còn slide / kịch bản thuyết trình; demo.py PASS,
   pytest 78/78 trước khi push.
+- 28/10 15:08  Tag `before-shear-buckling`. Việc 2 (SyntaxWarning, kiểm tra ý nghĩa, kiểm tra trích dẫn) trên main;
+  nhánh `shear-buckling` cho Việc 1.
+- 28/10 15:58  Kiểm chứng mô hình Ritz có D16, D26: tất cả đạt (k_s 9.328, tấm dài 5.351, Nemeth 1992 cùng xu hướng).
+- 28/10 16:09  Commit Việc 2 trên main (44 đề gemma3 28/28 + 16/16, RAG 12/12 + 6/6).
+- 28/10 16:00-16:30  Chạy lại thí nghiệm Lớp 1 (3 tiến trình, 29.5 phút), MATLAB 51/51, Le Riche & Haftka chạy lại trùng.
+- 28/10 16:39  pytest 91/91 trên nhánh -> gộp `shear-buckling` vào main; trên main: pytest 91/91, demo.py PASS,
+  run_demo --offline và có mạng OK.
+- 28/10 16:42  Dừng giữa chừng (hết quota) khi đang sửa slide 13-18.
+- 30/10 09:0x  Máy đã khởi động lại (29/10 17:57); không có tiến trình Python sót. Sửa 1 báo nhầm của bộ kiểm tra so
+  sánh với 1; đánh giá lại gemma3 (42 + 8 đề) không giảm; test_explain_checks 73/73.
+- 30/10 09:1x-09:3x  Slide 13-18 và kịch bản (.md / .docx) cập nhật theo kết quả mới, ngày thuyết trình 01/11.
+- 30/10 09:3x  Kiểm tra cuối trên main: pytest 91/91, demo.py PASS (0.002381 / 4), test_checks ALL PASS, không còn
+  SyntaxWarning, run_demo.bat --offline OK (47 s) và có mạng OK (20 s, cả 3 lời giải thích của HF qua kiểm tra);
+  HF đợt này 39 lần.
