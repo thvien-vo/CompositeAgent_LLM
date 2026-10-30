@@ -167,6 +167,9 @@ def explanations():
           "both-direction case described as one direction")
     check(not design.design_explanation_issues("The shear was checked for the given sign only.", one),
           "correct one-direction sentence")
+    # gemma3, 30/10/2026: "a load multiplier of X" is the meaning of a reserve factor, not a load
+    t = f"The governing criterion is buckling, which at a load multiplier of {m:.4g} gives the margin."
+    check(not design.design_explanation_issues(t, best), "'load multiplier' names a reserve factor")
     # gpt-oss-120b (Hugging Face), 30/10/2026: data copied as "name = value"; a report number is not a quantity
     fixed = solved("Which 24-ply IM7/8552 laminate has the largest safety margin under Nx = -100 kN/m and "
                    "Nxy = 30 kN/m?")

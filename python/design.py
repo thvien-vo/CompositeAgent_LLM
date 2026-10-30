@@ -667,7 +667,8 @@ DATA (name = value unit - meaning):
 Write 4 to 7 sentences: the stacking sequence and its number of plies (with the plies of each angle), whether the
 result is a proven optimum or the best design found, the safety margin and the criterion that governs it, the
 reserve factors of the criteria, and the comparison with the quasi-isotropic laminate. If the design does not meet
-the safety factor, say so clearly.
+the safety factor, say so clearly. Write natural sentences (do not copy the data lines as "name = value") and answer
+only with the explanation, without an introduction.
 """
 
 
@@ -681,8 +682,8 @@ def _explain_prompt(r, lang):
 DESIGN_KIND_WORDS = {
     "ply": ["ply", "plies", "layer", "layers", "lamina", "laminae", "lớp"],
     "safety_factor": ["reserve factor", "reserve factors", "safety factor", "factor of safety", "safety margin",
-                      "margin", "rf", "times", "multiplied by", "hệ số dự trữ", "biên an toàn", "hệ số an toàn",
-                      "lần", "biên"],
+                      "margin", "rf", "times", "multiplied by", "load multiplier", "multiplier", "hệ số dự trữ",
+                      "biên an toàn", "hệ số an toàn", "hệ số nhân tải", "lần", "biên"],
     "buckling": ["buckling", "buckling load factor", "load factor", "critical load", "eigenvalue",
                  "mất ổn định", "hệ số tải tới hạn", "tải tới hạn", "hệ số tải"],
     "percent": ["fewer", "reduction", "saving", "lighter", "less", "ít hơn", "giảm", "nhẹ hơn"],
