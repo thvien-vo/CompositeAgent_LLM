@@ -21,12 +21,15 @@ Mốc: tag `before-design-agent` (= c799a34). Làm trên nhánh `design-agent`, 
 giữ nhánh main để luôn chạy được). Bộ đếm HF đầu đợt: 146 dòng trong `logs\hf_calls.log` (giới hạn đợt: 100 lần
 -> tối đa dòng 246).
 Kế hoạch (đánh dấu [x] khi xong):
-- [ ] 1. Bộ đề thử thiết kế (viết TRƯỚC khi code): `python/benchmark_design.py`.
-- [ ] 2. Tối ưu: tùy chọn `shear_both_signs` (độ bền + mất ổn định cho +Nxy và -Nxy), pytest; mặc định tắt.
-- [ ] 3. Bảng một chiều / hai chiều lực cắt cho các ca có cắt (báo cáo Lớp 1); kiểm tra kết quả cũ không đổi.
-- [ ] 4. Bộ phân loại yêu cầu (`router.py`): 44 đề + 18 câu RAG phải đúng 100 %.
-- [ ] 5. Đọc yêu cầu thiết kế + chạy tối ưu + kiểm tra lại (MATLAB, Ritz đa thức, tựa đẳng hướng) (`design.py`).
-- [ ] 6. Giải thích bằng LLM + kiểm tra số liệu / ý nghĩa + bản dựng sẵn.
+- [x] 1. Bộ đề thử thiết kế (viết TRƯỚC khi code, commit 3a979fd): `python/design_cases.py` (21 yêu cầu).
+- [x] 2. Tối ưu: tùy chọn `shear_both_signs` (commit 3b5f889), pytest 102/102 (91 cũ + 11 mới); mặc định tắt.
+- [ ] 3. Bảng một chiều / hai chiều lực cắt: `experiments/shear_both.py` (chưa chạy). Đang chạy lại run_cases
+      (--recompute, 2 tiến trình) + Le Riche & Haftka với tùy chọn tắt -> log `logs\da_rerun_*.log`; pha tìm kiếm
+      chính xác đã trùng 16/16 bài; còn so CSV sau khi GA xong (git diff trong worktree).
+- [x] 4. Bộ phân loại `router.py`: 44/44 đề phân tích, 18/18 câu RAG, 20/20 đề thiết kế (DS20 cần LLM xác nhận).
+- [x] 5. `design.py` (đọc + tối ưu `api.design_search` + kiểm tra MATLAB / Ritz đa thức / tựa đẳng hướng).
+- [x] 6. Giải thích + kiểm tra ý nghĩa + bản dựng sẵn; `test_design_checks.py` ALL PASS (commit b89e0b7).
+      Tiếp: chạy `benchmark_design.py --backend ollama --explain` (lần 1 đang chạy với mã trước khi sửa bộ kiểm tra).
 - [ ] 7. Chạy bộ đề thiết kế (gemma3 toàn bộ, HF trong giới hạn).
 - [ ] 8. run_demo: phần Design, --interactive; log dự phòng; README.
 - [ ] 9. Kiểm tra cuối, gộp vào main, push; slide + kịch bản (sao lưu vào `D:\CompositeAgent_slide_backups\`).
