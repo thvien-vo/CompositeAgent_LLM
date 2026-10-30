@@ -1,0 +1,9 @@
+﻿Case,Load case,"t = 0.125 mm, GA: runs at optimum","t = 0.125 mm, GA: median designs evaluated","t = 0.125 mm, NSGA-II: runs at optimum","t = 0.125 mm, NSGA-II: median designs evaluated","t = 0.125 mm, GA + LS: runs at optimum","t = 0.125 mm, GA + LS: median designs evaluated","t = 0.183 mm, GA: runs at optimum","t = 0.183 mm, GA: median designs evaluated","t = 0.183 mm, NSGA-II: runs at optimum","t = 0.183 mm, NSGA-II: median designs evaluated","t = 0.183 mm, GA + LS: runs at optimum","t = 0.183 mm, GA + LS: median designs evaluated"
+C1,Uniaxial tension,20/20,636,20/20,458,20/20,1259,20/20,497,20/20,360,20/20,494
+C2,Biaxial tension,20/20,330,20/20,458,20/20,502,20/20,315,20/20,319,20/20,307
+C3,Uniaxial compression,20/20,883,11/20,4359,20/20,737,20/20,464,14/20,5528,20/20,259
+C4,Biaxial compression,19/20,4086,2/20,7813,20/20,983,20/20,651,18/20,3742,20/20,401
+C5,Pure shear,0/20‡,n/a,0/20‡,n/a,9/20‡,n/a,15/20,6913,3/20,6834,20/20,1637
+C6,Tension + shear,20/20,235,20/20,179,20/20,654,20/20,266,20/20,300,20/20,270
+C7,Compression + shear,20/20,1837,5/20,5413,20/20,1224,20/20,728,0/20,–,20/20,276
+C8,Very large load,20/20§,211,20/20§,1252,20/20§,2340,20/20,211,20/20,1565,20/20,4768

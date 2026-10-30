@@ -1,0 +1,5 @@
+﻿Case,Plies,N_y/N_x,λ_cr source (lb/in),λ_cr this study (lb/in),Difference (%),Reference value from
+LH-A,64,1,3973.01,3973.01,+0.00009%,"Le Riche (1994), Table 3.2 (5 optima listed)"
+LH-B,48,0.5,9998.19,9998.20,+0.00009%,"Le Riche (1994), Table 3.1 (global optimum and next best)"
+LH-C,48,0.25,12674.84,12678.78,+0.03106%,"Le Riche (1994), Fig. 3.12 (GA design; no table for this ratio)"
+LH-D,48,0.125,13518.66,13518.66,+0.00000%,"Le Riche (1994), Table 3.3 (multiple optima, strain critical)"

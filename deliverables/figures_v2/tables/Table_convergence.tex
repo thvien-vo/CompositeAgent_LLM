@@ -1,0 +1,23 @@
+% requires \usepackage{booktabs}
+\begin{table}[htbp]
+\centering
+\caption{Performance of the algorithms against the exact optimum.}
+\label{tab:convergence}
+\begin{tabular}{llrrrrrr}
+\toprule
+& & \multicolumn{3}{c}{$t = 0.125$ mm} & \multicolumn{3}{c}{$t = 0.183$ mm} \\ \cmidrule(lr){3-5}\cmidrule(lr){6-8}
+Case & Load case & GA & NSGA-II & GA + LS & GA & NSGA-II & GA + LS \\
+\midrule
+C1 & Uniaxial tension & 20/20 (636) & 20/20 (458) & 20/20 (1259) & 20/20 (497) & 20/20 (360) & 20/20 (494) \\
+C2 & Biaxial tension & 20/20 (330) & 20/20 (458) & 20/20 (502) & 20/20 (315) & 20/20 (319) & 20/20 (307) \\
+C3 & Uniaxial compression & 20/20 (883) & 11/20 (4359) & 20/20 (737) & 20/20 (464) & 14/20 (5528) & 20/20 (259) \\
+C4 & Biaxial compression & 19/20 (4086) & 2/20 (7813) & 20/20 (983) & 20/20 (651) & 18/20 (3742) & 20/20 (401) \\
+C5 & Pure shear & 0/20$^{\ddagger}$ (n/a) & 0/20$^{\ddagger}$ (n/a) & 9/20$^{\ddagger}$ (n/a) & 15/20 (6913) & 3/20 (6834) & 20/20 (1637) \\
+C6 & Tension + shear & 20/20 (235) & 20/20 (179) & 20/20 (654) & 20/20 (266) & 20/20 (300) & 20/20 (270) \\
+C7 & Compression + shear & 20/20 (1837) & 5/20 (5413) & 20/20 (1224) & 20/20 (728) & 0/20 (–) & 20/20 (276) \\
+C8 & Very large load & 20/20$^{\S}$ (211) & 20/20$^{\S}$ (1252) & 20/20$^{\S}$ (2340) & 20/20 (211) & 20/20 (1565) & 20/20 (4768) \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+{\footnotesize Entries: runs ending at the optimum out of 20 (median distinct designs evaluated to reach it). $^{\ddagger}$ No proven optimum: runs ending at the best known design; evaluations not recorded. $^{\S}$ No feasible design: runs ending at the largest-margin 64-ply design.}
+\end{table}

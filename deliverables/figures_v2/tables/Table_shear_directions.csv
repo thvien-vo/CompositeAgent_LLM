@@ -1,0 +1,9 @@
+﻿Case,t (mm),One direction: n*,One direction: RF_min,RF_min if N_xy reverses,One direction: saving (%),Both directions: n,Both directions: RF_min,Both directions: status,Both directions: saving (%)
+C5,0.125,42,1.5915,0.5558,25.0,46,1.5975,best found (GA + local search),17.9
+C5,0.183,28,1.5197,0.5136,30.0,32,1.6911,best found (GA + local search),20.0
+C6,0.125,24,1.6565,1.6565,25.0,24,1.6565,optimal,25.0
+C6,0.183,16,1.6979,1.6979,33.3,16,1.6979,optimal,33.3
+C7,0.125,20,1.7513,1.4932,16.7,20,1.6876,optimal,16.7
+C7,0.183,14,1.8243,1.5569,12.5,14,1.7437,optimal,12.5
+C8,0.125,> 64,1.0427,1.0427,n/a,> 64,1.0427,infeasible,n/a
+C8,0.183,64,1.5255,1.5255,11.1,64,1.5255,optimal,11.1
