@@ -38,6 +38,24 @@ Kế hoạch (đánh dấu [x] khi xong):
       Bản sao lưu slide + kịch bản: `D:\CompositeAgent_slide_backups\before_design_20261030\` (đã làm).
 - [ ] 9. Kiểm tra cuối, gộp vào main, push; slide + kịch bản (sao lưu vào `D:\CompositeAgent_slide_backups\`).
 
+TRẠNG THÁI KHI DỪNG (30/10 ~11:10, hết hạn mức) - CHƯA gộp vào main, main vẫn = c799a34 (chạy được):
+- HF design benchmark: **21/21** (40 lần gọi HF, bộ đếm 146 -> 186). 4 lời giải thích bị đổi sang bản dựng sẵn là
+  báo nhầm do cách trình bày dữ liệu (HF chép "design meets the safety factor = NO"; số hiệu NCP‑RP với gạch nối
+  không ngắt) -> đã sửa (dòng "verdict", che số hiệu báo cáo, phủ định "= NO"); kiểm tra lại offline 8/8 văn bản bị
+  từ chối nay đều qua (không gọi thêm HF). test_design_checks / test_explain_checks / test_checks: ALL PASS.
+- Chạy lại với gemma3 sau thay đổi: 44 đề 28/28 + 16/16, RAG 12/12 + 6/6 (không giảm).
+- Đang chạy nền khi dừng: run_cases --recompute (tùy chọn tắt) + leriche_haftka_exp, log `logs\da_rerun_*.log`
+  (pha tìm kiếm chính xác đã trùng 16/16 bài). Bước tiếp: `git -C D:\CompositeAgent_da diff --stat
+  deliverables/optimization/results` -> chỉ được khác cột thời gian; nếu xong thì `git checkout` các file kết quả
+  (giữ nguyên kết quả đã công bố) hoặc commit nếu chỉ khác thời gian.
+- Còn lại: (a) chạy `python -m optimization.experiments.shear_both` (3 tiến trình) -> bảng một/hai chiều, thêm mục
+  4.8 vào BAO_CAO_LOP1.md + mục 0/6/7/9; (b) run_demo.bat có mạng + --offline trên nhánh (phần 4 Design: thời gian
+  <= 2 / 4 phút), cập nhật log dự phòng `deliverables/demo_log_backup_*.txt`; (c) pytest đầy đủ (102), demo.py;
+  (d) gộp vào main, kiểm tra lại trên main, push main + tag before-design-agent; (e) slide: script
+  `scratchpad\edit_deck_design.py` (2 slide mới 17-18, cần file facts.json với số liệu) + kịch bản (nháp
+  `scratchpad\design_script_draft.md`); (f) dọn tiến trình Python.
+- HF còn lại trong đợt: tối đa 60 lần (2 lần run_demo có mạng ~18 lần mỗi lần).
+
 ## Đợt "mất ổn định do cắt + sửa demo" (28/10 chiều - 30/10): XONG
 Mốc trước khi làm: tag `before-shear-buckling`. Việc 1 làm trên nhánh `shear-buckling` (worktree `D:\CompositeAgent_sb`),
 gộp vào main (commit 62885cb) sau khi mọi kiểm chứng đạt; Việc 2 làm trực tiếp trên main.

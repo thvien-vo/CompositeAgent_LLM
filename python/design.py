@@ -587,11 +587,16 @@ CRIT_VI = {"max_stress": "Max Stress", "tsai_wu": "Tsai-Wu", "buckling": "mất 
 
 def status_text(r, lang="en"):
     s = r["search"]
+    if s["proven"] and r["spec"]["objective"] == "max_margin":
+        n = r["n_plies"]
+        return (f"proven largest safety margin for {n} plies (exact search)" if lang == "en" else
+                f"biên an toàn lớn nhất đã chứng minh với {n} lớp (tìm kiếm chính xác)")
     if s["proven"]:
         if s["status"] == "optimal":
             return "proven optimum (exact search)" if lang == "en" else "tối ưu đã chứng minh (tìm kiếm chính xác)"
-        return ("proven infeasible within the ply range (exact search)" if lang == "en" else
-                "đã chứng minh là không khả thi trong khoảng số lớp đã cho (tìm kiếm chính xác)")
+        return ("proven infeasible within the ply range (exact search); shown: the design with the largest margin"
+                if lang == "en" else "đã chứng minh là không khả thi trong khoảng số lớp đã cho (tìm kiếm chính "
+                "xác); in ra: phương án có biên lớn nhất")
     if s["status"] == "best found":
         if s.get("n_proven"):
             return ("best design found; its ply count is proven minimal" if lang == "en" else
@@ -616,7 +621,8 @@ def design_data(r):
             ("result status", status_text(r), "", "proven optimum or best design found"),
             ("safety margin", round(r["margin"], 4), "", "smallest reserve factor over all plies and criteria"),
             ("required safety factor", sp["safety_factor"], "", "the margin must be at least this"),
-            ("design meets the safety factor", "yes" if r["feasible"] else "NO", "", "")]
+            ("verdict", "the design meets the safety factor" if r["feasible"] else
+             "the design does NOT meet the safety factor", "", "")]
     for c in ("max_stress", "tsai_wu", "buckling"):
         v = r["rf"].get(c)
         if v is None:
@@ -746,6 +752,9 @@ _GOVERNED_RE = (r"(?:governed|controlled|limited|determined|decided|driven)\s+by
 def design_explanation_issues(text, r):
     """Every number must be one of the data and be named as what it is (English or Vietnamese); the verdicts
     (feasible or not, proven or not, governing criterion) must agree with the result."""
+    # report numbers, pages and years of the material source are names, not quantities
+    text = re.sub(r"NCP[-‑–]RP[-‑–][\w‑–-]+(?:\s+Rev\s+[\w-]+)?", "report", text)
+    text = re.sub(r"\bp\.\s*\d+|\(\d{4}\)", "", text)
     issues = llm.check_meaning(text, None, None, None, table=_value_table(r), vocab=_vocab(), report_unknown=True,
                                noun_after=True)
     t = llm._normalize(text).lower()
@@ -753,8 +762,10 @@ def design_explanation_issues(text, r):
         issues.append(f"the design meets the safety factor, but the text says '{re.search(_NOT_FEASIBLE_RE, t).group()}'")
     if not r["feasible"]:
         for m in re.finditer(_FEASIBLE_RE, t):
+            after = t[m.end():m.end() + 20]
             if not re.search(r"\b(?:not|neither|nor|none|no|never|fails?|không|chưa)\b", t[max(0, m.start() - 40):
-                                                                                             m.start()]):
+                                                                                             m.start()]) \
+                    and not re.match(r"[\w\s]*?(?:=|:)\s*(?:no|không)\b", after):    # "... meets the safety factor = NO"
                 issues.append(f"the design does NOT meet the safety factor, but the text says '{m.group()}'")
                 break
     if r["spec"]["loads"]["Nxy"]:

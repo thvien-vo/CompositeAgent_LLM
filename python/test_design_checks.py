@@ -162,6 +162,19 @@ def explanations():
           "both-direction case described as one direction")
     check(not design.design_explanation_issues("The shear was checked for the given sign only.", one),
           "correct one-direction sentence")
+    # gpt-oss-120b (Hugging Face), 30/10/2026: data copied as "name = value"; a report number is not a quantity
+    fixed = solved("Which 24-ply IM7/8552 laminate has the largest safety margin under Nx = -100 kN/m and "
+                   "Nxy = 30 kN/m?")
+    check(fixed["search"]["proven"] and not fixed["feasible"], "fixed ply count, proven largest margin < SF")
+    t = (f"The safety margin = {fixed['margin']:.4f} is below the required safety factor = 1.5, and therefore "
+         "design meets the safety factor = NO.")
+    check(not design.design_explanation_issues(t, fixed), "'meets the safety factor = NO' is a negation")
+    t = ("The ply properties are measured (measured: NCAMP NCP-RP-2009-028 Rev B, p.37) and the laminate has "
+         f"{proven['n_plies']} plies.")
+    check(not design.design_explanation_issues(t, proven), "a report number is not a quantity")
+    text, _ = design.prebuilt_explanation(fixed, "en")
+    check("largest safety margin for 24 plies" in text and not design.design_explanation_issues(text, fixed),
+          f"fixed ply count: status and pre-built text\n    {text}")
     print("explanations: wrong sentences caught, correct ones and pre-built texts pass")
 
 
