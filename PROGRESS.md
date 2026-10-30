@@ -29,9 +29,13 @@ Kế hoạch (đánh dấu [x] khi xong):
 - [x] 4. Bộ phân loại `router.py`: 44/44 đề phân tích, 18/18 câu RAG, 20/20 đề thiết kế (DS20 cần LLM xác nhận).
 - [x] 5. `design.py` (đọc + tối ưu `api.design_search` + kiểm tra MATLAB / Ritz đa thức / tựa đẳng hướng).
 - [x] 6. Giải thích + kiểm tra ý nghĩa + bản dựng sẵn; `test_design_checks.py` ALL PASS (commit b89e0b7).
-      Tiếp: chạy `benchmark_design.py --backend ollama --explain` (lần 1 đang chạy với mã trước khi sửa bộ kiểm tra).
-- [ ] 7. Chạy bộ đề thiết kế (gemma3 toàn bộ, HF trong giới hạn).
-- [ ] 8. run_demo: phần Design, --interactive; log dự phòng; README.
+- [~] 7. Bộ đề thiết kế: gemma3 lần 1 20/21 (DS11: LLM ghi "at most 24 plies" thành số lớp cố định -> sửa: giới hạn
+      Python đọc được thắng; thêm 5 sửa lỗi ý nghĩa tìm được khi đọc lời giải thích), lần 2 **21/21** (giải thích 14
+      LLM / 1 hỏi lại / 0 dựng sẵn, đọc tay 15 lời giải thích: đúng). HF: đang chạy (`logs\da_bench_design_hf.txt`).
+      Chạy lại 44 đề + RAG với gemma3: đang chạy (`logs\da_bench_old28.txt`, `da_bench_new.txt`, `da_rag_*.txt`).
+- [~] 8. run_demo phần 4 "Design" (2 yêu cầu, commit 0a2060d), --interactive (mục 3 và a = tự phân loại), README:
+      xong; còn chạy thử run_demo có mạng / --offline và log dự phòng.
+      Bản sao lưu slide + kịch bản: `D:\CompositeAgent_slide_backups\before_design_20261030\` (đã làm).
 - [ ] 9. Kiểm tra cuối, gộp vào main, push; slide + kịch bản (sao lưu vào `D:\CompositeAgent_slide_backups\`).
 
 ## Đợt "mất ổn định do cắt + sửa demo" (28/10 chiều - 30/10): XONG
