@@ -62,7 +62,13 @@ main sau khi mọi kiểm tra đạt.
   -> [-45/45_2/-45/45/-45_2/45/90/0_2/90]s, 24 lớp, biên 1,699 (mất ổn định), tựa đẳng hướng 32 lớp (-25 %);
   (2) carbon/epoxy (ML), Nx = -20 kN/m -> 26 lớp, biên 1,658, tựa đẳng hướng 32 lớp (-18,8 %). Thời gian phần 4:
   7,9 s có mạng, 17,7 s offline (giới hạn 2 / 4 phút). `--interactive`: mục 3 = yêu cầu thiết kế, a = tự phân loại.
-- HF trong đợt này: xem mục kết thúc dưới (đầu đợt 146 dòng).
+- **Gộp vào main** (commit 722086e) sau khi mọi kiểm tra trên nhánh đạt; kiểm tra lại trên main: pytest 102/102,
+  demo.py PASS (0,002381 / lớp 4), test_checks / test_explain_checks / test_design_checks ALL PASS, không
+  SyntaxWarning, `run_demo.bat --offline` OK (65 s, phần 4: 17,1 s) và có mạng OK (28 s, phần 4: 8,9 s). Log dự phòng
+  cập nhật: `deliverables/demo_log_backup_online.txt`, `demo_log_backup_offline.txt`.
+- **Hugging Face trong đợt này: 72 lần gọi** (giới hạn 100; dòng 147-218 của `logs\hf_calls.log`): 40 bộ đề thiết kế,
+  16 demo có mạng trên nhánh, 16 demo có mạng trên main.
+- Slide và kịch bản (ngoài repo): bản sao lưu trước khi sửa ở `D:\CompositeAgent_slide_backups\before_design_20261030\`.
 
 ## Đợt "mất ổn định do cắt + sửa demo" (28/10 chiều - 30/10): XONG
 Mốc trước khi làm: tag `before-shear-buckling`. Việc 1 làm trên nhánh `shear-buckling` (worktree `D:\CompositeAgent_sb`),

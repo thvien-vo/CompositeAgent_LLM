@@ -1,4 +1,4 @@
-COMPOSITE AGENT DEMO  -  2026-10-27 22:09  -  log: D:\CompositeAgent\logs\demo_20261027_220921.log
+COMPOSITE AGENT DEMO  -  2026-10-30 14:36  -  log: D:\CompositeAgent\logs\demo_20261030_143623.log
 
 ==============================================================================
   PART 0 - Environment check
@@ -29,7 +29,7 @@ MATLAB engine is ready.
 [1/4] LLM reads the problem ...
 [llm.py] check failed (2 ply thicknesses were given but the layup '[0/45/-45/90]s' has 8 plies) -> asking the LLM to correct its answer
 [llm.py] note: ignored a list of 6 ply thicknesses (layup has 8 plies)
-  (Ollama (gemma3:4b), 21.7 s)
+  (Ollama (gemma3:4b), 14.4 s)
   material : CFRP
   plies    : 8  angles = [0.0, 45.0, -45.0, 90.0, 90.0, -45.0, 45.0, 0.0]
   thickness: [0.125] mm per ply, total 1 mm
@@ -50,21 +50,21 @@ MATLAB engine is ready.
   safety factor     = 420.0   -> SAFE
 
 [4/4] LLM explains the result ...
-  (Ollama (gemma3:4b), 2.6 s)
+  (Ollama (gemma3:4b), 3.1 s)
 
-Total time: 24.5 s
+Total time: 17.7 s
 
 ===== EXPLANATION (LLM) =====
-The Classical Laminate Theory calculation indicates a maximum failure index of 0.002381 across ply 4, which is oriented at 90.0 degrees. This ply is critical due to the highest calculated transverse stress of 0.1518 MPa, which is compared to the transverse tensile strength of 63.76 MPa. The governing mode is transverse (sigma2, tension). The laminate is classified as safe with a safety factor of 420.0, calculated as the inverse of the failure index. The program computed a load of 59400000.0 N/m, suggesting a significant load capacity.
+Based on the Classical Laminate Theory calculation, the maximum failure index is 0.002381, indicating that the laminate is currently SAFE as this value is less than 1. The critical ply is number 4, with a fiber angle of 90 degrees, and it exhibits a governing stress of 0.1518 MPa, which is a transverse (sigma2, tension) stress component compared with a transverse tensile strength of 63.76 MPa. The failure index for this ply is 0.002381, calculated as |0.1518 MPa| / 63.76 MPa. The safety factor is 420, derived from the inverse of the maximum failure index, signifying a substantial margin of safety before the first ply fails. Per-ply stresses show that the ply with a 90-degree angle has the highest failure index of 0.002381.
 
-[guardrail] every number in the explanation matches the CLT data
+[guardrail] every number in the explanation matches the CLT data and is named as what it is
 
 ----- Problem 2/4: Vietnamese, glass fibre, kN/m, decimal comma, bending moment - high load, failure expected
   "Tấm composite sợi thủy tinh/epoxy, xếp lớp [0/±45]s, mỗi lớp dày 0,15 mm. Tải trọng: Nx = 150 kN/m, Nxy = 40 kN/m, mô-men uốn My = 10 N.m/m."
 
 [1/4] LLM reads the problem ...
 [llm.py] note: ignored a list of 2 ply thicknesses (layup has 6 plies)
-  (Ollama (gemma3:4b), 3.9 s)
+  (Ollama (gemma3:4b), 3.5 s)
   material : GFRP
   plies    : 6  angles = [0.0, 45.0, -45.0, -45.0, 45.0, 0.0]
   thickness: [0.15] mm per ply, total 0.9 mm
@@ -87,19 +87,19 @@ The Classical Laminate Theory calculation indicates a maximum failure index of 0
 [4/4] LLM explains the result ...
   (Ollama (gemma3:4b), 3.0 s)
 
-Total time: 7.0 s
+Total time: 6.7 s
 
 ===== EXPLANATION (LLM) =====
-The Classical Laminate Theory calculation indicates that the laminate is not safe, with a maximum failure index of 1.096. Ply number 4, at an angle of -45.0 degrees, is the critical ply due to its failure index exceeding 1.0. The governing mode of failure is transverse (sigma2, tension) with a governing stress of 49.49 MPa, compared to the transverse tensile strength of 45.17 MPa. This failure index represents the ratio of the maximum stress in the laminate to the material strength. The resulting safety factor is 0.9127, signifying a low margin of safety. The program calculated a nominal ABD11 N/m load of 28660000.0 N/m, which is significantly higher than the laminate’s capacity.
+Based on the Classical Laminate Theory calculation, the maximum failure index is 1.096, indicating that the laminate is not safe and the first ply fails. The critical ply is number 4, with a fiber angle of -45 degrees, and its failure index is 1.096. This failure is governed by a transverse (sigma2, tension) stress of 49.49 MPa, compared with the transverse tensile strength (Yt) of 45.17 MPa of the ply material, resulting in a failure index of |49.49 / 45.17| = 1.096. Consequently, the safety factor is 0.9127, which is less than 1, confirming that the laminate is already failing.  ABD(1,1) = 2.866e+07 N/m is the in-plane extensional stiffness of the laminate in x.
 
-[guardrail] every number in the explanation matches the CLT data
+[guardrail] every number in the explanation matches the CLT data and is named as what it is
 
 ----- Problem 3/4: Named material IM7/8552 (measured NCAMP values), loads written in words
   "IM7/8552 laminate [0/±45/90]s, 0.131 mm per ply, under a tensile load of 20 kN/m along x and a shear force of 5 kN/m."
 
 [1/4] LLM reads the problem ...
 [llm.py] note: ignored a list of 3 ply thicknesses (layup has 8 plies)
-  (Ollama (gemma3:4b), 4.1 s)
+  (Ollama (gemma3:4b), 3.7 s)
   material : CFRP
   plies    : 8  angles = [0.0, 45.0, -45.0, 90.0, 90.0, -45.0, 45.0, 0.0]
   thickness: [0.131] mm per ply, total 1.048 mm
@@ -119,14 +119,14 @@ The Classical Laminate Theory calculation indicates that the laminate is not saf
   safety factor     = 25.19   -> SAFE
 
 [4/4] LLM explains the result ...
-  (Ollama (gemma3:4b), 3.1 s)
+  (Ollama (gemma3:4b), 3.0 s)
 
-Total time: 7.2 s
+Total time: 6.7 s
 
 ===== EXPLANATION (LLM) =====
-The Classical Laminate Theory calculation for this 8-ply CFRP laminate indicates a maximum failure index of 0.03969, occurring in ply 4 at an angle of 90.0 degrees. This ply is critical due to the governing mode being transverse (sigma2, tension) with a governing stress of 2.544 MPa, compared with the transverse tensile strength of 64.1 MPa. The failure index is calculated as |2.544| / 64.1 = 0.03969. The laminate is classified as safe with a safety factor of 25.19. The program identified plies 4 and 5 as having the same maximum failure index. This critical ply is vulnerable to transverse tension, as evidenced by the high sigma2 stress and the corresponding tau12 value.
+The Classical Laminate Theory calculation for this 8-ply CFRP laminate, subjected to in-plane forces, indicates a maximum failure index of 0.03969. Ply number 4, with a fiber angle of 90 degrees, is the critical ply, as it exhibits the highest failure index, which is equal to 2.544 MPa, the governing stress, compared with the transverse tensile strength of 64.1 MPa. This governing stress is a transverse (sigma2, tension) stress. The safety factor is 25.19, representing 1 divided by the maximum failure index, confirming the laminate’s current state of safety.  ABD(1,1) = 7.08e+07 N/m is the in-plane extensional stiffness of the laminate in x. Because the maximum failure index is less than 1, the laminate is considered safe under these applied loads.
 
-[guardrail] every number in the explanation matches the CLT data
+[guardrail] every number in the explanation matches the CLT data and is named as what it is
 
 ----- Problem 4/4: Ambiguous text: a load without direction - the agent must refuse, not guess
   "CFRP [0/90]s, 0.125 mm plies, load 1000 N/m."
@@ -154,7 +154,7 @@ Sources of the retrieved rows:
   [1] IM7/8552: NCAMP NCP-RP-2009-028 Rev B, Table 3-3 p.37, RTD mean as-measured (status: verified_pdf)
   [2] IM7/8551-7: Soden, Hinton & Kaddour (1998) Compos Sci Technol 58:1011-1022 (WWFE-I) (status: needs_check)
   [3] IM7/BT250E-6: NCAMP NCP-RP-2015-019 N/C, lamina summary table p.31, RTD mean as-measured (status: verified_pdf)
-[guardrail] every number and report id in the answer appears in the retrieved database rows
+[guardrail] every number and report id in the answer appears in the retrieved database rows and each report id is the source of its material
 [fact-check] the answer AGREES with the database value looked up by Python
 
 ----- Question 2/4: Độ bền cắt S của AS4/8552 là bao nhiêu?
@@ -172,7 +172,7 @@ Sources of the retrieved rows:
   [1] AS4/8552: NCAMP NCP-RP-2010-008 Rev D, lamina summary table p.37, RTD mean as-measured (status: verified_pdf)
   [2] AS4/3501-6: Soden, Hinton & Kaddour (1998) Compos Sci Technol 58:1011-1022 (WWFE-I) (status: needs_check)
   [3] AS4/MTM45-1: NCAMP NCP-RP-2008-004 Rev B, Table 3-3 p.35, RTD (75F) mean as-measured (status: verified_pdf)
-[guardrail] every number and report id in the answer appears in the retrieved database rows
+[guardrail] every number and report id in the answer appears in the retrieved database rows and each report id is the source of its material
 [fact-check] the answer AGREES with the database value looked up by Python
 
 ----- Question 3/4: Which NCAMP material has the highest Xt?
@@ -187,9 +187,12 @@ Sources of the retrieved rows:
     3. IM7G/EP2202: 2967 MPa (source: NCAMP NCP-RP-2014-006 N/C, lamina summary table p.35, RTD mean as-measured; status: verified_pdf)
     4. T40-800/5215: 2473 MPa (source: NCAMP NCP-RP (Cycom 5215 T40-800 Unitape), lamina summary table p.36, RTD mean as-measured; status: verified_pdf)
     5. MR60H/NB4708: 2458 MPa (source: NCAMP NCP-RP-2010-074 N/C, lamina summary table p.35, RTD mean as-measured; status: verified_pdf)
+[check] the answer has 2 problem(s) -> asking the LLM again (once):
+        - NCP-RP-2023-002 is given as the source of IM7G/EP2202, but the source of IM7G/EP2202 is "NCAMP NCP-RP-2014-006 N/C, lamina summary table p.35, RTD mean as-measured"
+        - NCP-RP-2023-002 is given as the source of T1100GC/TC380, but the source of T1100GC/TC380 is "NCAMP NCP-RP-2025-010 Rev -, lamina summary table p.38, RTD mean as-measured"
 
-=== ANSWER (Ollama (gemma3:4b)) ===
-The NCAMP material with the highest longitudinal tensile strength (Xt) is T1100G/3960 with a value of 3645 MPa (source [1]: p.34). The material T1100GC/TC380 has 3277 MPa (source [2]: p.38), and IM7G/EP2202 has 2967 MPa (source [3]: p.35). This information was obtained from the NCAMP NCP-RP-2023-002 Rev B database.
+=== ANSWER (pre-built by Python from the database rows: the LLM answer failed the citation check twice) ===
+Ranking computed by Python from the whole database (NCAMP materials only, 15 materials with data), property Xt (longitudinal tensile strength), highest first: 1. T1100G/3960: 3645 MPa (source: NCAMP NCP-RP-2023-002 Rev B, lamina summary table p.34, RTD mean as-measured; status: verified_pdf); 2. T1100GC/TC380: 3277 MPa (source: NCAMP NCP-RP-2025-010 Rev -, lamina summary table p.38, RTD mean as-measured; status: verified_pdf); 3. IM7G/EP2202: 2967 MPa (source: NCAMP NCP-RP-2014-006 N/C, lamina summary table p.35, RTD mean as-measured; status: verified_pdf).
 
 Sources of the retrieved rows:
   [1] T1100G/3960: NCAMP NCP-RP-2023-002 Rev B, lamina summary table p.34, RTD mean as-measured (status: verified_pdf)
@@ -211,13 +214,92 @@ Sources of the retrieved rows:
   [1] AS4/3501-6: Soden, Hinton & Kaddour (1998) Compos Sci Technol 58:1011-1022 (WWFE-I) (status: needs_check)
   [2] HTS40/MTM45-1: NCAMP NCP-RP-2009-008 N/C, lamina summary table p.35, RTD mean as-measured (status: verified_pdf)
   [3] T1100G/3960: NCAMP NCP-RP-2023-002 Rev B, lamina summary table p.34, RTD mean as-measured (status: verified_pdf)
-[guardrail] every number and report id in the answer appears in the retrieved database rows
+[guardrail] every number and report id in the answer appears in the retrieved database rows and each report id is the source of its material
+
+==============================================================================
+  PART 4 - Design: request in words -> optimiser -> checks (MATLAB, polynomial Ritz) -> LLM
+==============================================================================
+
+----- Design request 1/2: English, IM7/8552 (measured NCAMP values), shear that may reverse: checked for +Nxy and -Nxy
+  "Design the lightest IM7/8552 laminate for a shear load Nxy = 40 kN/m."
+  [request type] design (design words: design, lightest)
+
+[1/4] LLM reads the design request ...
+  (Ollama (gemma3:4b), 3.2 s)
+  material : IM7/8552 -> measured: NCAMP NCP-RP-2009-028 Rev B, p.37
+  loads    : Nx=0  Ny=0  Nxy=40000 N/m   (shear checked for +Nxy and -Nxy)
+  objective: lightest (fewest plies); plies 8-64; safety factor 1.5
+  plate    : 0.5 m x 0.5 m, simply supported; ply thickness 0.125 mm
+  rules    : symmetric, balanced, >= 10 % per direction, <= 4 identical plies in a row; angles 0, +45, -45, 90
+  defaults used (not given in the text): ply angles 0, +45, -45, 90; ply count 8-64; safety factor 1.5; ply thickness 0.125 mm; plate length a 0.5 m; plate width b 0.5 m; design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row; shear checked in both directions (+Nxy and -Nxy): the text does not say that the shear acts in one direction only
+
+[2/4] Optimiser (exact search, else GA + local search) ...
+
+[3/4] Checks: MATLAB strength, polynomial Ritz buckling, quasi-isotropic comparison ...
+  (1.6 s, of which search 1.4 s)
+  search   : exact search optimal (1.4 s)
+  RESULT   : [-45/45_2/-45/45/-45_2/45/90/0_2/90]s   24 plies (3 mm)  ->  proven optimum (exact search)
+  plies per angle: 0: 4   +45: 8   -45: 8   90: 4
+  reserve factors: Max Stress 42.66   Tsai-Wu 26.03   buckling 1.699
+  margin   : 1.699 (required 1.5) governed by buckling, shear -Nxy  -> MEETS the safety factor
+  check MATLAB clt_engine.m (strength): PASS  (largest relative difference Python/MATLAB 2.5e-15)
+  check buckling (Nxy=40000): sine-series Ritz 1.699 vs independent polynomial Ritz 1.698 -> difference +0.05 %
+  check buckling (Nxy=-40000): sine-series Ritz 1.699 vs independent polynomial Ritz 1.698 -> difference +0.05 %
+  quasi-isotropic: smallest [0/45/-45/90]ns meeting the same constraints = 32 plies -> this design has 25.0 % fewer plies
+
+[4/4] LLM explains the design ...
+  (Ollama (gemma3:4b), 2.4 s)
+
+Total time: 7.3 s
+
+===== EXPLANATION (LLM) =====
+The design, with a stacking sequence of [-45/45_2/-45/45/-45_2/45/90/0_2/90]s consisting of 24 plies, has been proven optimum through an exact search. The governing criterion for this design is buckling, and the safety margin is 1.6988, which is less than the required safety factor of 1.5. The buckling reserve factor is 1.6988, while the Tsai-Wu reserve factor is 26.0279.  This design has 25.0 % fewer plies than the smallest quasi-isotropic laminate needed, which is 32 plies.
+
+[guardrail] every number in the explanation is one of the design data and is named as what it is
+
+----- Design request 2/2: Vietnamese, carbon/epoxy group (ML properties), compression: buckling governs
+  "Thiết kế tấm carbon/epoxy nhẹ nhất chịu nén Nx = -20 kN/m, kích thước tấm 0,5 m × 0,5 m."
+  [request type] design (design words: thiết kế, nhẹ nhất)
+
+[1/4] LLM reads the design request ...
+  (Ollama (gemma3:4b), 3.2 s)
+  material : CFRP -> ML prediction (group CFRP)
+  loads    : Nx=-20000  Ny=0  Nxy=0 N/m
+  objective: lightest (fewest plies); plies 8-64; safety factor 1.5
+  plate    : 0.5 m x 0.5 m, simply supported; ply thickness 0.125 mm
+  rules    : symmetric, balanced, >= 10 % per direction, <= 4 identical plies in a row; angles 0, +45, -45, 90
+  defaults used (not given in the text): ply angles 0, +45, -45, 90; ply count 8-64; safety factor 1.5; ply thickness 0.125 mm; design rules: symmetric, balanced, >= 10 % of the plies in each direction, <= 4 identical plies in a row
+
+[2/4] Optimiser (exact search, else GA + local search) ...
+
+[3/4] Checks: MATLAB strength, polynomial Ritz buckling, quasi-isotropic comparison ...
+  (3.8 s, of which search 3.6 s)
+  search   : exact search optimal (3.6 s)
+  RESULT   : [-45/45_2/-45/45/-45_2/45/0_3/90_2]s   26 plies (3.25 mm)  ->  proven optimum (exact search)
+  plies per angle: 0: 6   +45: 8   -45: 8   90: 4
+  reserve factors: Max Stress 85.43   Tsai-Wu 75.76   buckling 1.658
+  margin   : 1.658 (required 1.5) governed by buckling  -> MEETS the safety factor
+  check MATLAB clt_engine.m (strength): PASS  (largest relative difference Python/MATLAB 3.6e-15)
+  check buckling (Nxy=0): sine-series Ritz 1.658 vs independent polynomial Ritz 1.658 -> difference -0.00 %
+  quasi-isotropic: smallest [0/45/-45/90]ns meeting the same constraints = 32 plies -> this design has 18.8 % fewer plies
+  [warning] ply properties are ML predictions with an error: the result is for reference only / tính chất vật liệu là dự đoán, có sai số; kết quả chỉ mang tính tham khảo
+
+[4/4] LLM explains the design ...
+  (Ollama (gemma3:4b), 2.6 s)
+
+Total time: 9.8 s
+
+===== EXPLANATION (LLM) =====
+The design, with a stacking sequence of [-45/45_2/-45/45/-45_2/45/0_3/90_2]s consisting of 26 plies, has been proven optimum through an exact search. The governing criterion for this design is buckling, with a buckling reserve factor of 1.6585. The Max Stress reserve factor is 85.4263 and the Tsai-Wu reserve factor is 75.7644. The safety margin is 1.6585, which meets the required safety factor of 1.5. This design has 18.8 % fewer plies than the smallest quasi-isotropic laminate needed, which is 32 plies.
+
+[guardrail] every number in the explanation is one of the design data and is named as what it is
 
 ==============================================================================
   SUMMARY
 ==============================================================================
-  Part 1 reference check       OK        6.8 s
-  Part 2 agent                 OK       41.9 s
-  Part 3 RAG                   OK        8.4 s
+  Part 1 reference check       OK        5.8 s
+  Part 2 agent                 OK       33.9 s
+  Part 3 RAG                   OK        7.8 s
+  Part 4 design                OK       17.1 s
   LLM used last: Ollama (gemma3:4b)
-  total time: 57 s   log: D:\CompositeAgent\logs\demo_20261027_220921.log
+  total time: 65 s   log: D:\CompositeAgent\logs\demo_20261030_143623.log

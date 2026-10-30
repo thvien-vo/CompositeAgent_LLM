@@ -174,7 +174,7 @@ venv\Scripts\python.exe python\benchmark_design.py --backend ollama --explain
 ### Stacking-sequence optimisation (Layer 1)
 
 ```bat
-python\optimization\run_optimization.bat           pytest + all experiments (about 1-1.5 h on 20 cores)
+python\optimization\run_optimization.bat           pytest + all experiments (about 1-1.5 h, at most 4 processes)
 python\optimization\run_optimization.bat --quick   reduced run (3 seeds, smaller budget) -> results_quick\, figures_quick\
 ```
 
@@ -202,48 +202,54 @@ print(res.summary())    # stacking sequence, ply count, reserve factors, governi
 Agent (details in `PROGRESS.md` and `deliverables/benchmark/`):
 
 - Reference check (`demo.py`): PASS after every change.
-- LLM extraction, final version, 28 + 16 hand-written problems with known answers: 28/28 and 16/16 with both
-  `gpt-oss-120b` and `gemma3:4b` (the Python checks bring `gemma3:4b` alone from 9/28 to 28/28); no silently wrong
-  answer in the 88 final runs. The first version gave 0/28 with Hugging Face because the loads were silently set to zero.
-- RAG: development set 12/12 (Hugging Face) and 11/12 (`gemma3:4b`); hold-out set 6/6 and 5/6; the right material
-  retrieved in 18/18 questions.
+- LLM extraction, 28 + 16 hand-written problems with known answers: 28/28 and 16/16 with both `gpt-oss-120b` and
+  `gemma3:4b` (the Python checks bring `gemma3:4b` alone from 9/28 to 28/28); no silently wrong answer in the final
+  runs. The first version gave 0/28 with Hugging Face because the loads were silently set to zero.
+- RAG: development set 12/12, hold-out set 6/6 with both models (`gemma3:4b` 11/12 and 5/6 before the citation
+  check); the right material retrieved in 18/18 questions.
 - ML, leave-one-out over 25 materials: R² = 0.44 (E1), 0.30 (G12), 0.31 (Xt); negative for E2, ν12, Xc and S.
+- Request type (rules): 44/44 old analysis problems and 18/18 old RAG questions classified correctly.
+- Design in words, 21 test requests written before the code (15 to design, 6 to refuse): 21/21 fully correct with
+  `gemma3:4b` and with `gpt-oss-120b` (request read correctly, same design as a direct `optimize(...)` call, MATLAB
+  re-check passed, the 6 unsupported or unclear requests refused).
 
 Optimisation (IM7/8552, simply supported 0.5 m × 0.5 m plate, safety factor 1.5; details in
 `deliverables/optimization/BAO_CAO_LOP1.md`):
 
+- Buckling: Rayleigh-Ritz with D16, D26 and Nxy, checked before use: square isotropic plate in shear k_s = 9.328
+  (9.34 in the literature), long plate 5.351 (5.35); within 0.62 % of an independent polynomial Ritz solution.
 - Python CLT vs MATLAB `clt_engine.m`: 60/60 random laminates, maximum relative error 2.5 × 10⁻¹⁵.
-- GA, GA + local search and NSGA-II reach the exhaustive-search optimum in 20/20 runs on all 16 problems
-  (8 load cases × 2 ply thicknesses, 960 runs).
-- Le Riche & Haftka benchmark: exhaustive search reproduces the published optima 3973.01, 9998.19 and 13518.66;
+- Exact search with proven bounds: global optimum proven for 15 of 16 problems (8 load cases × 2 ply thicknesses);
+  against it, GA + local search 300/300 runs, GA 294/300, NSGA-II 213/300.
+- Le Riche & Haftka benchmark (their own assumptions): published optima 3973.01, 9998.19 and 13518.66 reproduced;
   minimum-thickness problem of 1995: 48 plies, as published.
-- MATLAB re-check of the 83 final designs: 83/83 pass. pytest: 78/78 pass.
-- Mass saving against the smallest quasi-isotropic `[0/±45/90]ns` laminate with the same margin (0.125 mm plies,
-  load cases without shear): −50 % in uniaxial tension, −37.5 % in biaxial tension, −8.3 % to −16.7 % in compression.
-  No saving is claimed for the load cases with shear (see below).
+- MATLAB re-check of the 51 final designs: 51/51 pass. pytest: 102/102 pass.
+- Mass saving against the smallest quasi-isotropic `[0/±45/90]ns` laminate with the same margin and the same buckling
+  model (0.125 mm plies): −50 % uniaxial tension, −37.5 % biaxial tension, −16.7 % and −8.3 % compression, −25 % pure
+  shear (42 vs 56 plies), −25 % tension + shear, −16.7 % compression + shear; the very large load is infeasible within
+  64 plies.
+- Shear that may reverse (option `shear_both_signs`, default in the design agent): pure shear needs 46 plies instead of
+  42 (32 instead of 28 with 0.18288 mm plies); the published one-direction results do not change when the option is off.
 
 ## Limitations
 
 - Small dataset (25 lamina systems); several ML properties have a negative R²; measured values only for these 25
-  materials, at room temperature and dry.
+  materials, at room temperature and dry. Designs made with ML-predicted properties are for reference only.
 - CLT in the agent: linear elastic, Max Stress criterion, first-ply failure; no hygrothermal stresses, no delamination.
-- The test sets are small and written by the author; load directions are read with keyword rules (English and
-  Vietnamese), so unusual wording is refused.
-- Offline mode (`gemma3:4b`): the explanation can use a wrong term (for example call ABD(1,1) a load) although every
-  number is correct, because the guardrail checks numbers only.
+- The test sets are small and written by the author; load directions and the meaning of explanations are checked with
+  keyword rules (English and Vietnamese), so unusual wording is refused or replaced by a pre-built explanation.
 - RAG indexes the table rows only; the vectors are stored in a JSON file (no vector database yet).
-- Optimisation: shear buckling is not in the main model (a Ritz check shows that the 12-ply pure-shear design buckles
-  at 2.3 % of the load and about 46 plies are needed); D16 / D26 are neglected; strengths are mean values, not
-  B-basis allowables; one load case at a time; the "GA-deceptive" Le Riche & Haftka case is solved exactly in only
-  3/20 runs.
+- Optimisation and design: in-plane loads only, angles 0/±45/90, symmetric and balanced laminates, one load case (or
+  ±Nxy); Ritz values are upper bounds; strengths are mean values, not B-basis allowables; the exact search cannot
+  always finish within its time limit (then the best design found is reported); NSGA-II is weaker with D16, D26; the
+  "GA-deceptive" Le Riche & Haftka case is solved exactly in only 3/20 runs.
 
 ## Next steps
 
 - Layer 2: optimisation that accounts for the ML prediction error of the ply properties.
-- Layer 3: the optimiser as a tool of the agent; comparison of designs proposed by the LLM with the GA.
-- Shear buckling (and D16 / D26) in the main optimisation model.
-- More data and features, prediction intervals; PostgreSQL + pgvector for RAG; a larger independent test set;
-  checking the meaning of the explanation, not only its numbers.
+- Layer 3: compare designs proposed by the LLM itself with the optimiser; more objectives (stiffness), moments.
+- Several load cases at once; buckling shape functions that meet the edge conditions.
+- More data and features, prediction intervals; PostgreSQL + pgvector for RAG; a larger independent test set.
 
 ## Data sources
 
