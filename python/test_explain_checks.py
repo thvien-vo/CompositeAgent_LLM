@@ -117,6 +117,14 @@ TEXTS = [
     ("P2", "The maximum failure index of 1.096 is below 1.", True),
     ("P1", "Per-ply stresses show that ply 4 has the highest failure index due to its 0.1518 MPa stress.", False),
     ("P1", "Ply 4 has the highest failure index due to its 63.76 MPa stress.", True),
+    # comparisons with 1 when the failure index is only named inside the definition of the safety factor
+    ("P2", "The safety factor of 0.9127, the reciprocal of the failure index, is below 1.", False),
+    ("P2", "The safety factor, i.e. 1 divided by the maximum failure index, is 0.9127, which is less than 1.", False),
+    ("P2", "The reciprocal of the failure index, 0.9127, is below 1, so the laminate is not safe.", False),
+    ("P2", "Hệ số an toàn, tức là nghịch đảo của chỉ số phá hủy, bằng 0.9127, nhỏ hơn 1.", False),
+    ("P2", "The failure index of 1.096 is below 1.", True),
+    ("P1", "The safety factor of 420, the reciprocal of the failure index, is below 1.", True),
+    ("P1", "Hệ số an toàn, tức là nghịch đảo của chỉ số phá hủy, bằng 420, nhỏ hơn 1.", True),
 ]
 
 # (answer, context materials named in it, must be flagged?)

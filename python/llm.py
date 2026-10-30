@@ -1011,6 +1011,11 @@ def _normalize(text):
     t = re.sub(r"\[[^\]]*\]\s*[a-zA-Z0-9]*", "layup", t)                                          # [0/45/90]s
     t = re.sub(r"(?<![\w.])1\s*/\s*(?:the\s+)?(?:max(?:imum)?\s+)?(?:FI|failure index|chỉ số phá hủy)\b", " ", t,
                flags=re.IGNORECASE)                                                             # "1/FI"
+    # "the reciprocal of the failure index" names the safety factor, not the index
+    t = re.sub(r"\b(?:the\s+)?(?:reciprocal|inverse)\s+of\s+(?:the\s+)?(?:max(?:imum)?\s+)?(?:FI|failure index)\b"
+               r"|(?<![\w.])1\s+(?:divided\s+by|over)\s+(?:the\s+)?(?:max(?:imum)?\s+)?(?:FI|failure index)\b"
+               r"|\bnghịch đảo\s+(?:của\s+)?(?:FI\b|chỉ số(?:\s+(?:phá hủy|phá huỷ|hư hỏng|lỗi hỏng))?)",
+               " safety factor ", t, flags=re.IGNORECASE)
     t = re.sub(r"\b(sigma|tau|σ|τ)\s*_\s*\{?(\d+)\}?", r"\1\2", t, flags=re.IGNORECASE)
     t = re.sub(r"(?<=[A-Za-z]{2})_(?=[A-Za-z]{2})", " ", t)                                    # max_failure_index
     return t
