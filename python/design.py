@@ -384,22 +384,24 @@ def build_spec(raw, text):
         raise DesignRefusal(f"{n_min} plies: a symmetric laminate has an even number of plies")
 
     # --- safety factor, ply thickness, plate: text first, else a grounded LLM value, else the default
-    def pick(name, text_val, llm_val, default, show, grounded):
+    def pick(name, text_val, llm_val, default, show, grounded, plausible):
         if text_val is not None:
             if llm_val and abs(llm_val - text_val) > 1e-9 * abs(text_val):
                 notes.append(f"LLM read {name} = {show(llm_val)}, the text says {show(text_val)} -> using the text")
             return text_val
-        if llm_val and grounded:
+        if llm_val and grounded and plausible(llm_val):
             notes.append(f"{name} {show(llm_val)} read by the LLM (written in the text)")
             return llm_val
-        if llm_val:
+        if llm_val and not grounded:
             notes.append(f"LLM gave {name} {show(llm_val)}, which is not written in the text -> ignored")
+        elif llm_val:     # e.g. the plate size "0,5 m" copied as the ply thickness
+            notes.append(f"LLM gave {name} {show(llm_val)}, which is not a plausible {name} -> ignored")
         defaults.append(f"{name} {show(default)}")
         return default
 
     sf_llm = float(raw.get("safety_factor") or 0)
     sf = pick("safety factor", tv["safety_factor"], sf_llm, DEFAULTS["safety_factor"], lambda v: f"{v:g}",
-              _grounded_number(sf_llm, nums))
+              _grounded_number(sf_llm, nums), lambda v: 1.0 <= v <= 5.0)
 
     def length(q):
         try:
@@ -409,12 +411,13 @@ def build_spec(raw, text):
 
     t_llm = length(raw.get("ply_thickness"))
     t = pick("ply thickness", tv["ply_thickness"], t_llm, DEFAULTS["ply_thickness"], lambda v: f"{v * 1e3:g} mm",
-             bool(t_llm) and llm._grounded_si(t_llm, nums, units, llm.LENGTH_UNITS))
+             bool(t_llm) and llm._grounded_si(t_llm, nums, units, llm.LENGTH_UNITS), lambda v: 0.02e-3 <= v <= 1e-3)
     a_llm, b_llm = length(raw.get("plate_a")), length(raw.get("plate_b"))
     pa, pb = tv["plate"] if tv["plate"] else (None, None)
     ground = lambda v: bool(v) and llm._grounded_si(v, nums, units, {"m": 1.0, "mm": 1e-3})
-    a = pick("plate length a", pa, a_llm, DEFAULTS["a"], lambda v: f"{v:g} m", ground(a_llm))
-    b = pick("plate width b", pb, b_llm, DEFAULTS["b"], lambda v: f"{v:g} m", ground(b_llm))
+    plate_ok = lambda v: 0.05 <= v <= 5.0
+    a = pick("plate length a", pa, a_llm, DEFAULTS["a"], lambda v: f"{v:g} m", ground(a_llm), plate_ok)
+    b = pick("plate width b", pb, b_llm, DEFAULTS["b"], lambda v: f"{v:g} m", ground(b_llm), plate_ok)
     if not (1.0 <= sf <= 5.0):
         raise DesignRefusal(f"safety factor {sf:g}: expected a value between 1 and 5")
     if not (0.02e-3 <= t <= 1.0e-3):

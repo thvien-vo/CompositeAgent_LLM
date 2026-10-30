@@ -89,6 +89,11 @@ def llm_values():
     except design.DesignRefusal:
         ok = False
     check(ok, "a temperature in °C is not a ply angle")
+    # gemma3, 30/10/2026 (demo request 2): the plate size "0,5 m" copied as the ply thickness -> ignored, default
+    text = "Thiết kế tấm carbon/epoxy nhẹ nhất chịu nén Nx = -20 kN/m, tấm 0,5 m × 0,5 m."
+    spec = design.build_spec(dict(EMPTY, material="CFRP", ply_thickness={"value": 0.5, "unit": "m"}), text)
+    check(abs(spec.ply_thickness - 0.125e-3) < 1e-15 and (spec.a, spec.b) == (0.5, 0.5)
+          and any("not a plausible ply thickness" in x for x in spec.notes), f"implausible LLM thickness: {spec}")
     # gemma3, 30/10/2026: "at most 24 plies" copied as a fixed ply count -> the text (a limit) wins
     text = ("Design the lightest IM7/8552 laminate with at most 24 plies for Nx = 2000 kN/m and Ny = 1000 kN/m.")
     spec = design.build_spec(dict(EMPTY, material_name="IM7/8552", material="CFRP", ply_count=24), text)
