@@ -4,8 +4,9 @@ run_demo.py - one-command demo for the presentation (started by ..\run_demo.bat)
   Part 1  reference check, ML + MATLAB only: max FI 0.00238, critical ply 4, ABD(1,1) 5.94e7 N/m
   Part 2  agent: problems written in words -> LLM -> ML -> MATLAB -> LLM
   Part 3  RAG: questions about the material database, answers with report number and page
-  Part 4  (only with --interactive) the audience types its own problem or question
-Options: --offline (only Ollama, no internet)  --no-wait  --lang vi  --parts 1,2,3  --interactive
+  Part 4  design: a design request in words -> optimiser -> checks (MATLAB, polynomial Ritz) -> LLM
+  Part 5  (only with --interactive) the audience types its own problem, design request or question
+Options: --offline (only Ollama, no internet)  --no-wait  --lang vi  --parts 1,2,3,4  --interactive
 Everything printed is also saved in ..\logs\demo_YYYYMMDD_HHMMSS.log
 """
 import argparse
@@ -32,6 +33,12 @@ PROBLEMS = [  # (title, text, the agent must refuse?)
      "and a shear force of 5 kN/m.", False),
     ("Ambiguous text: a load without direction - the agent must refuse, not guess",
      "CFRP [0/90]s, 0.125 mm plies, load 1000 N/m.", True),
+]
+DESIGNS = [  # (title, request): both feasible and proven optimal by the exact search (checked 30/10/2026)
+    ("English, IM7/8552 (measured NCAMP values), shear that may reverse: checked for +Nxy and -Nxy",
+     "Design the lightest IM7/8552 laminate for a shear load Nxy = 40 kN/m."),
+    ("Vietnamese, carbon/epoxy group (ML properties), compression: buckling governs",
+     "Thiết kế tấm carbon/epoxy nhẹ nhất chịu nén Nx = -20 kN/m, tấm 0,5 m × 0,5 m."),
 ]
 QUESTIONS = [
     "What is the longitudinal tensile strength Xt of IM7/8552?",
@@ -201,22 +208,60 @@ def part3(no_wait):
     return ok
 
 
-def part4(lang):
+def part4(lang, no_wait):
+    import design
+    import router
+    banner("PART 4 - Design: request in words -> optimiser -> checks (MATLAB, polynomial Ritz) -> LLM")
+    results = []
+    for i, (title, text) in enumerate(DESIGNS, 1):
+        print(f"\n----- Design request {i}/{len(DESIGNS)}: {title}")
+        print(f"  \"{text}\"")
+        try:
+            kind, why = router.classify(text)
+            print(f"  [request type] {kind} ({why})")
+            if kind != "design":
+                print(f"  [FAIL] classified as {kind}")
+                results.append(False)
+                continue
+            out = design.main(text, lang=lang)
+            design.print_explanation(out)
+            r = out["result"]
+            results.append(r["feasible"] and (r["matlab"] or {}).get("pass") is True)
+        except Exception as e:
+            print(f"  [FAIL] {type(e).__name__}: {e}")
+            results.append(False)
+        if i < len(DESIGNS):
+            wait(8, no_wait)
+    return all(results)
+
+
+def part5(lang):
+    import design
     import main as agent
     import rag
-    banner("PART 4 - Try your own (Enter on an empty line = quit)")
+    import router
+    banner("PART 5 - Try your own (Enter on an empty line = quit)")
     while True:
-        kind = input("\n  1 = laminate problem (CLT), 2 = material question (RAG), Enter = quit: ").strip()
-        if kind not in ("1", "2"):
+        kind = input("\n  1 = laminate problem (CLT), 2 = material question (RAG), 3 = design request, "
+                     "a = let the program decide, Enter = quit: ").strip().lower()
+        if kind not in ("1", "2", "3", "a"):
             return
         text = input("  Type it on one line: ").strip()
         if not text:
             continue
         try:
+            if kind == "a":
+                kind, why = router.classify(text)
+                print(f"  [request type] {kind} ({why})")
+                kind = {"analysis": "1", "question": "2", "design": "3"}[kind]
             if kind == "1":
                 agent.print_explanation(agent.main(text, lang=lang))
-            else:
+            elif kind == "2":
                 rag.print_answer(rag.answer(text))
+            else:
+                design.print_explanation(design.main(text, lang=lang))
+        except (router.UnclearRequest, design.DesignRefusal) as e:
+            print(f"  [REFUSED] {e}")
         except Exception as e:
             print(f"  [FAIL] {type(e).__name__}: {e}")
 
@@ -226,7 +271,7 @@ def run():
     ap.add_argument("--offline", action="store_true", help="use only Ollama (no internet)")
     ap.add_argument("--no-wait", action="store_true")
     ap.add_argument("--lang", default="en", choices=["en", "vi"])
-    ap.add_argument("--parts", default="1,2,3")
+    ap.add_argument("--parts", default="1,2,3,4")
     ap.add_argument("--interactive", action="store_true")
     args = ap.parse_args()
     if args.offline:
@@ -261,8 +306,12 @@ def run():
         wait(8, args.no_wait)
     if "3" in parts:
         timed("Part 3 RAG", part3, args.no_wait)
+        if "4" in parts:
+            wait(8, args.no_wait)
+    if "4" in parts:
+        timed("Part 4 design", part4, args.lang, args.no_wait)
     if args.interactive:
-        part4(args.lang)
+        part5(args.lang)
 
     banner("SUMMARY")
     for k, (ok, sec) in summary.items():

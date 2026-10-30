@@ -1083,12 +1083,13 @@ def keyword_vocabulary(kind_words, kind_symbols, compatible, kind_names):
     return rx, lookup, compatible, kind_names
 
 
-def check_meaning(text, problem, result, material, table=None, vocab=None, report_unknown=False):
+def check_meaning(text, problem, result, material, table=None, vocab=None, report_unknown=False, noun_after=False):
     """For each number in the explanation: find what it is in the CLT data (failure index, stress, ABD(1,1)...)
     and check that the words next to it (same clause, English or Vietnamese) name that kind of quantity.
     ABD(1,1) must be called a stiffness and its sentence must not speak of a load or a load capacity.
     table / vocab: another value table (value, kind, label) and vocabulary (keyword_vocabulary) - used by the
-    design explanation; report_unknown: also report numbers that are not in the table.
+    design explanation; report_unknown: also report numbers that are not in the table; noun_after: a matching
+    kind word right after the number names it even without a unit ("... is 32 plies").
     Returns a list of problems (empty = every number is described correctly)."""
     t = _normalize(text)
     kw_re, kw_lookup, compatible, kind_names = vocab or (_KW_RE, _KW_LOOKUP, _COMPATIBLE, KIND_NAMES)
@@ -1142,7 +1143,7 @@ def check_meaning(text, problem, result, material, table=None, vocab=None, repor
             right1 = min([n[0] for n in nums[i + 1:] if n[0] >= e0] + [ce, e0 + 7])
             if re.search(r"/\s*\|?\s*$", sent[max(0, s0 - 4):s0]) or re.match(r"\s*\|?\s*/", sent[e0:]):
                 continue  # operand of a ratio ("|27.21 MPa| / 45.17 MPa = 0.6024", "1 / 0.4372"): the result is named
-            if unit and any(e0 <= x[0] <= e0 + 2 and ok(x[2]) for x in words):
+            if (unit or noun_after) and any(e0 <= x[0] <= e0 + 2 and ok(x[2]) for x in words):
                 continue  # "its 0.2524 MPa stress": the noun right after the unit says what it is
             verdict, word = None, None
             for ws, we, kind, w in reversed([x for x in words if left0 <= x[0] and x[1] <= s0]):

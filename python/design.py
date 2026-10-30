@@ -332,7 +332,12 @@ def build_spec(raw, text):
         raise DesignRefusal(f"objective '{tv['objective_other'][0]}' is not supported; " + SUPPORTED)
     n_min, n_max = DEFAULTS["n_min"], DEFAULTS["n_max"]
     exact = set(tv["n_exact"])
-    if not exact and int(raw.get("ply_count") or 0) > 0:
+    python_counts = bool(exact or tv["n_range"] or tv["n_min"] or tv["n_max"])
+    llm_n = int(raw.get("ply_count") or 0)
+    if python_counts and llm_n and llm_n not in exact:
+        notes.append(f"LLM read a fixed ply count {llm_n}, but the text gives a limit of the ply count, not a fixed "
+                     "number -> using the text")
+    if not python_counts and int(raw.get("ply_count") or 0) > 0:
         n = int(raw["ply_count"])
         if _grounded_number(n, nums) and re.search(PLY, text, flags=re.IGNORECASE):
             exact = {n}
@@ -362,7 +367,7 @@ def build_spec(raw, text):
                 n_max = tv["n_max"]
             for key, val in (("ply_count_min", tv["n_min"]), ("ply_count_max", tv["n_max"])):
                 v = int(raw.get(key) or 0)
-                if v and val is None and _grounded_number(v, nums):
+                if v and not python_counts and _grounded_number(v, nums):
                     if key == "ply_count_min":
                         n_min = v
                     else:
@@ -566,7 +571,7 @@ def solve(spec, check_matlab=True):
                              "e_clt": max(v["clt"]["e_ABD"], v["clt"]["e_stress"], v["clt"]["e_FI"])}
         except Exception as e:
             out["matlab"] = {"pass": None, "error": f"{type(e).__name__}: {str(e)[:200]}"}
-    qi = quasi_isotropic(p)
+    qi = quasi_isotropic(p, n_min=spec.n_min)       # same constraints, including the smallest ply count
     out["quasi_isotropic"] = {"n": qi["n"], "margin": qi["margin"], "found": qi["found"],
                               "notation": qi.get("notation")}
     out["reduction_pct"] = (100.0 * (qi["n"] - len(full)) / qi["n"]) if (qi["found"] and feasible) else None
@@ -622,13 +627,16 @@ def design_data(r):
     if r["governing"] != "buckling" and r["critical_ply"]:
         rows.append(("critical ply", r["critical_ply"], "", f"ply number (angle {r['critical_angle']:g} deg)"))
     if sp["loads"]["Nxy"]:
-        rows.append(("shear checked in both directions", "yes" if sp["shear_both"] else "no (given sign only)", "",
-                     "+Nxy and -Nxy, the smaller reserve factor counts"))
+        rows.append(("shear direction", "both directions checked (+Nxy and -Nxy, the smaller reserve factor counts)"
+                     if sp["shear_both"] else "only the sign given in the request was checked (the request says the "
+                     "shear acts in one direction)", "", ""))
     qi = r["quasi_isotropic"]
     if qi["found"]:
         rows.append(("quasi-isotropic laminate needed", qi["n"], "plies",
                      "smallest [0/45/-45/90]ns laminate that meets the same safety factor"))
-    if r["reduction_pct"] is not None:
+    if r["reduction_pct"] == 0:
+        rows.append(("ply count compared with quasi-isotropic", "the same number of plies", "", ""))
+    elif r["reduction_pct"] is not None:
         rows.append(("fewer plies than quasi-isotropic", round(r["reduction_pct"], 1), "%",
                      "(quasi-isotropic plies - design plies) / quasi-isotropic plies; say it with this sentence: "
                      f"'This design has {r['reduction_pct']:.1f} % fewer plies than the smallest quasi-isotropic "
@@ -707,7 +715,7 @@ def _value_table(r):
     qi = r["quasi_isotropic"]
     if qi["found"]:
         rows.append((qi["n"], "ply", "the plies of the quasi-isotropic laminate"))
-    if r["reduction_pct"] is not None:
+    if r["reduction_pct"]:
         rows.append((r["reduction_pct"], "percent", "the reduction of the ply count"))
     for k, v in sp["loads"].items():
         if v:
@@ -720,6 +728,10 @@ _NOT_FEASIBLE_RE = (r"\b(?:infeasible|not\s+feasible|no\s+feasible|does\s+not\s+
 _FEASIBLE_RE = (r"(?<!not\s)(?<!n['’]t\s)\b(?:meets|satisfies|fulfils|fulfills)\s+(?:the\s+)?(?:required\s+)?"
                 r"(?:safety|constraint)|(?<!không\s)(?<!chưa\s)\bđạt\s+(?:yêu\s+cầu|hệ\s+số\s+an\s+toàn)")
 _PROVEN_RE = r"\bproven\b|\bguarantee|\bglobally\s+optimal|\bglobal\s+optimum|chứng\s+minh|tối\s+ưu\s+toàn\s+cục"
+_SHEAR_NOT_CHECKED_RE = (r"(?:shear|cắt)[^.;]{0,50}?(?:(?:was|were|is|has|have)\s+not\s+(?:been\s+)?checked|"
+                         r"not\s+checked|neither\s+direction|không\s+(?:được\s+)?kiểm\s+tra)")
+_SHEAR_ONE_RE = r"one\s+direction\s+only|only\s+(?:in\s+)?one\s+direction|given\s+sign\s+only|chỉ\s+(?:theo\s+)?một\s+chiều"
+_SHEAR_BOTH_RE = r"both\s+directions|both\s+signs|\+nxy\s+and\s+-nxy|cả\s+hai\s+chiều"
 # "the quasi-isotropic laminate ... has 10 % fewer plies than this design" (the reduction belongs to the design)
 _WRONG_WAY_RE = (r"(?:fewer|less|lighter|thinner|ít\s+hơn|nhẹ\s+hơn|mỏng\s+hơn|giảm)(?:[^.;]|\.(?=\d)){0,60}?"
                  r"(?:\bthan|so\s+với)\s+"
@@ -733,13 +745,27 @@ _GOVERNED_RE = (r"(?:governed|controlled|limited|determined|decided|driven)\s+by
 def design_explanation_issues(text, r):
     """Every number must be one of the data and be named as what it is (English or Vietnamese); the verdicts
     (feasible or not, proven or not, governing criterion) must agree with the result."""
-    issues = llm.check_meaning(text, None, None, None, table=_value_table(r), vocab=_vocab(), report_unknown=True)
+    issues = llm.check_meaning(text, None, None, None, table=_value_table(r), vocab=_vocab(), report_unknown=True,
+                               noun_after=True)
     t = llm._normalize(text).lower()
     if r["feasible"] and re.search(_NOT_FEASIBLE_RE, t):
         issues.append(f"the design meets the safety factor, but the text says '{re.search(_NOT_FEASIBLE_RE, t).group()}'")
-    if not r["feasible"] and re.search(_FEASIBLE_RE, t):
-        issues.append(f"the design does NOT meet the safety factor, but the text says "
-                      f"'{re.search(_FEASIBLE_RE, t).group()}'")
+    if not r["feasible"]:
+        for m in re.finditer(_FEASIBLE_RE, t):
+            if not re.search(r"\b(?:not|neither|nor|none|no|never|fails?|không|chưa)\b", t[max(0, m.start() - 40):
+                                                                                             m.start()]):
+                issues.append(f"the design does NOT meet the safety factor, but the text says '{m.group()}'")
+                break
+    if r["spec"]["loads"]["Nxy"]:
+        m = re.search(_SHEAR_NOT_CHECKED_RE, t)
+        if m:
+            issues.append(f"the shear was checked ({'both directions' if r['spec']['shear_both'] else 'the given sign'}"
+                          f"), but the text says '{m.group()}'")
+        wrong = _SHEAR_ONE_RE if r["spec"]["shear_both"] else _SHEAR_BOTH_RE
+        done = "in both directions" if r["spec"]["shear_both"] else "for the given sign only"
+        m = re.search(wrong, t)
+        if m and not llm._negated(t, m.start()):
+            issues.append(f"the shear was checked {done}, but the text says '{m.group()}'")
     for m in re.finditer(_PROVEN_RE, t):
         if r["search"]["proven"]:
             break
@@ -781,9 +807,11 @@ def prebuilt_explanation(r, lang="en"):
             out.append("Hệ số dự trữ của từng tiêu chuẩn: " + ", ".join(parts) + ".")
         if "buckling" in rf and rf["buckling"] == float("inf"):
             out.append("Tải này không làm tấm mất ổn định (không có nén, lực kéo lấn át).")
-        if r["reduction_pct"] is not None:
+        if r["reduction_pct"]:
             out.append(f"Tấm tựa đẳng hướng nhỏ nhất cần {qi['n']} lớp để có cùng hệ số an toàn, nên thiết kế này "
                        f"ít hơn {r['reduction_pct']:.1f} % số lớp.")
+        elif r["reduction_pct"] == 0:
+            out.append(f"Tấm tựa đẳng hướng nhỏ nhất cũng cần {qi['n']} lớp.")
         note = "(bản dựng sẵn bằng Python từ kết quả tính, vì lời giải thích của LLM không qua được bước kiểm tra)"
     else:
         out = [f"The stacking sequence {r['notation']} has {r['n_plies']} plies: {c['0']} plies at 0°, "
@@ -797,9 +825,11 @@ def prebuilt_explanation(r, lang="en"):
             out.append("Reserve factors of the criteria: " + ", ".join(parts) + ".")
         if "buckling" in rf and rf["buckling"] == float("inf"):
             out.append("These loads cannot make the plate buckle (no compression, or the tension dominates).")
-        if r["reduction_pct"] is not None:
+        if r["reduction_pct"]:
             out.append(f"The smallest quasi-isotropic laminate needs {qi['n']} plies to reach the same safety "
                        f"factor, so this design has {r['reduction_pct']:.1f} % fewer plies.")
+        elif r["reduction_pct"] == 0:
+            out.append(f"The smallest quasi-isotropic laminate also needs {qi['n']} plies.")
         note = "(pre-built explanation written by Python from the results, because the LLM text did not pass the checks)"
     return " ".join(out), note
 
@@ -881,7 +911,8 @@ def print_result(r):
               f"polynomial Ritz {b['lambda_polynomial']:.4g} -> difference {b['difference_pct']:+.2f} %")
     qi = r["quasi_isotropic"]
     if qi["found"]:
-        red = (f" -> this design has {r['reduction_pct']:.1f} % fewer plies" if r["reduction_pct"] is not None else "")
+        red = (f" -> this design has {r['reduction_pct']:.1f} % fewer plies" if r["reduction_pct"] else
+               " -> the same number of plies" if r["reduction_pct"] == 0 else "")
         print(f"  quasi-isotropic: smallest [0/45/-45/90]ns meeting the same constraints = {qi['n']} plies{red}")
     else:
         print("  quasi-isotropic: no [0/45/-45/90]ns laminate up to 128 plies meets the constraints")

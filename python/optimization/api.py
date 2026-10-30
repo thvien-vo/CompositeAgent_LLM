@@ -212,15 +212,15 @@ def optimize(loads, material: Union[str, Material, None] = "IM7/8552", rules: Op
                               hit_evals=r["hit_evals"])
 
 
-def quasi_isotropic(problem: Problem, n_max: int = 128) -> Dict:
-    """Smallest [0/45/-45/90]_ns laminate (n = 8, 16, ...) with margin >= safety factor (same criteria).
+def quasi_isotropic(problem: Problem, n_max: int = 128, n_min: int = 8) -> Dict:
+    """Smallest [0/45/-45/90]_ns laminate (n = 8, 16, ...; n >= n_min) with margin >= safety factor (same criteria).
     Searched up to n_max plies (beyond the optimizer's 64-ply range, to quantify the comparison)."""
     from .evaluate import Evaluator
     from dataclasses import replace
     p = replace(problem, rules=replace(problem.rules, n_max=max(problem.rules.n_max, n_max)), encoding="ply")
     ev = Evaluator(p)
     rows = []
-    for k in range(1, n_max // 8 + 1):
+    for k in range(max(1, -(-n_min // 8)), n_max // 8 + 1):
         half = np.array([[0, 1, 2, 3] * k], dtype=np.int8)
         r = ev.compute_plies(half)
         rows.append({"n": 8 * k, "margin": float(r["margin"][0])})

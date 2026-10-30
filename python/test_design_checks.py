@@ -89,6 +89,14 @@ def llm_values():
     except design.DesignRefusal:
         ok = False
     check(ok, "a temperature in °C is not a ply angle")
+    # gemma3, 30/10/2026: "at most 24 plies" copied as a fixed ply count -> the text (a limit) wins
+    text = ("Design the lightest IM7/8552 laminate with at most 24 plies for Nx = 2000 kN/m and Ny = 1000 kN/m.")
+    spec = design.build_spec(dict(EMPTY, material_name="IM7/8552", material="CFRP", ply_count=24), text)
+    check((spec.n_min, spec.n_max, spec.objective) == (8, 24, "min_plies"), f"ply limit, not fixed: {spec}")
+    # the quasi-isotropic laminate of the comparison meets the same ply-count limits (no negative saving)
+    r = design.solve(design.build_spec(dict(EMPTY), "Lightest T700GC/TC1225 laminate with between 16 and 40 plies "
+                                                    "for Nx = 300 kN/m, Ny = 150 kN/m."), check_matlab=False)
+    check(r["quasi_isotropic"]["n"] >= 16 and r["reduction_pct"] >= 0, f"QI within the ply range: {r['quasi_isotropic']}")
     print("LLM values: checked against the text")
 
 
@@ -138,6 +146,22 @@ def explanations():
     t = (f"The lightest design found has {infeasible['n_plies']} plies, but its margin of "
          f"{infeasible['margin']:.4g} meets the safety factor.")
     check(bool(design.design_explanation_issues(t, infeasible)), "infeasible design called acceptable")
+    # found in the gemma3 run of 30/10/2026: a correct negation, a ply count named after the number, the shear check
+    t = (f"The Max Stress and Tsai-Wu reserve factors are {infeasible['rf']['max_stress']:.4g} and "
+         f"{infeasible['rf']['tsai_wu']:.4g}, but neither meets the required safety factor of 1.5.")
+    check(not design.design_explanation_issues(t, infeasible), "'neither meets' is a negation")
+    t = f"The smallest quasi-isotropic laminate needed to achieve the same safety factor is {qi} plies."
+    check(not design.design_explanation_issues(t, best), "'... is 32 plies' names a ply count")
+    one = solved("Optimise the stacking sequence of an IM7/8552 plate for Nxy = 60 kN/m; the shear always acts in "
+                 "the positive direction.")
+    check(bool(design.design_explanation_issues("Shear checking was not checked in either direction.", one)),
+          "the shear WAS checked (given sign)")
+    check(bool(design.design_explanation_issues("The shear was checked in both directions.", one)),
+          "one-direction case described as both directions")
+    check(bool(design.design_explanation_issues("The shear was checked in one direction only.", best)),
+          "both-direction case described as one direction")
+    check(not design.design_explanation_issues("The shear was checked for the given sign only.", one),
+          "correct one-direction sentence")
     print("explanations: wrong sentences caught, correct ones and pre-built texts pass")
 
 
